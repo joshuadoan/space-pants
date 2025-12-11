@@ -28,42 +28,64 @@ export function useKeyboardControls(
       return;
     }
 
-    const playerHalfWidth = player.width / 2;
-    const playerHalfHeight = player.height / 2;
+    // Track which keys are currently pressed
+    const keysPressed = new Set<Keys>();
 
     // Set up Excalibur game keyboard controls
-    const handleKeyHold = (evt: KeyEvent) => {
-      if (evt.key === Keys.ArrowLeft) {
-        const newX = player.pos.x - player.speed;
-        if (newX >= playerHalfWidth) {
-          player.pos.x = newX;
-        }
+    const handleKeyPress = (evt: KeyEvent) => {
+      keysPressed.add(evt.key);
+      updateVelocity();
+    };
+
+    const handleKeyRelease = (evt: KeyEvent) => {
+      keysPressed.delete(evt.key);
+      updateVelocity();
+    };
+
+    const updateVelocity = () => {
+      // Reset velocity
+      player.vel.x = 0;
+      player.vel.y = 0;
+
+      // Apply movement based on pressed keys
+      if (keysPressed.has(Keys.ArrowLeft)) {
+        player.moveDIrection("left");
       }
-      if (evt.key === Keys.ArrowRight) {
-        const newX = player.pos.x + player.speed;
-        if (newX <= game.worldWidth - playerHalfWidth) {
-          player.pos.x = newX;
-        }
+      if (keysPressed.has(Keys.ArrowRight)) {
+        player.moveDIrection("right");
       }
-      if (evt.key === Keys.ArrowUp) {
-        const newY = player.pos.y - player.speed;
-        if (newY >= playerHalfHeight) {
-          player.pos.y = newY;
-        }
+      if (keysPressed.has(Keys.ArrowUp)) {
+        player.moveDIrection("up");
       }
-      if (evt.key === Keys.ArrowDown) {
-        const newY = player.pos.y + player.speed;
-        if (newY <= game.worldHeight - playerHalfHeight) {
-          player.pos.y = newY;
-        }
+      if (keysPressed.has(Keys.ArrowDown)) {
+        player.moveDIrection("down");
+      }
+
+      // If no keys are pressed, stop movement
+      if (keysPressed.size === 0) {
+        player.stopMovement();
       }
     };
 
+    // Listen for key press and release events
+    game.input.keyboard.on("press", handleKeyPress);
+    game.input.keyboard.on("release", handleKeyRelease);
+
+    // Also handle hold events for continuous movement
+    const handleKeyHold = (evt: KeyEvent) => {
+      if (!keysPressed.has(evt.key)) {
+        keysPressed.add(evt.key);
+        updateVelocity();
+      }
+    };
     game.input.keyboard.on("hold", handleKeyHold);
 
-    // Cleanup Excalibur keyboard listener
+    // Cleanup Excalibur keyboard listeners
     return () => {
+      game.input.keyboard.off("press", handleKeyPress);
+      game.input.keyboard.off("release", handleKeyRelease);
       game.input.keyboard.off("hold", handleKeyHold);
+      player.stopMovement();
     };
   }, [game, player]);
 

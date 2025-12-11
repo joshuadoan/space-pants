@@ -1,4 +1,4 @@
-import { Actor, Vector } from "excalibur";
+import { Actor, Scene, Vector } from "excalibur";
 import { createSpaceShipOutOfShapes } from "./utils/createSpaceShipOutOfShapes";
 import { Resources, type Goods } from "../types";
 import type { GoodType } from "../types";
@@ -56,6 +56,30 @@ export class Meeple extends Actor {
   }
 
   onPreUpdate(_engine: Game): void {
+    // Handle boundary checking for velocity-based movement
+    const scene = this.scene as Scene;
+    if (scene && scene.engine) {
+      const game = scene.engine as Game;
+      
+      // Clamp position to world bounds and stop velocity at boundaries
+      if (this.pos.x < 0) {
+        this.pos.x = 0;
+        if (this.vel.x < 0) this.vel.x = 0;
+      }
+      if (this.pos.x > game.worldWidth - this.width) {
+        this.pos.x = game.worldWidth - this.width;
+        if (this.vel.x > 0) this.vel.x = 0;
+      }
+      if (this.pos.y < 0) {
+        this.pos.y = 0;
+        if (this.vel.y < 0) this.vel.y = 0;
+      }
+      if (this.pos.y > game.worldHeight - this.height) {
+        this.pos.y = game.worldHeight - this.height;
+        if (this.vel.y > 0) this.vel.y = 0;
+      }
+    }
+
     if (!this.actions.getQueue().isComplete()) return;
 
     const currentTime = Date.now();
@@ -121,6 +145,30 @@ export class Meeple extends Actor {
       this.transact("remove", Resources.Money, moneyAmount);
       spaceBar.transact("add", Resources.Money, moneyAmount);
     }, 3000);
+  }
+
+  moveDIrection(direction: "left" | "right" | "up" | "down"): void {
+    // Use velocity for smooth, frame-rate independent movement
+    // Boundary checking is handled in onPreUpdate
+    switch (direction) {
+      case "left":
+        this.vel.x = -this.speed;
+        break;
+      case "right":
+        this.vel.x = this.speed;
+        break;
+      case "up":
+        this.vel.y = -this.speed;
+        break;
+      case "down":
+        this.vel.y = this.speed;
+        break;
+    }
+  }
+
+  stopMovement(): void {
+    this.vel.x = 0;
+    this.vel.y = 0;
   }
 
   private executeGoShopping(): void {

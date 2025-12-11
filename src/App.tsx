@@ -18,6 +18,7 @@ import { Trader } from "./entities/Trader";
 import "./App.css";
 import { MeepleCard } from "./components/MeepleCard";
 import { SpaceApartments } from "./entities/SpaceApartments";
+import { useKeyboardControls } from "./hooks/useKeyboardControls";
 
 type TabType =
   | "player"
@@ -131,6 +132,9 @@ function App() {
   }, [state.activeTab, state.activeEntity, gameEntitiesState.meeples]);
 
   const { avgFps, maxFps, currentFps } = useFps(20);
+
+  // keyboard
+  useKeyboardControls(game, gameEntitiesState.meeples.find((meeple) => meeple instanceof Player) || null);
 
   return (
     <main className="w-screen h-screen flex flex-col">
