@@ -54,7 +54,7 @@ type State = {
 };
 
 const initialState: State = {
-  activeTab: "miners",
+  activeTab: "player",
   activeEntity: null,
   readmeContent: "",
 };
@@ -117,6 +117,18 @@ function App() {
       );
     }
   }, [state.activeTab, state.readmeContent]);
+
+  // Auto-select first player when on player tab and no entity is selected
+  useEffect(() => {
+    if (state.activeTab === "player" && !state.activeEntity) {
+      const players = gameEntitiesState.meeples.filter(
+        (meeple) => meeple instanceof Player
+      );
+      if (players.length > 0) {
+        dispatch({ type: "zoom-to-entity", payload: players[0] });
+      }
+    }
+  }, [state.activeTab, state.activeEntity, gameEntitiesState.meeples]);
 
   const { avgFps, maxFps, currentFps } = useFps(20);
 

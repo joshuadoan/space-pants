@@ -18,7 +18,7 @@ const TEMPLATE_MAP: Record<string, LogicRule[]> = {
   miner: MINER_RULES,
 };
 
-export function Rules({
+export function RulesForm({
   rules,
   onUpdateRules,
 }: {
@@ -78,6 +78,22 @@ export function Rules({
     setLocalRules((prevRules) => prevRules.filter((rule) => rule.id !== ruleId));
   };
 
+  const handleAddRule = () => {
+    // Generate a random ID using crypto.randomUUID if available, otherwise fallback to random string
+    const randomId = typeof crypto !== 'undefined' && crypto.randomUUID
+      ? crypto.randomUUID()
+      : `${Date.now()}-${Math.random().toString(36).substring(2, 15)}-${Math.random().toString(36).substring(2, 15)}`;
+    
+    const newRule: LogicRule = {
+      id: randomId,
+      good: Resources.Money,
+      operator: ComparisonOperator.Equal,
+      value: 0,
+      action: LogicRuleActionType.Socialize,
+    };
+    setLocalRules((prevRules) => [...prevRules, newRule]);
+  };
+
   return (
     <div className="w-full">
       <button
@@ -110,26 +126,23 @@ export function Rules({
               ))}
             </select>
           </div>
-          {localRules.map((rule) => (
+          {localRules.map((rule, index) => (
             <div
-              key={rule.id}
+              key={index}
               className="card bg-base-200 shadow-md hover:shadow-lg transition-shadow duration-200"
             >
               <div className="card-body p-4">
-                <div className="flex justify-between items-start mb-2">
-                  <h3 className="text-sm font-semibold text-base-content/80">
-                    Rule: {rule.id}
-                  </h3>
+                <div className="flex justify-end items-start mb-2 gap-2">
                   <button
                     type="button"
                     onClick={() => handleDeleteRule(rule.id)}
                     className="btn btn-sm btn-error btn-outline"
-                    aria-label={`Delete rule ${rule.id}`}
+                    aria-label={`Delete rule`}
                   >
                     Delete
                   </button>
                 </div>
-                <div className="flex flex-col sm:flex-row gap-3">
+                <div className="flex flex-col sm:flex-row gap-3 mt-3">
                   <div className="flex-1">
                     <label className="label py-1">
                       <span className="label-text text-xs text-base-content/70">
@@ -234,12 +247,21 @@ export function Rules({
               </div>
             </div>
           ))}
-          <button
-            type="submit"
-            className="btn btn-primary mt-2 w-full sm:w-auto sm:self-end"
-          >
-            Save Rules
-          </button>
+          <div className="flex flex-col sm:flex-row gap-2 justify-end mt-2">
+            <button
+              type="button"
+              onClick={handleAddRule}
+              className="btn btn-secondary w-full sm:w-auto"
+            >
+              Add New Rule
+            </button>
+            <button
+              type="submit"
+              className="btn btn-primary w-full sm:w-auto"
+            >
+              Save Rules
+            </button>
+          </div>
         </form>
       )}
     </div>

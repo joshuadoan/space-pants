@@ -14,7 +14,9 @@ import { IconSatellite } from "@tabler/icons-react";
 import { IconBeer } from "@tabler/icons-react";
 import { MeepleStateType } from "../entities/types";
 import { GoodsDisplay } from "./GoodsDisplay";
-import { Rules } from "./Rules";
+import { RulesForm } from "./RulesForm";
+import { Player } from "../entities/Player";
+import { RulesReadOnly } from "./RulesReadOnly";
 
 export function MeepleCard({
   meeple,
@@ -29,7 +31,7 @@ export function MeepleCard({
     <div className="card-body p-0 gap-2">
       <div className="flex items-center justify-between mb-1">
         <h3
-          className="font-semibold text-base text-base-content truncate flex-1 cursor-pointer hover:text-primary"
+          className="font-semibold text-base text-base-content truncate flex-1 cursor-pointer hover:text-primary underline"
           title={`Click to zoom to ${meeple.name}`}
           role="button"
           onClick={onMeepleNameClick}
@@ -181,12 +183,20 @@ export function MeepleCard({
       {activeEntity && activeEntity.id === meeple.id && (
         <>
           <div className="divider my-1"></div>
-          <Rules
-            rules={meeple.rules}
-            onUpdateRules={(rules) => {
-              meeple.rules = rules;
-            }}
-          />
+          {
+            meeple instanceof Player ? (
+              <RulesForm
+                rules={meeple.rules}
+                onUpdateRules={(rules) => {
+                  meeple.rules = rules;
+                }}
+              />
+            ) : ( 
+              <RulesReadOnly
+                rules={meeple.rules}
+              />
+            )
+          }
         </>
       )}
     </div>

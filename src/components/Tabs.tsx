@@ -6,7 +6,7 @@ type TabsProps = {
 };
 
 const TABS: { value: TabType; label: string }[] = [
-  { value: "all", label: "All" },
+  // { value: "all", label: "All" },
   { value: "player", label: "Player" },
   { value: "traders", label: "Traders" },
   { value: "miners", label: "Miners" },
