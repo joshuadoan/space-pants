@@ -1,38 +1,19 @@
-import { Actor, Scene, Vector, Rectangle, Color } from "excalibur";
+import { Actor, Scene, Vector, Rectangle } from "excalibur";
 import { createSpaceShipOutOfShapes } from "./utils/createSpaceShipOutOfShapes";
-import { Resources, Products, type Goods } from "../types";
+import { Resources, type Goods } from "../types";
 import type { GoodType } from "../types";
 import type { Game } from "./Game";
 import {
-  ComparisonOperator,
   LogicRuleActionType,
   MeepleStateType,
   MeepleType,
   type LogicRule,
   type MeepleState,
 } from "./types";
+import { getGoodColor, getGoodWithMostAmount } from "../utils/goodsUtils";
+import { evaluateRule } from "../utils/ruleUtils";
 
 const MAX_ACIONS_BEFORE_GOING_HOME = 10;
-
-// Color mapping for each good type
-function getGoodColor(good: GoodType): Color {
-  switch (good) {
-    case Resources.Ore:
-      return Color.Orange;
-    case Products.Gruffle:
-      return Color.Blue;
-    case Products.Druffle:
-      return Color.Green;
-    case Products.Klintzpaw:
-      return Color.Purple;
-    case Products.Grogin:
-      return Color.Yellow;
-    case Products.Fizz:
-      return Color.Red;
-    default:
-      return Color.White;
-  }
-}
 
 export class Meeple extends Actor {
   speed: number;
@@ -194,7 +175,7 @@ export class Meeple extends Actor {
     }
 
     for (const rule of this.rules) {
-      if (this.evaluateRule(rule, this.goods[rule.good] ?? 0)) {
+      if (evaluateRule(rule, this.goods[rule.good] ?? 0)) {
         this.executeRuleAction(rule.action);
         break; // Only execute one rule per update cycle
       }
@@ -287,7 +268,7 @@ export class Meeple extends Actor {
 
     this.actionCount++;
     this.visitTarget(station, MeepleStateType.Trading, () => {
-      const good = this.getGoodWithMostAmmount(station);
+      const good = getGoodWithMostAmount(station.goods);
       if (good && station.goods[good] && station.goods[good] >= 1) {
         this.transact("add", good, 1);
         station.transact("remove", good, 1);
@@ -369,21 +350,6 @@ export class Meeple extends Actor {
       });
   }
 
-  /// get good with most ammount that is not money or ore
-  getGoodWithMostAmmount(station: Meeple): GoodType | undefined {
-    const goods = Object.keys(station.goods).filter(
-      (good): good is GoodType =>
-        good !== Resources.Ore && good !== Resources.Money
-    );
-    if (!goods.length) {
-      return undefined;
-    }
-    return goods.reduce(
-      (max, good) =>
-        (station.goods[good] ?? 0) > (station.goods[max] ?? 0) ? good : max,
-      goods[0]
-    );
-  }
 
   getRandomVisitor(): Meeple | undefined {
     const visitors = Array.from(this.visitors);
@@ -448,20 +414,4 @@ export class Meeple extends Actor {
     });
   }
 
-  evaluateRule(rule: LogicRule, value: number): boolean {
-    switch (rule.operator) {
-      case ComparisonOperator.Equal:
-        return value === rule.value;
-      case ComparisonOperator.LessThan:
-        return value < rule.value;
-      case ComparisonOperator.GreaterThan:
-        return value > rule.value;
-      case ComparisonOperator.LessThanOrEqual:
-        return value <= rule.value;
-      case ComparisonOperator.GreaterThanOrEqual:
-        return value >= rule.value;
-      default:
-        return false;
-    }
-  }
 }

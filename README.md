@@ -1,117 +1,170 @@
 # Space Pants
 
-A space economy simulation game built with React, TypeScript, and Excalibur.js. Watch autonomous entities mine, trade, socialize, and interact in a dynamic space economy.
+A real-time space economy simulation game built with React, TypeScript, and Excalibur.js. Watch autonomous entities mine, trade, socialize, and interact in a dynamic space economy with customizable behavior rules.
 
 ## 🚀 Features
 
+### Core Gameplay
 - **Real-time Space Economy Simulation**: Watch miners, traders, space stations, and other entities interact autonomously
 - **Entity Management**: View and manage all entities in the game world through an intuitive tabbed interface
 - **Customizable Behavior**: Edit logic rules for entities to control their actions based on resource conditions
-- **Drag-and-Drop Rule Reordering**: Reorder entity rules by dragging them in the rules editor
-- **Dynamic Production**: Space stations convert ore into various products (Gruffle, Druffle, Klintzpaw, Grogin, Fizz)
+- **Drag-and-Drop Rule Reordering**: Reorder entity rules by dragging them in the rules editor to change priority
+- **Interactive Camera**: Click on any entity name to zoom and follow it with the camera
+- **FPS Monitoring**: Real-time performance metrics displayed on screen
+
+### Economic Systems
+- **Dynamic Production**: Space stations convert ore into various products (Gruffle, Druffle, Klintzpaw, Grogin, Fizz) at a rate of 1 product per 10 ore per second
 - **Trading System**: Entities buy and sell goods at space stations
 - **Social System**: Entities visit space bars and space apartments to socialize and spend money
-- **Interactive Camera**: Click on any entity to zoom and follow it
-- **FPS Monitoring**: Real-time performance metrics displayed on screen
+- **Resource Management**: Visual indicators show goods carried by entities (followers display goods quantities)
+
+### UI Features
+- **Tabbed Interface**: Filter entities by type (Traders, Miners, Stations, Space Bars, Space Apartments, Asteroids, Player, All)
+- **Entity Cards**: Expandable cards showing entity stats, goods, and editable rules
 - **Built-in Documentation**: View the README directly in the app via the Readme tab
+- **Toast Notifications**: Visual feedback for rule updates and entity actions
 
 ## 🎮 Game Entities
 
 ### Player
 - Controllable character that can move around the space world
 - Starts with 0 money
-- Can be controlled with keyboard (WASD/Arrow keys)
+- Keyboard controls: WASD or Arrow keys
+- Camera automatically follows the player
+- Speed: 100 units/second (configurable via `DEFAULT_SHIP_SPEED`)
 
 ### Miners
 - Mine ore from asteroids
 - Trade ore for money at space stations
 - Visit space bars when they have enough money (≥50)
-- Default behavior: Mine → Trade → Socialize cycle
+- Default behavior cycle: Mine → Trade → Socialize
+- Default rules:
+  - If Money ≥ 50 → Socialize
+  - If Ore ≤ 0 → Mine Ore
+  - If Ore ≥ 10 → Trade Ore For Money
 
 ### Traders
 - Buy products from space stations when they have money
 - Sell products to space stations when they run out of money
 - Start with 10 money
+- Default rules:
+  - If Money > 0 → Go Shopping
+  - If Money ≤ 0 → Go Selling
 
 ### Space Stations
-- Stationary trading hubs
+- Stationary trading hubs (60x60 units)
 - Accept ore and produce various products
 - Production rate: 1 product per 10 ore per second
 - Products include: Gruffle, Druffle, Klintzpaw, Grogin, Fizz
+- Randomly colored with unique designs
+- Handle transactions with visiting entities
 
 ### Space Bars
 - Social gathering spots
 - Entities spend money here to socialize
 - Visitors are tracked and displayed
 - Stock Fizz drinks for sale
+- Named with randomly generated space names
 
 ### Space Apartments
 - Residential buildings where entities can rest
 - Maximum capacity of 5 visitors at once
 - Visual design with lit windows and doors
+- Named with randomly generated space names
 
 ### Asteroids
 - Source of ore for miners
 - Randomly distributed across the world
 - Varying sizes (15-30 units)
+- Stationary resource nodes
 
 ### Stars
 - Background decorative elements
 - Grid-based distribution across the world
 - Viewport culling for performance optimization
+- Creates immersive space atmosphere
 
 ## 🛠️ Tech Stack
 
-- **React 19** - UI framework
-- **TypeScript** - Type safety
-- **Excalibur.js** - 2D game engine
-- **TailwindCSS + DaisyUI** - Styling
-- **Vite** - Build tool and dev server
-- **react-fps** - Performance monitoring
-- **react-markdown** - Markdown rendering for documentation
-- **react-dnd** - Drag and drop functionality for rule reordering
-- **@tabler/icons-react** - Icon library
+### Core Technologies
+- **React 19** - UI framework with automatic memoization
+- **TypeScript** - Type safety and developer experience
+- **Excalibur.js v0.31.0** - 2D game engine for entity rendering and physics
+- **Vite v7.2.4** - Build tool and dev server
+
+### UI & Styling
+- **TailwindCSS v4.1.17** - Utility-first CSS framework
+- **DaisyUI v5.5.5** - Component library for TailwindCSS
+- **@tabler/icons-react v3.35.0** - Icon library
+
+### State Management & Performance
+- **XState v5.24.0** - State machine library (for entity state management)
+- **@tanstack/react-virtual v3.13.13** - Virtual scrolling (available but not actively used)
+
+### UI Components & Utilities
+- **react-dnd v16.0.1** - Drag and drop functionality for rule reordering
+- **react-dnd-html5-backend v16.0.1** - HTML5 backend for react-dnd
+- **react-fps v1.0.6** - Performance monitoring
+- **react-markdown v10.1.0** - Markdown rendering for documentation
+
+### Development Tools
+- **ESLint** - Code linting
+- **TypeScript ESLint** - TypeScript-specific linting rules
 
 ## 📦 Installation
 
-1. Clone the repository:
+### Prerequisites
+- Node.js (v18 or higher recommended)
+- pnpm (package manager)
+
+### Setup Steps
+
+1. **Clone the repository:**
 ```bash
 git clone https://github.com/your-username/space-pants.git
 cd space-pants
 ```
 
-2. Install dependencies:
+2. **Install dependencies:**
 ```bash
 pnpm install
 ```
 
-3. Start the development server:
+3. **Start the development server:**
 ```bash
 pnpm dev
 ```
 
-4. Open your browser to `http://localhost:5173` (or the port shown in terminal)
+4. **Open your browser:**
+Navigate to `http://localhost:5173` (or the port shown in terminal)
 
-## 🏗️ Build
+## 🏗️ Build & Deployment
 
-Build for production:
+### Build for Production
 ```bash
 pnpm build
 ```
 
-Preview production build:
+The production build will be output to the `dist/` directory.
+
+### Preview Production Build
 ```bash
 pnpm preview
 ```
 
+### Linting
+```bash
+pnpm lint
+```
+
 ## 🎯 How to Play
 
-1. **Observe**: Watch the autonomous entities go about their business
-2. **Navigate**: Use WASD or Arrow keys to move your player character
+1. **Observe**: Watch the autonomous entities go about their business in real-time
+2. **Navigate**: Use WASD or Arrow keys to move your player character around the world
 3. **Explore**: Click on any entity name in the sidebar to zoom the camera to it
 4. **Customize**: Expand an entity card to view and edit its rules editor
 5. **Reorder Rules**: Drag and drop rules to change their priority order
-6. **Monitor**: Use the tabs to filter entities by type (Traders, Miners, Stations, Space Bars, Space Apartments, etc.)
+6. **Monitor**: Use the tabs to filter entities by type (Traders, Miners, Stations, Space Bars, Space Apartments, Asteroids, Player, All)
 7. **Read Docs**: Click the "Readme" tab to view this documentation in the app
 
 ## 🧩 Entity Rules System
@@ -119,8 +172,10 @@ pnpm preview
 Each entity follows a set of logic rules that determine its behavior. Rules are evaluated every second and executed when conditions are met.
 
 ### Rule Format
-- **Good**: The resource to check (Ore, Money, etc.)
-- **Operator**: Comparison operator (=, <, >, <=, >=)
+Each rule consists of:
+- **ID**: Unique identifier for the rule
+- **Good**: The resource to check (Ore, Money, or any Product)
+- **Operator**: Comparison operator (=, <, >, <=, >=, !=)
 - **Value**: Threshold value to compare against
 - **Action**: What to do when condition is met
 
@@ -132,7 +187,14 @@ Each entity follows a set of logic rules that determine its behavior. Rules are 
 - **Go Selling**: Sell products to a space station
 
 ### Rule Priority
-Rules are evaluated in order from top to bottom. You can drag and drop rules to reorder them and change their priority.
+Rules are evaluated in order from top to bottom. The first rule whose condition is met will be executed. You can drag and drop rules to reorder them and change their priority.
+
+### Rule Templates
+The game includes pre-built rule templates:
+- **Miner Template**: Default mining and trading behavior
+- **Trader Template**: Default buying and selling behavior
+
+You can apply these templates or create custom rules from scratch.
 
 ### Example Rules
 A miner's default rules:
@@ -140,62 +202,132 @@ A miner's default rules:
 - If Ore ≤ 0 → Mine Ore
 - If Ore ≥ 10 → Trade Ore For Money
 
+A trader's default rules:
+- If Money > 0 → Go Shopping
+- If Money ≤ 0 → Go Selling
+
 ## 📁 Project Structure
 
 ```
-src/
-├── components/          # React UI components
-│   ├── GoodsDisplay.tsx
-│   ├── MeepleCard.tsx   # Entity card display component
-│   ├── RulesForm.tsx    # Rules editor component with drag-and-drop
-│   ├── RulesReadOnly.tsx # Read-only rules display
-│   ├── StatBasic.tsx
-│   ├── Tabs.tsx
-│   ├── Toast.tsx        # Toast notification system
-│   └── ValueDisplays.tsx
-├── entities/            # Game entity classes
-│   ├── Game.ts          # Excalibur game engine wrapper
-│   ├── Meeple.ts        # Base entity class
-│   ├── Player.ts
-│   ├── Miner.ts
-│   ├── Trader.ts
-│   ├── SpaceStation.ts
-│   ├── SpaceBar.ts
-│   ├── SpaceApartments.ts
-│   ├── Asteroid.ts
-│   ├── Star.ts          # Background star entities
-│   ├── ruleTemplates.ts # Default rule templates
-│   └── types.ts         # Entity type definitions
-├── hooks/               # React hooks
-│   ├── useGame.ts       # Game initialization
-│   ├── useGameEntities.ts # Entity state management
-│   └── useKeyboardControls.ts
-├── utils/               # Utility functions
-│   ├── addStars.ts      # Star generation utility
-│   ├── goodsMetadata.tsx
-│   └── keyboardControls.ts
-└── types.ts             # TypeScript type definitions
+space-pants/
+├── src/
+│   ├── components/          # React UI components
+│   │   ├── GoodsDisplay.tsx  # Goods visualization component
+│   │   ├── MeepleCard.tsx    # Entity card display component
+│   │   ├── RulesForm.tsx     # Rules editor with drag-and-drop
+│   │   ├── RulesReadOnly.tsx # Read-only rules display
+│   │   ├── StatBasic.tsx     # Basic stat display component
+│   │   ├── Tabs.tsx          # Tab navigation component
+│   │   ├── Toast.tsx         # Toast notification system
+│   │   └── ValueDisplays.tsx # Value display utilities
+│   ├── entities/             # Game entity classes
+│   │   ├── Game.ts           # Excalibur game engine wrapper
+│   │   ├── Meeple.ts         # Base entity class with AI logic
+│   │   ├── Player.ts         # Player-controlled entity
+│   │   ├── Miner.ts          # Miner entity
+│   │   ├── Trader.ts         # Trader entity
+│   │   ├── SpaceStation.ts   # Space station entity
+│   │   ├── SpaceBar.ts       # Space bar entity
+│   │   ├── SpaceApartments.ts # Space apartment entity
+│   │   ├── Asteroid.ts       # Asteroid resource node
+│   │   ├── Star.ts           # Background star entities
+│   │   ├── ruleTemplates.ts  # Default rule templates
+│   │   ├── types.ts          # Entity type definitions
+│   │   └── utils/            # Entity utilities
+│   │       ├── createSpaceShipOutOfShapes.ts
+│   │       └── generateSpaceName.ts
+│   ├── hooks/                # React hooks
+│   │   ├── useGame.ts        # Game initialization and setup
+│   │   ├── useGameEntities.ts # Entity state management
+│   │   └── useKeyboardControls.ts # Keyboard input handling
+│   ├── utils/                # Utility functions
+│   │   ├── addStars.ts       # Star generation utility
+│   │   ├── goodsMetadata.tsx # Goods metadata and icons
+│   │   ├── goodsUtils.ts     # Goods manipulation utilities
+│   │   ├── keyboardControls.ts # Keyboard control utilities
+│   │   └── ruleUtils.ts      # Rule evaluation utilities
+│   ├── App.tsx               # Main application component
+│   ├── main.tsx              # Application entry point
+│   ├── types.ts              # TypeScript type definitions
+│   ├── consts.ts             # Application constants
+│   ├── App.css               # Application styles
+│   └── index.css             # Global styles
+├── public/                   # Static assets
+│   └── vite.svg
+├── dist/                     # Production build output
+├── docs.md                   # Additional documentation
+├── presentation.md           # Presentation notes
+├── package.json              # Project dependencies and scripts
+├── pnpm-lock.yaml            # Dependency lock file
+├── pnpm-workspace.yaml       # pnpm workspace configuration
+├── tsconfig.json             # TypeScript configuration
+├── tsconfig.app.json         # App-specific TypeScript config
+├── tsconfig.node.json        # Node-specific TypeScript config
+├── vite.config.ts            # Vite configuration
+├── eslint.config.js          # ESLint configuration
+└── README.md                 # This file
 ```
 
 ## 🎨 Customization
 
 ### World Configuration
 Edit `src/hooks/useGame.ts` to modify:
-- World size (`WORLD_WIDTH`, `WORLD_HEIGHT`)
-- Number of entities (traders, miners, stations, asteroids, space bars, space apartments)
-- Player speed
-- Camera zoom level
-- Star distribution and spacing
+- World size (`WORLD_WIDTH`, `WORLD_HEIGHT`) - Default: 1000x1000
+- Number of entities:
+  - `NUMBER_OF_TRADERS` - Default: 10
+  - `NUMBER_OF_MINERS` - Default: 10
+  - `NUMBER_OF_SPACE_STATIONS` - Default: 5
+  - `NUMBER_OF_ASTEROIDS` - Default: 5
+  - `NUMBER_OF_SPACE_BARS` - Default: 3
+  - `NUMBER_OF_SPACE_APARTMENTS` - Default: 3
+- Player speed - Default: 100 (configurable via `DEFAULT_SHIP_SPEED` in `src/consts.ts`)
+- Camera zoom level - Default: 2x
+- Star distribution and spacing (in `src/utils/addStars.ts`)
 
 ### Entity Behavior
-Modify entity classes in `src/entities/` to change default rules and starting conditions.
+- Modify entity classes in `src/entities/` to change default rules and starting conditions
+- Edit rule templates in `src/entities/ruleTemplates.ts`
+- Customize entity appearance in entity constructors
+
+### Styling
+- Modify `src/index.css` for global styles
+- Use TailwindCSS classes throughout components
+- Customize DaisyUI theme in TailwindCSS configuration
+
+## ⚡ Performance
+
+The game uses React's automatic memoization to maintain smooth performance:
+- State updates occur every 300ms
+- 30+ entities update simultaneously
+- React compares component output automatically
+- Only components with changed output re-render
+- This enables smooth 60 FPS gameplay even with frequent updates
+
+### Performance Optimizations
+- Viewport culling for stars (only render visible stars)
+- Efficient entity state management
+- React's built-in output comparison prevents unnecessary re-renders
+- FPS monitoring helps identify performance issues
 
 ## 🐛 Development
 
-Run linter:
-```bash
-pnpm lint
-```
+### Development Workflow
+1. Make changes to source files
+2. Hot module replacement (HMR) will automatically update the app
+3. Check browser console for errors
+4. Use FPS counter to monitor performance
+
+### Code Style
+- Follow TypeScript best practices
+- Use functional React components
+- Follow existing code patterns
+- Run `pnpm lint` before committing
+
+### Debugging
+- Use browser DevTools for React debugging
+- Check Excalibur.js console logs for game engine issues
+- Monitor FPS counter for performance issues
+- Use entity cards to inspect entity state
 
 ## 🤝 Contributing
 
@@ -218,12 +350,20 @@ Contributions are welcome! This is an open source project and we appreciate any 
 - Performance optimizations
 - Documentation improvements
 - New game mechanics
+- Additional rule actions
+- New products or resources
+- Enhanced visualization features
 
 ## 📝 License
 
 This project is open source. Please check the LICENSE file for details on how you can use, modify, and distribute this code.
 
+## 🙏 Acknowledgments
+
+- Built with [Excalibur.js](https://excaliburjs.com/) game engine
+- UI components styled with [DaisyUI](https://daisyui.com/)
+- Icons provided by [Tabler Icons](https://tabler.io/icons)
+
 ---
 
 Enjoy exploring the space economy! 🚀
-
