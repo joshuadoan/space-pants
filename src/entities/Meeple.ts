@@ -1,4 +1,4 @@
-import { Actor, Scene, Vector } from "excalibur";
+import { Actor, Scene, Vector, Rectangle, Color } from "excalibur";
 import { createSpaceShipOutOfShapes } from "./utils/createSpaceShipOutOfShapes";
 import { Resources, type Goods } from "../types";
 import type { GoodType } from "../types";
@@ -20,6 +20,7 @@ export class Meeple extends Actor {
   state: MeepleState;
   type: MeepleType;
   visitors: Set<Meeple>;
+  private follower: Actor | null = null;
 
   private lastUpdateTime: number = 0;
 
@@ -53,6 +54,38 @@ export class Meeple extends Actor {
   }
   onInitialize(_engine: Game): void {
     // if (this.state.type !== MeepleStateType.Idle) return;
+    
+    // Create a tiny square follower
+    this.follower = new Actor({
+      pos: this.pos.clone(),
+      width: 4,
+      height: 4,
+    });
+    
+    // Create a small square graphic
+    const square = new Rectangle({
+      width: 4,
+      height: 4,
+      color: Color.White,
+    });
+    this.follower.graphics.add(square);
+    
+    // Initially hide the follower (will be shown when meeple has ore)
+    this.follower.graphics.visible = false;
+    
+    // Add follower to the scene
+    this.scene?.add(this.follower);
+    
+    // Make the follower follow this meeple at a distance of 30 pixels
+    this.follower.actions.follow(this, 30);
+  }
+
+  onPreKill(_scene: Scene): void {
+    // Clean up the follower when the meeple is removed
+    if (this.follower) {
+      this.follower.kill();
+      this.follower = null;
+    }
   }
 
   onPreUpdate(_engine: Game): void {
@@ -78,6 +111,12 @@ export class Meeple extends Actor {
         this.pos.y = game.worldHeight - this.height;
         if (this.vel.y > 0) this.vel.y = 0;
       }
+    }
+
+    // Show/hide follower based on whether meeple has ore
+    if (this.follower) {
+      const hasOre = (this.goods[Resources.Ore] ?? 0) > 0;
+      this.follower.graphics.visible = hasOre;
     }
 
     if (!this.actions.getQueue().isComplete()) return;
