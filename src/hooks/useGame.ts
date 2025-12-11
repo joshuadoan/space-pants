@@ -9,6 +9,7 @@ import { Asteroid } from "../entities/Asteroid";
 import { Miner } from "../entities/Miner";
 import { SpaceBar } from "../entities/SpaceBar";
 import { generateSpaceName } from "../entities/utils/generateSpaceName";
+import { SpaceApartments } from "../entities/SpaceApartments";
 
 const WORLD_WIDTH = 1000;
 const WORLD_HEIGHT = 1000;
@@ -17,6 +18,7 @@ const NUMBER_OF_SPACE_STATIONS = 5;
 const NUMBER_OF_ASTEROIDS = 5;
 const NUMBER_OF_MINERS = 10;
 const NUMBER_OF_SPACE_BARS = 3;
+const NUMBER_OF_SPACE_APARTMENTS = 3;
 
 type SetGameAtion = {
   name: "set-game";
@@ -117,12 +119,22 @@ export const useGame = () => {
     for (let i = 0; i < NUMBER_OF_SPACE_BARS; i++) {
       const spaceBar = new SpaceBar(
         new Vector(Math.random() * WORLD_WIDTH, Math.random() * WORLD_HEIGHT),
-        1,
         generateSpaceName()
       );
       spaceBar.name = generateSpaceName();
 
       game.currentScene.add(spaceBar);
+    }
+
+    // create 10 space apartments at random positions
+    for (let i = 0; i < NUMBER_OF_SPACE_APARTMENTS; i++) {
+      const spaceApartment = new SpaceApartments(
+        new Vector(Math.random() * WORLD_WIDTH, Math.random() * WORLD_HEIGHT),
+        generateSpaceName()
+      );
+      spaceApartment.name = generateSpaceName();
+
+      game.currentScene.add(spaceApartment);
     }
 
     game.start().then(() => {

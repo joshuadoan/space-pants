@@ -1,4 +1,4 @@
-type TabType = "player" | "traders" | "miners" | "stations" | "asteroids" | "spacebars" | "all" | "readme";
+type TabType = "player" | "traders" | "miners" | "stations" | "asteroids" | "spacebars" | "spaceapartments" | "all" | "readme";
 
 type TabsProps = {
   activeTab: TabType;
@@ -13,6 +13,7 @@ const TABS: { value: TabType; label: string }[] = [
   { value: "stations", label: "Stations" },
   { value: "asteroids", label: "Asteroids" },
   { value: "spacebars", label: "Space Bars" },
+  { value: "spaceapartments", label: "Space Apartments" },
 ];
 
 export function Tabs({ activeTab, onTabChange }: TabsProps) {

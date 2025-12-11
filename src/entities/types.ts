@@ -8,32 +8,8 @@ export enum MeepleType {
   Player = "Player",
   SpaceStation = "SpaceStation",
   SpaceBar = "SpaceBar",
+  SpaceApartments = "SpaceApartments",
 }
-
-export enum MeepleActionType {
-  MineOre = "Mine Ore",
-  StopMining = "Stop Mining",
-  TravelToTarget = "Travel To Target",
-  Trade = "Trade",
-}
-
-type MeepleActionMineOre = {
-  type: MeepleActionType.MineOre;
-};
-
-type MeepleActionStopMining = {
-  type: MeepleActionType.StopMining;
-};
-
-type MeepleActionTravelToTarget = {
-  type: MeepleActionType.TravelToTarget;
-  target: Meeple;
-};
-
-export type MeepleAction =
-  | MeepleActionMineOre
-  | MeepleActionStopMining
-  | MeepleActionTravelToTarget;
 
 export enum MeepleStateType {
   Idle = "idle",
@@ -41,13 +17,25 @@ export enum MeepleStateType {
   Mining = "mining",
   Trading = "trading",
   Socializing = "socializing",
+  Chilling = "chilling",
+  Transacting = "transacting",
 }
 
 export type MeepleStateIdle = {
   type: MeepleStateType.Idle;
 };
 
-export type MeepleStateFunning = {
+export type MeepleStateTransacting = {
+  type: MeepleStateType.Transacting;
+  target: Meeple;
+};
+
+export type MeepleStateChilling = {
+  type: MeepleStateType.Chilling;
+  target: Meeple;
+};
+
+export type MeepleStateSocializing = {
   type: MeepleStateType.Socializing;
   target: Meeple;
 };
@@ -72,7 +60,9 @@ export type MeepleState =
   | MeepleStateMining
   | MeeplStateTraveling
   | MeepleStateTrading
-  | MeepleStateFunning;
+  | MeepleStateChilling
+  | MeepleStateSocializing
+  | MeepleStateTransacting;
 
 export enum ComparisonOperator {
   Equal = "=",

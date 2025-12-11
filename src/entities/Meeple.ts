@@ -206,6 +206,11 @@ export class Meeple extends Actor {
     );
   }
 
+  getRandomVisitor(): Meeple | undefined {
+    const visitors = Array.from(this.visitors);
+    return visitors[Math.floor(Math.random() * visitors.length)] ?? undefined;
+  }
+
   getRandomAsteroid(): Meeple | undefined {
     const meeples = this.scene?.actors.filter(
       (a: Actor) => a instanceof Meeple

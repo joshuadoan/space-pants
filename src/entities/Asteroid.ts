@@ -2,6 +2,7 @@ import { Color, Polygon, Vector } from "excalibur";
 import { Meeple } from "./Meeple";
 import { Resources } from "../types";
 import type { Game } from "./Game";
+import { MeepleStateType } from "./types";
 
 // Color palette for asteroids (various shades of gray and brown)
 const ASTEROID_COLORS = [
@@ -90,16 +91,27 @@ export class Asteroid extends Meeple {
       const timeSinceLastRegeneration = currentTime - this.lastRegenerationTime;
       if (timeSinceLastRegeneration >= this.REGENERATION_RATE) {
         // Add 1 ore, but cap at MIN_ORE_THRESHOLD
-        const newOre = Math.min(
-          currentOre + 1,
-          this.MIN_ORE_THRESHOLD
-        );
+        const newOre = Math.min(currentOre + 1, this.MIN_ORE_THRESHOLD);
         this.goods[Resources.Ore] = newOre;
         this.lastRegenerationTime = currentTime;
       }
     } else {
       // Reset regeneration timer when ore is at or above threshold
       this.lastRegenerationTime = 0;
+    }
+
+    if (this.visitors.size > 1) {
+      const randomVisitor = this.getRandomVisitor();
+      if (randomVisitor) {
+        this.state = {
+          type: MeepleStateType.Transacting,
+          target: randomVisitor,
+        };
+      } else {
+        this.state = {
+          type: MeepleStateType.Idle,
+        };
+      }
     }
   }
 }

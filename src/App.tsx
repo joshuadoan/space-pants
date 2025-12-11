@@ -18,6 +18,7 @@ import { Trader } from "./entities/Trader";
 
 import "./App.css";
 import { MeepleCard } from "./components/MeepleCard";
+import { SpaceApartments } from "./entities/SpaceApartments";
 
 type TabType =
   | "player"
@@ -26,6 +27,7 @@ type TabType =
   | "stations"
   | "asteroids"
   | "spacebars"
+  | "spaceapartments"
   | "all"
   | "readme";
 
@@ -163,10 +165,17 @@ function App() {
             ),
             all: [...gameEntitiesState.meeples],
             readme: [],
+            spaceapartments: gameEntitiesState.meeples.filter(
+              (meeple) => meeple instanceof SpaceApartments
+            ),
           }[state.activeTab].map((entity, index) => (
             <div
               key={index}
-              className="card bg-base-100 shadow-md hover:shadow-lg transition-all duration-200 border border-base-300 rounded-lg p-4 m-2"
+              className={`card bg-base-100 shadow-md hover:shadow-lg transition-all duration-200 border rounded-lg p-4 m-2 ${
+                state.activeEntity?.id === entity.id
+                  ? "border-primary border-2"
+                  : "border-base-300"
+              }`}
             >
               <MeepleCard
                 meeple={entity}

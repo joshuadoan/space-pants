@@ -1,6 +1,7 @@
 import type { Meeple } from "../entities/Meeple";
 import { MeepleType } from "../entities/types";
 import {
+  IconBuilding,
   IconCurrencyDollar,
   IconMoodSmile,
   IconUser,
@@ -78,6 +79,12 @@ export function MeepleCard({
                 Space Bar
               </span>
             ),
+            [MeepleType.SpaceApartments]: (
+              <span className="badge badge-sm badge-info badge-outline flex items-center gap-1">
+                <IconBuilding size={14} />
+                Space Apartments
+              </span>
+            ),
           }[meeple.type]
         }
         {
@@ -114,6 +121,18 @@ export function MeepleCard({
                 Socializing
               </span>
             ),
+            [MeepleStateType.Transacting]: (
+              <span className="badge badge-sm badge-warning badge-outline flex items-center gap-1">
+                <IconCurrencyDollar size={14} />
+                Transacting
+              </span>
+            ),
+            [MeepleStateType.Chilling]: (
+              <span className="badge badge-sm badge-ghost badge-outline flex items-center gap-1">
+                <IconMoodSmile size={14} />
+                Chilling
+              </span>
+            ),
           }[meeple.state.type]
         }
       </div>
@@ -148,6 +167,7 @@ export function MeepleCard({
                     [MeepleType.Asteroid]: <IconMeteor size={14} />,
                     [MeepleType.SpaceStation]: <IconSatellite size={14} />,
                     [MeepleType.SpaceBar]: <IconBeer size={14} />,
+                    [MeepleType.SpaceApartments]: <IconBuilding size={14} />,
                   }[visitor.type]
                 }{" "}
                 {visitor.name}

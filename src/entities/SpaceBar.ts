@@ -2,14 +2,16 @@ import { Vector, Rectangle, GraphicsGroup, Color } from "excalibur";
 import { Meeple } from "./Meeple";
 import { Products, Resources, type GoodType } from "../types";
 
+import { MeepleStateType } from "./types";
+import type { Game } from "./Game";
 const FIZZ_PRICE = 50; // Price per fizz
 const INITIAL_FIZZ_STOCK = 100; // Starting stock of fizz
 
 export class SpaceBar extends Meeple {
   public prices: Map<GoodType, number> = new Map();
 
-  constructor(position: Vector, speed: number, name: string) {
-    super(position, speed, name, 30, 20);
+  constructor(position: Vector, name: string) {
+    super(position, 0, name, 30, 20);
     
     // Initialize with fizz stock
     this.goods = {
@@ -38,6 +40,24 @@ export class SpaceBar extends Meeple {
           this.goods[good] = currentGood - quantity;
         }
         break;
+    }
+  }
+
+  onPreUpdate(engine: Game): void {
+    super.onPreUpdate(engine);
+
+    if (this.visitors.size > 1) {
+      const randomVisitor = this.getRandomVisitor();
+      if (randomVisitor) {
+        this.state = {
+          type: MeepleStateType.Transacting,
+          target: randomVisitor,
+        };
+      } else {
+        this.state = {
+          type: MeepleStateType.Idle,
+        };
+      }
     }
   }
 
