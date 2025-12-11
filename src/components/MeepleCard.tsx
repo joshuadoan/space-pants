@@ -141,45 +141,52 @@ export function MeepleCard({
       <div className="divider my-1"></div>
       <GoodsDisplay goods={meeple.goods} />
       {/* <-- Visitors */}
-      <div className="divider my-1"></div>
-      <div className="space-y-2">
-        <div className="flex items-center gap-2">
-          <span className="text-sm font-semibold text-base-content flex items-center gap-1">
-            <IconUsers size={16} />
-            Visitors
-          </span>
-          <span className="badge badge-sm badge-ghost">
-            {meeple.visitors.size}
-          </span>
-        </div>
-        {meeple.visitors.size > 0 ? (
-          <div className="flex flex-wrap gap-1.5">
-            {Array.from(meeple.visitors).map((visitor) => (
-              <div
-                key={visitor.name}
-                className="badge badge-sm badge-primary badge-outline hover:badge-primary transition-colors cursor-pointer"
-                onClick={onMeepleNameClick}
-                title={`Click to zoom to ${visitor.name}`}
-              >
-                {
-                  {
-                    [MeepleType.Player]: <IconUser size={14} />,
-                    [MeepleType.Trader]: <IconShip size={14} />,
-                    [MeepleType.Miner]: <IconPick size={14} />,
-                    [MeepleType.Asteroid]: <IconMeteor size={14} />,
-                    [MeepleType.SpaceStation]: <IconSatellite size={14} />,
-                    [MeepleType.SpaceBar]: <IconBeer size={14} />,
-                    [MeepleType.SpaceApartments]: <IconBuilding size={14} />,
-                  }[visitor.type]
-                }{" "}
-                {visitor.name}
+      {(meeple.type === MeepleType.Asteroid ||
+        meeple.type === MeepleType.SpaceStation ||
+        meeple.type === MeepleType.SpaceBar ||
+        meeple.type === MeepleType.SpaceApartments) && (
+        <>
+          <div className="divider my-1"></div>
+          <div className="space-y-2">
+            <div className="flex items-center gap-2">
+              <span className="text-sm font-semibold text-base-content flex items-center gap-1">
+                <IconUsers size={16} />
+                Visitors
+              </span>
+              <span className="badge badge-sm badge-ghost">
+                {meeple.visitors.size}
+              </span>
+            </div>
+            {meeple.visitors.size > 0 ? (
+              <div className="flex flex-wrap gap-1.5">
+                {Array.from(meeple.visitors).map((visitor) => (
+                  <div
+                    key={visitor.name}
+                    className="badge badge-sm badge-primary badge-outline hover:badge-primary transition-colors cursor-pointer"
+                    onClick={onMeepleNameClick}
+                    title={`Click to zoom to ${visitor.name}`}
+                  >
+                    {
+                      {
+                        [MeepleType.Player]: <IconUser size={14} />,
+                        [MeepleType.Trader]: <IconShip size={14} />,
+                        [MeepleType.Miner]: <IconPick size={14} />,
+                        [MeepleType.Asteroid]: <IconMeteor size={14} />,
+                        [MeepleType.SpaceStation]: <IconSatellite size={14} />,
+                        [MeepleType.SpaceBar]: <IconBeer size={14} />,
+                        [MeepleType.SpaceApartments]: <IconBuilding size={14} />,
+                      }[visitor.type]
+                    }{" "}
+                    {visitor.name}
+                  </div>
+                ))}
               </div>
-            ))}
+            ) : (
+              <div className="text-xs text-base-content/50 italic">No visitors</div>
+            )}
           </div>
-        ) : (
-          <div className="text-xs text-base-content/50 italic">No visitors</div>
-        )}
-      </div>
+        </>
+      )}
       {activeEntity && activeEntity.id === meeple.id && (
         <>
           <div className="divider my-1"></div>

@@ -12,6 +12,8 @@ import {
   type MeepleState,
 } from "./types";
 
+const MAX_ACIONS_BEFORE_GOING_HOME = 10;
+
 export class Meeple extends Actor {
   speed: number;
   name: string;
@@ -23,6 +25,8 @@ export class Meeple extends Actor {
   private follower: Actor | null = null;
 
   private lastUpdateTime: number = 0;
+  private homePosition: Vector;
+  private actionCount: number = 0;
 
   constructor(
     position: Vector,
@@ -51,6 +55,8 @@ export class Meeple extends Actor {
     };
     this.type = this.constructor.name as MeepleType;
     this.visitors = new Set();
+    this.homePosition = position.clone();
+    this.actionCount = 0;
   }
   onInitialize(_engine: Game): void {
     // if (this.state.type !== MeepleStateType.Idle) return;
@@ -125,6 +131,12 @@ export class Meeple extends Actor {
     if (currentTime - this.lastUpdateTime < 1000) return;
     this.lastUpdateTime = currentTime;
 
+    // Check if meeple needs to go home
+    if (this.actionCount >= MAX_ACIONS_BEFORE_GOING_HOME) {
+      this.goHome();
+      return;
+    }
+
     for (const rule of this.rules) {
       if (this.evaluateRule(rule, this.goods[rule.good] ?? 0)) {
         this.executeRuleAction(rule.action);
@@ -157,6 +169,7 @@ export class Meeple extends Actor {
     const asteroid = this.getRandomAsteroid();
     if (!asteroid) return;
 
+    this.actionCount++;
     this.visitTarget(asteroid, MeepleStateType.Mining, () => {
       this.transact("add", Resources.Ore, 10);
       asteroid.transact("remove", Resources.Ore, 10);
@@ -167,6 +180,7 @@ export class Meeple extends Actor {
     const station = this.getRandomStation();
     if (!station) return;
 
+    this.actionCount++;
     this.visitTarget(station, MeepleStateType.Trading, () => {
       this.transact("remove", Resources.Ore, 10);
       this.transact("add", Resources.Money, 10);
@@ -179,6 +193,7 @@ export class Meeple extends Actor {
     const spaceBar = this.getRandomSpaceBar();
     if (!spaceBar) return;
 
+    this.actionCount++;
     const moneyAmount = this.goods[Resources.Money] ?? 0;
     this.visitTarget(spaceBar, MeepleStateType.Socializing, () => {
       this.transact("remove", Resources.Money, moneyAmount);
@@ -214,6 +229,7 @@ export class Meeple extends Actor {
     const station = this.getRandomStation();
     if (!station) return;
 
+    this.actionCount++;
     this.visitTarget(station, MeepleStateType.Trading, () => {
       const good = this.getGoodWithMostAmmount(station);
       if (good && station.goods[good] && station.goods[good] >= 1) {
@@ -229,6 +245,7 @@ export class Meeple extends Actor {
     const station = this.getRandomStation();
     if (!station) return;
 
+    this.actionCount++;
     this.visitTarget(station, MeepleStateType.Trading, () => {
       const goods = Object.keys(this.goods).filter(
         (good): good is GoodType =>
@@ -271,6 +288,25 @@ export class Meeple extends Actor {
       .delay(delayMs)
       .callMethod(() => target.visitors.delete(this))
       .callMethod(() => {
+        this.state = {
+          type: MeepleStateType.Idle,
+        };
+      });
+  }
+
+  private goHome(): void {
+    this.actions
+      .callMethod(() => {
+        // Use 'this' as target for state type compatibility (not actually used)
+        this.state = {
+          type: MeepleStateType.Traveling,
+          target: this,
+        };
+      })
+      .moveTo(this.homePosition, this.speed)
+      .delay(10000) // Wait 10 seconds at home
+      .callMethod(() => {
+        this.actionCount = 0; // Reset action counter
         this.state = {
           type: MeepleStateType.Idle,
         };
