@@ -7,8 +7,7 @@ export class Game extends Engine {
       super({
         // bg dark almost black for space
         backgroundColor: Color.fromHex("#000000"),
-        pixelArt: true,
-        pixelRatio: 2,
+        antialiasing: true,
         displayMode: DisplayMode.FillContainer,
         canvasElement: document.getElementById(
           "game-canvas"

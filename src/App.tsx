@@ -57,7 +57,7 @@ type State = {
 };
 
 const initialState: State = {
-  activeTab: "miners",
+  activeTab: "player",
   activeEntity: null,
   readmeContent: "",
 };
