@@ -3,7 +3,6 @@ import { useFps } from "react-fps";
 import Markdown from 'react-markdown'
 
 import { useGame } from "./hooks/useGame";
-import { useKeyboardControls } from "./hooks/useKeyboardControls";
 import { useGameEntities } from "./hooks/useGameEntities";
 
 import { Tabs } from "./components/Tabs";
@@ -99,12 +98,6 @@ function App() {
       );
     }
   }, [state.activeEntity, gameRef]);
-
-  // Consolidate keyboard controls (game movement + scroll prevention)
-  useKeyboardControls(
-    gameRef.current,
-    gameEntitiesState.meeples.find((meeple) => meeple instanceof Player) || null
-  );
 
   async function getReadmeMarkdownFromFile() {
     try {

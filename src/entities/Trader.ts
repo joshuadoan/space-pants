@@ -1,7 +1,7 @@
 import { Resources } from "../types";
 import type { Vector } from "excalibur";
 import { Meeple } from "./Meeple";
-import { ComparisonOperator, LogicRuleActionType } from "./types";
+import { TRADER_RULES } from "./ruleTemplates";
 const INITIAL_MONEY = 10;
 
 export class Trader extends Meeple {
@@ -10,21 +10,6 @@ export class Trader extends Meeple {
     // Initialize with money
     this.goods[Resources.Money] = INITIAL_MONEY;
     this.speed = 100;
-    this.rules = [
-      {
-        id: "go-shopping",
-        good: Resources.Money,
-        operator: ComparisonOperator.GreaterThan,
-        value: 0,
-        action: LogicRuleActionType.GoShopping,
-      },
-      {
-        id: "go-selling",
-        good: Resources.Money,
-        operator: ComparisonOperator.LessThanOrEqual,
-        value: 0,
-        action: LogicRuleActionType.GoSelling,
-      },
-    ];
+    this.rules = TRADER_RULES;
   }
 }

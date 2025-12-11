@@ -5,6 +5,18 @@ import {
   type LogicRule,
 } from "../entities/types";
 import { Resources } from "../types";
+import { TRADER_RULES, MINER_RULES } from "../entities/ruleTemplates";
+
+const RULE_TEMPLATES = {
+  "": "Select a template...",
+  trader: "Trader",
+  miner: "Miner",
+} as const;
+
+const TEMPLATE_MAP: Record<string, LogicRule[]> = {
+  trader: TRADER_RULES,
+  miner: MINER_RULES,
+};
 
 export function Rules({
   rules,
@@ -16,6 +28,7 @@ export function Rules({
   const formRef = useRef<HTMLFormElement>(null);
   const [localRules, setLocalRules] = useState<LogicRule[]>(rules);
   const [isExpanded, setIsExpanded] = useState(false);
+  const [selectedTemplate, setSelectedTemplate] = useState<string>("");
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -54,6 +67,17 @@ export function Rules({
     );
   };
 
+  const handleTemplateChange = (templateKey: string) => {
+    setSelectedTemplate(templateKey);
+    if (templateKey && TEMPLATE_MAP[templateKey]) {
+      setLocalRules(TEMPLATE_MAP[templateKey]);
+    }
+  };
+
+  const handleDeleteRule = (ruleId: string) => {
+    setLocalRules((prevRules) => prevRules.filter((rule) => rule.id !== ruleId));
+  };
+
   return (
     <div className="w-full">
       <button
@@ -68,12 +92,43 @@ export function Rules({
           ref={formRef}
           className="flex flex-col gap-4"
         >
+          <div className="w-full">
+            <label className="label py-1">
+              <span className="label-text text-xs text-base-content/70">
+                Rule Template
+              </span>
+            </label>
+            <select
+              value={selectedTemplate}
+              onChange={(e) => handleTemplateChange(e.target.value)}
+              className="select select-primary select-bordered w-full"
+            >
+              {Object.entries(RULE_TEMPLATES).map(([key, label]) => (
+                <option key={key} value={key} disabled={key === ""}>
+                  {label}
+                </option>
+              ))}
+            </select>
+          </div>
           {localRules.map((rule) => (
             <div
               key={rule.id}
               className="card bg-base-200 shadow-md hover:shadow-lg transition-shadow duration-200"
             >
               <div className="card-body p-4">
+                <div className="flex justify-between items-start mb-2">
+                  <h3 className="text-sm font-semibold text-base-content/80">
+                    Rule: {rule.id}
+                  </h3>
+                  <button
+                    type="button"
+                    onClick={() => handleDeleteRule(rule.id)}
+                    className="btn btn-sm btn-error btn-outline"
+                    aria-label={`Delete rule ${rule.id}`}
+                  >
+                    Delete
+                  </button>
+                </div>
                 <div className="flex flex-col sm:flex-row gap-3">
                   <div className="flex-1">
                     <label className="label py-1">
