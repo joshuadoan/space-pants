@@ -1,4 +1,4 @@
-type TabType = "player" | "traders" | "miners" | "stations" | "asteroids" | "spacebars" | "all";
+type TabType = "player" | "traders" | "miners" | "stations" | "asteroids" | "spacebars" | "all" | "readme";
 
 type TabsProps = {
   activeTab: TabType;
@@ -28,6 +28,14 @@ export function Tabs({ activeTab, onTabChange }: TabsProps) {
           {tab.label}
         </a>
       ))}
+      <a
+      key="readme-tab"
+        role="tab"
+        className="tab"
+        onClick={() => onTabChange("readme")}
+      >
+        Readme
+      </a>
     </div>
   );
 }

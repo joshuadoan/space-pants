@@ -61,7 +61,7 @@ A space economy simulation game built with React, TypeScript, and Excalibur.js. 
 
 1. Clone the repository:
 ```bash
-git clone <repository-url>
+git clone https://github.com/your-username/space-pants.git
 cd space-pants
 ```
 
@@ -165,13 +165,31 @@ Run linter:
 pnpm lint
 ```
 
-## 📝 License
-
-This project is private and not licensed for public use.
-
 ## 🤝 Contributing
 
-This is a private project. Contributions are not currently accepted.
+Contributions are welcome! This is an open source project and we appreciate any help you can provide.
+
+### How to Contribute
+
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Make your changes
+4. Commit your changes (`git commit -m 'Add some amazing feature'`)
+5. Push to the branch (`git push origin feature/amazing-feature`)
+6. Open a Pull Request
+
+### Areas for Contribution
+
+- Bug fixes
+- New entity types
+- UI/UX improvements
+- Performance optimizations
+- Documentation improvements
+- New game mechanics
+
+## 📝 License
+
+This project is open source. Please check the LICENSE file for details on how you can use, modify, and distribute this code.
 
 ---
 
