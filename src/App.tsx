@@ -14,6 +14,7 @@ import { Player } from "./entities/Player";
 import { SpaceBar } from "./entities/SpaceBar";
 import { SpaceStation } from "./entities/SpaceStation";
 import { Trader } from "./entities/Trader";
+import { TreasureCollector } from "./entities/TreasureCollector";
 
 import "./App.css";
 import { MeepleCard } from "./components/MeepleCard";
@@ -28,6 +29,7 @@ type TabType =
   | "asteroids"
   | "spacebars"
   | "spaceapartments"
+  | "treasurecollectors"
   | "all"
   | "readme";
 
@@ -157,6 +159,9 @@ function App() {
       readme: [],
       spaceapartments: gameEntitiesState.meeples.filter(
         (meeple) => meeple instanceof SpaceApartments
+      ),
+      treasurecollectors: gameEntitiesState.meeples.filter(
+        (meeple) => meeple instanceof TreasureCollector
       ),
     }[state.activeTab];
   }, [state.activeTab, gameEntitiesState.meeples.length]);

@@ -15,6 +15,7 @@ export class SpaceApartments extends Meeple {
     this.goods = {
       [Resources.Ore]: 0,
       [Resources.Money]: 0,
+      [Resources.Treasure]: 0,
     };
 
     // Create an apartment building design

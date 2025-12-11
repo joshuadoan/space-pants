@@ -4,6 +4,7 @@ import {
   IconPick,
   IconPackage,
   IconBeer,
+  IconCoin,
 } from "@tabler/icons-react";
 import type { ReactElement, ComponentType } from "react";
 
@@ -23,6 +24,11 @@ const GOODS_METADATA_MAP: Record<GoodType, GoodMetadata> = {
     value: Resources.Ore,
     label: "Ore",
     IconComponent: IconPick,
+  },
+  [Resources.Treasure]: {
+    value: Resources.Treasure,
+    label: "Treasure",
+    IconComponent: IconCoin,
   },
   [Products.Gruffle]: {
     value: Products.Gruffle,
@@ -81,6 +87,9 @@ export function formatGoodDisplay(good: GoodType, quantity: number): string {
   }
   if (good === Resources.Ore) {
     return `${quantity} ore`;
+  }
+  if (good === Resources.Treasure) {
+    return `${quantity} treasure`;
   }
   // Products
   return `${quantity}x ${metadata.label}`;

@@ -4,6 +4,7 @@ import type { Meeple } from "./Meeple";
 export enum MeepleType {
   Miner = "Miner",
   Trader = "Trader",
+  TreasureCollector = "TreasureCollector",
   Asteroid = "Asteroid",
   Player = "Player",
   SpaceStation = "SpaceStation",
@@ -87,4 +88,5 @@ export enum LogicRuleActionType {
   Socialize = "Socialize",
   GoShopping = "Go Shopping",
   GoSelling = "Go Selling",
+  SellTreasure = "Sell Treasure",
 }

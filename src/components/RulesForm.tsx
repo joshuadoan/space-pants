@@ -160,7 +160,7 @@ function DraggableRuleItem({
               <option disabled={true} value="">
                 Pick a value
               </option>
-              {[0, 10, 20, 30, 40, 50].map((value) => (
+              {[0, 1, 5,10, 20, 30, 40, 50].map((value) => (
                 <option key={value} value={value}>
                   {value}
                 </option>

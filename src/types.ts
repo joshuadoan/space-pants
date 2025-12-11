@@ -9,6 +9,7 @@ export enum Products {
 export enum Resources {
     Ore = "ore",
     Money = "money",
+    Treasure = "treasure",
 }
 
 export type GoodType = Products | Resources;

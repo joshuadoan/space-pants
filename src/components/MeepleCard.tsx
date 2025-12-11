@@ -6,6 +6,7 @@ import {
   IconMoodSmile,
   IconUser,
   IconUsers,
+  IconStar
 } from "@tabler/icons-react";
 import { IconShip } from "@tabler/icons-react";
 import { IconPick } from "@tabler/icons-react";
@@ -85,6 +86,12 @@ export function MeepleCard({
               <span className="badge badge-sm badge-info badge-outline flex items-center gap-1">
                 <IconBuilding size={14} />
                 Space Apartments
+              </span>
+            ),
+            [MeepleType.TreasureCollector]: (
+              <span className="badge badge-sm badge-warning flex items-center gap-1">
+                <IconStar size={14} />
+                Treasure Collector
               </span>
             ),
           }[meeple.type]
@@ -175,6 +182,7 @@ export function MeepleCard({
                         [MeepleType.SpaceStation]: <IconSatellite size={14} />,
                         [MeepleType.SpaceBar]: <IconBeer size={14} />,
                         [MeepleType.SpaceApartments]: <IconBuilding size={14} />,
+                        [MeepleType.TreasureCollector]: <IconStar size={14} />,
                       }[visitor.type]
                     }{" "}
                     {visitor.name}

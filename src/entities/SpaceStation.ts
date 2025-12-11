@@ -32,6 +32,7 @@ export class SpaceStation extends Meeple {
     this.goods = {
       [Resources.Ore]: 0,
       [Resources.Money]: 0,
+      [Resources.Treasure]: 0,
     };
 
     // Initialize all products to 0

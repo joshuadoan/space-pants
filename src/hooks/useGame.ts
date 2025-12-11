@@ -10,6 +10,7 @@ import { Miner } from "../entities/Miner";
 import { SpaceBar } from "../entities/SpaceBar";
 import { generateSpaceName } from "../entities/utils/generateSpaceName";
 import { SpaceApartments } from "../entities/SpaceApartments";
+import { TreasureCollector } from "../entities/TreasureCollector";
 import { DEFAULT_SHIP_SPEED } from "../consts";
 
 const WORLD_WIDTH = 1000;
@@ -137,6 +138,16 @@ export const useGame = () => {
 
       game.currentScene.add(spaceApartment);
     }
+
+    // create 1 treasure collector at random position
+    const treasureCollector = new TreasureCollector(
+      new Vector(Math.random() * WORLD_WIDTH, Math.random() * WORLD_HEIGHT),
+      1,
+      generateSpaceName()
+    );
+    treasureCollector.name = generateSpaceName();
+
+    game.currentScene.add(treasureCollector);
 
     game.start().then(() => {
       dispatch({ name: "set-game", payload: game });

@@ -7,6 +7,8 @@ export function getGoodColor(good: GoodType): Color {
   switch (good) {
     case Resources.Ore:
       return Color.Orange;
+    case Resources.Treasure:
+      return Color.fromHex("#FFD700"); // Gold color
     case Products.Gruffle:
       return Color.Blue;
     case Products.Druffle:

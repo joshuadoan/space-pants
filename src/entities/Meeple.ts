@@ -47,6 +47,7 @@ export class Meeple extends Actor {
     this.goods = {
       [Resources.Ore]: 0,
       [Resources.Money]: 0,
+      [Resources.Treasure]: 0,
     };
     this.rules = [];
     const meepleDesign = createSpaceShipOutOfShapes();
@@ -199,6 +200,9 @@ export class Meeple extends Actor {
       case LogicRuleActionType.GoSelling:
         this.executeGoSelling();
         break;
+      case LogicRuleActionType.SellTreasure:
+        this.executeSellTreasure();
+        break;
     }
   }
 
@@ -300,6 +304,22 @@ export class Meeple extends Actor {
     }, 3000);
   }
 
+  private executeSellTreasure(): void {
+    const treasureCollector = this.getRandomTreasureCollector();
+    if (!treasureCollector) return;
+
+    const treasureAmount = this.goods[Resources.Treasure] ?? 0;
+    if (treasureAmount <= 0) return;
+
+    this.actionCount++;
+    this.visitTarget(treasureCollector, MeepleStateType.Trading, () => {
+      this.transact("remove", Resources.Treasure, 1);
+      this.transact("add", Resources.Money, 100);
+      treasureCollector.transact("add", Resources.Treasure, 1);
+      treasureCollector.transact("remove", Resources.Money, 100);
+    }, 3000);
+  }
+
   private visitTarget(
     target: Meeple,
     activeStateType: MeepleStateType,
@@ -387,6 +407,18 @@ export class Meeple extends Actor {
     );
     return (
       spaceBars?.[Math.floor(Math.random() * spaceBars.length)] ?? undefined
+    );
+  }
+
+  getRandomTreasureCollector(): Meeple | undefined {
+    const meeples = this.scene?.actors.filter(
+      (a: Actor) => a instanceof Meeple
+    );
+    const treasureCollectors = meeples?.filter(
+      (meeple: Meeple) => meeple.type === MeepleType.TreasureCollector
+    );
+    return (
+      treasureCollectors?.[Math.floor(Math.random() * treasureCollectors.length)] ?? undefined
     );
   }
 
