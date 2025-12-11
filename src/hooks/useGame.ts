@@ -10,6 +10,7 @@ import { Miner } from "../entities/Miner";
 import { SpaceBar } from "../entities/SpaceBar";
 import { generateSpaceName } from "../entities/utils/generateSpaceName";
 import { SpaceApartments } from "../entities/SpaceApartments";
+import { DEFAULT_SHIP_SPEED } from "../consts";
 
 const WORLD_WIDTH = 1000;
 const WORLD_HEIGHT = 1000;
@@ -60,7 +61,7 @@ export const useGame = () => {
     const cameraZoom = 2; // Zoom in 5x - shows 1/5th of the world
     game.currentScene.camera.zoom = cameraZoom;
     //Create player
-    const playerSpeed = 100;
+    const playerSpeed = DEFAULT_SHIP_SPEED;
     const player = new Player(
       new Vector(WORLD_WIDTH / 2, WORLD_HEIGHT / 2),
       playerSpeed,

@@ -1,5 +1,6 @@
 import { useState } from "react";
 import type { LogicRule } from "../entities/types";
+import { getGoodIcon } from "../utils/goodsMetadata";
 
 export function RulesReadOnly({ rules }: { rules: LogicRule[] }) {
   const [isExpanded, setIsExpanded] = useState(false);
@@ -31,7 +32,8 @@ export function RulesReadOnly({ rules }: { rules: LogicRule[] }) {
                   
                   {/* Condition */}
                   <div className="flex items-center gap-2 flex-wrap">
-                    <span className="badge badge-outline badge-lg px-3 py-2">
+                    <span className="badge badge-outline badge-lg px-3 py-2 flex items-center gap-1.5">
+                      {rule.good ? getGoodIcon(rule.good, 18) : null}
                       {rule.good || "—"}
                     </span>
                     <span className="text-lg font-mono text-primary font-semibold">

@@ -1,0 +1,1 @@
+export const DEFAULT_SHIP_SPEED = 100;

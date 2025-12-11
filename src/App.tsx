@@ -1,6 +1,6 @@
-import { useEffect, useReducer } from "react";
+import { useEffect, useMemo, useReducer } from "react";
 import { useFps } from "react-fps";
-import Markdown from 'react-markdown'
+import Markdown from "react-markdown";
 
 import { useGame } from "./hooks/useGame";
 import { useGameEntities } from "./hooks/useGameEntities";
@@ -103,11 +103,11 @@ function App() {
   async function getReadmeMarkdownFromFile() {
     try {
       // In Vite, we can import text files using ?raw suffix
-      const readmeModule = await import('../README.md?raw');
+      const readmeModule = await import("../README.md?raw");
       return readmeModule.default;
     } catch (error) {
-      console.error('Failed to load README.md:', error);
-      return '# Error\n\nFailed to load README.md file.';
+      console.error("Failed to load README.md:", error);
+      return "# Error\n\nFailed to load README.md file.";
     }
   }
 
@@ -133,8 +133,39 @@ function App() {
 
   const { avgFps, maxFps, currentFps } = useFps(20);
 
+  const filteredEntities = useMemo(() => {
+    return {
+      traders: gameEntitiesState.meeples.filter(
+        (meeple) => meeple instanceof Trader
+      ),
+      miners: gameEntitiesState.meeples.filter(
+        (meeple) => meeple instanceof Miner
+      ),
+      spacebars: gameEntitiesState.meeples.filter(
+        (meeple) => meeple instanceof SpaceBar
+      ),
+      stations: gameEntitiesState.meeples.filter(
+        (meeple) => meeple instanceof SpaceStation
+      ),
+      asteroids: gameEntitiesState.meeples.filter(
+        (meeple) => meeple instanceof Asteroid
+      ),
+      player: gameEntitiesState.meeples.filter(
+        (meeple) => meeple instanceof Player
+      ),
+      all: [...gameEntitiesState.meeples],
+      readme: [],
+      spaceapartments: gameEntitiesState.meeples.filter(
+        (meeple) => meeple instanceof SpaceApartments
+      ),
+    }[state.activeTab];
+  }, [state.activeTab, gameEntitiesState.meeples.length]);
+
   // keyboard
-  useKeyboardControls(game, gameEntitiesState.meeples.find((meeple) => meeple instanceof Player) || null);
+  useKeyboardControls(
+    game,
+    gameEntitiesState.meeples.find((meeple) => meeple instanceof Player) || null
+  );
 
   return (
     <main className="w-screen h-screen flex flex-col">
@@ -153,31 +184,7 @@ function App() {
       {/* Main content area */}
       <div className="flex flex-1 overflow-hidden">
         <nav className="w-md flex flex-col overflow-y-auto border-r border-base-300">
-          {{
-            traders: gameEntitiesState.meeples.filter(
-              (meeple) => meeple instanceof Trader
-            ),
-            miners: gameEntitiesState.meeples.filter(
-              (meeple) => meeple instanceof Miner
-            ),
-            spacebars: gameEntitiesState.meeples.filter(
-              (meeple) => meeple instanceof SpaceBar
-            ),
-            stations: gameEntitiesState.meeples.filter(
-              (meeple) => meeple instanceof SpaceStation
-            ),
-            asteroids: gameEntitiesState.meeples.filter(
-              (meeple) => meeple instanceof Asteroid
-            ),
-            player: gameEntitiesState.meeples.filter(
-              (meeple) => meeple instanceof Player
-            ),
-            all: [...gameEntitiesState.meeples],
-            readme: [],
-            spaceapartments: gameEntitiesState.meeples.filter(
-              (meeple) => meeple instanceof SpaceApartments
-            ),
-          }[state.activeTab].map((entity, index) => (
+          {filteredEntities.map((entity, index) => (
             <div
               key={index}
               className={`card bg-base-100 shadow-md hover:shadow-lg transition-all duration-200 border rounded-lg p-4 m-2 ${
@@ -198,7 +205,9 @@ function App() {
           {state.activeTab === "readme" && (
             <div className="card bg-base-100 shadow-md hover:shadow-lg transition-all duration-200 border border-base-300 rounded-lg p-4 m-2">
               <div className="card-body">
-                <Markdown>{state.readmeContent || "Loading README..."}</Markdown>
+                <Markdown>
+                  {state.readmeContent || "Loading README..."}
+                </Markdown>
               </div>
             </div>
           )}

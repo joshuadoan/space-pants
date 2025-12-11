@@ -69,3 +69,75 @@ export function createSpaceShipOutOfShapes(): GraphicsGroup {
       })),
     });
   }
+
+// Miner-specific color palette - industrial/mining themed
+const MINER_COLORS = [
+  Color.fromHex("#8B4513"), // Brown
+  Color.fromHex("#654321"), // Dark brown
+  Color.fromHex("#A0522D"), // Sienna
+  Color.fromHex("#CD853F"), // Peru
+  Color.fromHex("#D2691E"), // Chocolate
+  Color.fromHex("#B8860B"), // Dark goldenrod
+  Color.fromHex("#808080"), // Gray
+  Color.fromHex("#696969"), // Dim gray
+  Color.fromHex("#778899"), // Light slate gray
+  Color.fromHex("#2F4F4F"), // Dark slate gray
+];
+
+export function createMinerShipOutOfShapes(): GraphicsGroup {
+  const blocks: { rect: Rectangle; offset: Vector }[] = [];
+  
+  // Generate a random seed for this miner design
+  const seed = Math.random();
+  
+  // Select random colors from miner palette
+  const primaryColor = MINER_COLORS[Math.floor(Math.random() * MINER_COLORS.length)];
+  const secondaryColor = MINER_COLORS[Math.floor(Math.random() * MINER_COLORS.length)];
+  const accentColor = MINER_COLORS[Math.floor(Math.random() * MINER_COLORS.length)];
+  
+  // Miner design patterns - industrial/mining themed
+  const pattern = Math.floor(seed * 4); // 4 different patterns
+  
+  switch (pattern) {
+    case 0: // Heavy mining rig - wide body with drill
+      blocks.push({ rect: new Rectangle({ width: 14, height: 8, color: primaryColor }), offset: new Vector(0, 0) }); // Main body
+      blocks.push({ rect: new Rectangle({ width: 4, height: 4, color: accentColor }), offset: new Vector(0, -6) }); // Drill head
+      blocks.push({ rect: new Rectangle({ width: 3, height: 3, color: secondaryColor }), offset: new Vector(-7, 2) }); // Left cargo
+      blocks.push({ rect: new Rectangle({ width: 3, height: 3, color: secondaryColor }), offset: new Vector(7, 2) }); // Right cargo
+      blocks.push({ rect: new Rectangle({ width: 6, height: 2, color: accentColor }), offset: new Vector(0, 5) }); // Engine
+      break;
+      
+    case 1: // Compact miner - vertical design with storage
+      blocks.push({ rect: new Rectangle({ width: 10, height: 10, color: primaryColor }), offset: new Vector(0, -1) }); // Main body
+      blocks.push({ rect: new Rectangle({ width: 3, height: 3, color: accentColor }), offset: new Vector(0, -7) }); // Drill
+      blocks.push({ rect: new Rectangle({ width: 4, height: 5, color: secondaryColor }), offset: new Vector(-6, 0) }); // Left storage
+      blocks.push({ rect: new Rectangle({ width: 4, height: 5, color: secondaryColor }), offset: new Vector(6, 0) }); // Right storage
+      blocks.push({ rect: new Rectangle({ width: 8, height: 2, color: accentColor }), offset: new Vector(0, 6) }); // Engine
+      break;
+      
+    case 2: // Industrial hauler - long horizontal with multiple drills
+      blocks.push({ rect: new Rectangle({ width: 16, height: 6, color: primaryColor }), offset: new Vector(0, 0) }); // Main body
+      blocks.push({ rect: new Rectangle({ width: 3, height: 3, color: accentColor }), offset: new Vector(-6, -5) }); // Left drill
+      blocks.push({ rect: new Rectangle({ width: 3, height: 3, color: accentColor }), offset: new Vector(0, -5) }); // Center drill
+      blocks.push({ rect: new Rectangle({ width: 3, height: 3, color: accentColor }), offset: new Vector(6, -5) }); // Right drill
+      blocks.push({ rect: new Rectangle({ width: 5, height: 4, color: secondaryColor }), offset: new Vector(-8, 2) }); // Left cargo bay
+      blocks.push({ rect: new Rectangle({ width: 5, height: 4, color: secondaryColor }), offset: new Vector(8, 2) }); // Right cargo bay
+      break;
+      
+    case 3: // Utility miner - compact with side-mounted equipment
+      blocks.push({ rect: new Rectangle({ width: 8, height: 10, color: primaryColor }), offset: new Vector(0, -1) }); // Body
+      blocks.push({ rect: new Rectangle({ width: 2, height: 4, color: accentColor }), offset: new Vector(0, -7) }); // Top drill
+      blocks.push({ rect: new Rectangle({ width: 3, height: 6, color: secondaryColor }), offset: new Vector(-6, -2) }); // Left equipment
+      blocks.push({ rect: new Rectangle({ width: 3, height: 6, color: secondaryColor }), offset: new Vector(6, -2) }); // Right equipment
+      blocks.push({ rect: new Rectangle({ width: 6, height: 3, color: accentColor }), offset: new Vector(0, 6) }); // Engine
+      break;
+  }
+  
+  // Create graphics group with all blocks
+  return new GraphicsGroup({
+    members: blocks.map(block => ({
+      graphic: block.rect,
+      offset: block.offset,
+    })),
+  });
+}
