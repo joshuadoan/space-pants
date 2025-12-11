@@ -381,7 +381,7 @@ export class Meeple extends Actor {
       (a: Actor) => a instanceof Meeple
     );
     const asteroids = meeples?.filter(
-      (meeple: Meeple) => meeple.type === MeepleType.Asteroid
+      (meeple: Meeple) => meeple.type === MeepleType.Asteroid && meeple !== this
     );
     return (
       asteroids?.[Math.floor(Math.random() * asteroids.length)] ?? undefined
@@ -393,7 +393,7 @@ export class Meeple extends Actor {
       (a: Actor) => a instanceof Meeple
     );
     const stations = meeples?.filter(
-      (meeple: Meeple) => meeple.type === MeepleType.SpaceStation
+      (meeple: Meeple) => meeple.type === MeepleType.SpaceStation && meeple !== this
     );
     return stations?.[Math.floor(Math.random() * stations.length)] ?? undefined;
   }
@@ -403,7 +403,7 @@ export class Meeple extends Actor {
       (a: Actor) => a instanceof Meeple
     );
     const spaceBars = meeples?.filter(
-      (meeple: Meeple) => meeple.type === MeepleType.SpaceBar
+      (meeple: Meeple) => meeple.type === MeepleType.SpaceBar && meeple !== this
     );
     return (
       spaceBars?.[Math.floor(Math.random() * spaceBars.length)] ?? undefined
@@ -415,7 +415,7 @@ export class Meeple extends Actor {
       (a: Actor) => a instanceof Meeple
     );
     const treasureCollectors = meeples?.filter(
-      (meeple: Meeple) => meeple.type === MeepleType.TreasureCollector
+      (meeple: Meeple) => meeple.type === MeepleType.TreasureCollector && meeple !== this
     );
     return (
       treasureCollectors?.[Math.floor(Math.random() * treasureCollectors.length)] ?? undefined
