@@ -16,6 +16,8 @@
     "daisyui": "^5.5.5",
     "excalibur": "^0.31.0",
     "react": "^19.2.0",
+    "react-dnd": "^16.0.1",
+    "react-dnd-html5-backend": "^16.0.1",
     "react-dom": "^19.2.0",
     "react-fps": "^1.0.6",
     "react-markdown": "^10.1.0",

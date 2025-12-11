@@ -7,11 +7,13 @@ A space economy simulation game built with React, TypeScript, and Excalibur.js. 
 - **Real-time Space Economy Simulation**: Watch miners, traders, space stations, and other entities interact autonomously
 - **Entity Management**: View and manage all entities in the game world through an intuitive tabbed interface
 - **Customizable Behavior**: Edit logic rules for entities to control their actions based on resource conditions
+- **Drag-and-Drop Rule Reordering**: Reorder entity rules by dragging them in the rules editor
 - **Dynamic Production**: Space stations convert ore into various products (Gruffle, Druffle, Klintzpaw, Grogin, Fizz)
 - **Trading System**: Entities buy and sell goods at space stations
-- **Social System**: Entities visit space bars to socialize and spend money
+- **Social System**: Entities visit space bars and space apartments to socialize and spend money
 - **Interactive Camera**: Click on any entity to zoom and follow it
 - **FPS Monitoring**: Real-time performance metrics displayed on screen
+- **Built-in Documentation**: View the README directly in the app via the Readme tab
 
 ## 🎮 Game Entities
 
@@ -41,11 +43,22 @@ A space economy simulation game built with React, TypeScript, and Excalibur.js. 
 - Social gathering spots
 - Entities spend money here to socialize
 - Visitors are tracked and displayed
+- Stock Fizz drinks for sale
+
+### Space Apartments
+- Residential buildings where entities can rest
+- Maximum capacity of 5 visitors at once
+- Visual design with lit windows and doors
 
 ### Asteroids
 - Source of ore for miners
 - Randomly distributed across the world
 - Varying sizes (15-30 units)
+
+### Stars
+- Background decorative elements
+- Grid-based distribution across the world
+- Viewport culling for performance optimization
 
 ## 🛠️ Tech Stack
 
@@ -53,9 +66,11 @@ A space economy simulation game built with React, TypeScript, and Excalibur.js. 
 - **TypeScript** - Type safety
 - **Excalibur.js** - 2D game engine
 - **TailwindCSS + DaisyUI** - Styling
-- **XState** - State management
 - **Vite** - Build tool and dev server
 - **react-fps** - Performance monitoring
+- **react-markdown** - Markdown rendering for documentation
+- **react-dnd** - Drag and drop functionality for rule reordering
+- **@tabler/icons-react** - Icon library
 
 ## 📦 Installation
 
@@ -93,9 +108,11 @@ pnpm preview
 
 1. **Observe**: Watch the autonomous entities go about their business
 2. **Navigate**: Use WASD or Arrow keys to move your player character
-3. **Explore**: Click on any entity in the sidebar to zoom the camera to it
-4. **Customize**: Click on an entity card to expand its rules editor and modify its behavior
-5. **Monitor**: Use the tabs to filter entities by type (Traders, Miners, Stations, etc.)
+3. **Explore**: Click on any entity name in the sidebar to zoom the camera to it
+4. **Customize**: Expand an entity card to view and edit its rules editor
+5. **Reorder Rules**: Drag and drop rules to change their priority order
+6. **Monitor**: Use the tabs to filter entities by type (Traders, Miners, Stations, Space Bars, Space Apartments, etc.)
+7. **Read Docs**: Click the "Readme" tab to view this documentation in the app
 
 ## 🧩 Entity Rules System
 
@@ -114,6 +131,9 @@ Each entity follows a set of logic rules that determine its behavior. Rules are 
 - **Go Shopping**: Buy products from a space station
 - **Go Selling**: Sell products to a space station
 
+### Rule Priority
+Rules are evaluated in order from top to bottom. You can drag and drop rules to reorder them and change their priority.
+
 ### Example Rules
 A miner's default rules:
 - If Money ≥ 50 → Socialize
@@ -126,9 +146,13 @@ A miner's default rules:
 src/
 ├── components/          # React UI components
 │   ├── GoodsDisplay.tsx
-│   ├── Rules.tsx        # Rules editor component
+│   ├── MeepleCard.tsx   # Entity card display component
+│   ├── RulesForm.tsx    # Rules editor component with drag-and-drop
+│   ├── RulesReadOnly.tsx # Read-only rules display
+│   ├── StatBasic.tsx
 │   ├── Tabs.tsx
-│   └── ...
+│   ├── Toast.tsx        # Toast notification system
+│   └── ValueDisplays.tsx
 ├── entities/            # Game entity classes
 │   ├── Game.ts          # Excalibur game engine wrapper
 │   ├── Meeple.ts        # Base entity class
@@ -137,12 +161,19 @@ src/
 │   ├── Trader.ts
 │   ├── SpaceStation.ts
 │   ├── SpaceBar.ts
-│   └── Asteroid.ts
+│   ├── SpaceApartments.ts
+│   ├── Asteroid.ts
+│   ├── Star.ts          # Background star entities
+│   ├── ruleTemplates.ts # Default rule templates
+│   └── types.ts         # Entity type definitions
 ├── hooks/               # React hooks
 │   ├── useGame.ts       # Game initialization
-│   ├── useGameEntities.ts
+│   ├── useGameEntities.ts # Entity state management
 │   └── useKeyboardControls.ts
 ├── utils/               # Utility functions
+│   ├── addStars.ts      # Star generation utility
+│   ├── goodsMetadata.tsx
+│   └── keyboardControls.ts
 └── types.ts             # TypeScript type definitions
 ```
 
@@ -151,9 +182,10 @@ src/
 ### World Configuration
 Edit `src/hooks/useGame.ts` to modify:
 - World size (`WORLD_WIDTH`, `WORLD_HEIGHT`)
-- Number of entities (traders, miners, stations, asteroids, space bars)
+- Number of entities (traders, miners, stations, asteroids, space bars, space apartments)
 - Player speed
 - Camera zoom level
+- Star distribution and spacing
 
 ### Entity Behavior
 Modify entity classes in `src/entities/` to change default rules and starting conditions.
