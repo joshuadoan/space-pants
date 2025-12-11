@@ -1,6 +1,6 @@
 import { Actor, Scene, Vector, Rectangle, Color } from "excalibur";
 import { createSpaceShipOutOfShapes } from "./utils/createSpaceShipOutOfShapes";
-import { Resources, type Goods } from "../types";
+import { Resources, Products, type Goods } from "../types";
 import type { GoodType } from "../types";
 import type { Game } from "./Game";
 import {
@@ -14,6 +14,26 @@ import {
 
 const MAX_ACIONS_BEFORE_GOING_HOME = 10;
 
+// Color mapping for each good type
+function getGoodColor(good: GoodType): Color {
+  switch (good) {
+    case Resources.Ore:
+      return Color.Orange;
+    case Products.Gruffle:
+      return Color.Blue;
+    case Products.Druffle:
+      return Color.Green;
+    case Products.Klintzpaw:
+      return Color.Purple;
+    case Products.Grogin:
+      return Color.Yellow;
+    case Products.Fizz:
+      return Color.Red;
+    default:
+      return Color.White;
+  }
+}
+
 export class Meeple extends Actor {
   speed: number;
   name: string;
@@ -22,7 +42,7 @@ export class Meeple extends Actor {
   state: MeepleState;
   type: MeepleType;
   visitors: Set<Meeple>;
-  private follower: Actor | null = null;
+  private followers: Map<GoodType, Actor> = new Map();
 
   private lastUpdateTime: number = 0;
   private homePosition: Vector;
@@ -61,37 +81,74 @@ export class Meeple extends Actor {
   onInitialize(_engine: Game): void {
     // if (this.state.type !== MeepleStateType.Idle) return;
     
+    // Only create followers for miner and trader type meeples
+    // Followers will be created dynamically in onPreUpdate based on goods
+    if (this.type !== MeepleType.Miner && this.type !== MeepleType.Trader) return;
+  }
+
+  onPreKill(_scene: Scene): void {
+    // Clean up all followers when the meeple is removed
+    for (const follower of this.followers.values()) {
+      follower.kill();
+    }
+    this.followers.clear();
+  }
+
+  private updateFollowers(): void {
+    // Get all goods except Money
+    const goodsWithFollowers = Object.keys(this.goods).filter(
+      (good): good is GoodType => good !== Resources.Money
+    );
+
+    // Remove followers for goods that are now 0 or don't exist
+    for (const [good, follower] of this.followers.entries()) {
+      const quantity = this.goods[good] ?? 0;
+      if (quantity <= 0) {
+        follower.kill();
+        this.followers.delete(good);
+      }
+    }
+
+    // Create followers for goods > 0 that don't have followers yet
+    for (const good of goodsWithFollowers) {
+      const quantity = this.goods[good] ?? 0;
+      if (quantity > 0 && !this.followers.has(good)) {
+        this.createFollower(good);
+      }
+    }
+  }
+
+  private createFollower(good: GoodType): void {
+    // Calculate distance based on good type to spread followers around
+    const goodTypes = Object.keys(this.goods).filter(
+      (g): g is GoodType => g !== Resources.Money
+    );
+    const goodIndex = goodTypes.indexOf(good);
+    const baseDistance = 30;
+    const distance = baseDistance + (goodIndex * 5); // Slightly different distances
+
     // Create a tiny square follower
-    this.follower = new Actor({
+    const follower = new Actor({
       pos: this.pos.clone(),
       width: 4,
       height: 4,
     });
-    
-    // Create a small square graphic
+
+    // Create a small square graphic with color based on good type
     const square = new Rectangle({
       width: 4,
       height: 4,
-      color: Color.White,
+      color: getGoodColor(good),
     });
-    this.follower.graphics.add(square);
-    
-    // Initially hide the follower (will be shown when meeple has ore)
-    this.follower.graphics.visible = false;
-    
-    // Add follower to the scene
-    this.scene?.add(this.follower);
-    
-    // Make the follower follow this meeple at a distance of 30 pixels
-    this.follower.actions.follow(this, 30);
-  }
+    follower.graphics.add(square);
 
-  onPreKill(_scene: Scene): void {
-    // Clean up the follower when the meeple is removed
-    if (this.follower) {
-      this.follower.kill();
-      this.follower = null;
-    }
+    // Add follower to the scene
+    this.scene?.add(follower);
+
+    // Make the follower follow this meeple at a distance
+    follower.actions.follow(this, distance);
+    
+    this.followers.set(good, follower);
   }
 
   onPreUpdate(_engine: Game): void {
@@ -119,10 +176,9 @@ export class Meeple extends Actor {
       }
     }
 
-    // Show/hide follower based on whether meeple has ore
-    if (this.follower) {
-      const hasOre = (this.goods[Resources.Ore] ?? 0) > 0;
-      this.follower.graphics.visible = hasOre;
+    // Manage followers based on goods (excluding money)
+    if (this.type === MeepleType.Miner || this.type === MeepleType.Trader) {
+      this.updateFollowers();
     }
 
     if (!this.actions.getQueue().isComplete()) return;
