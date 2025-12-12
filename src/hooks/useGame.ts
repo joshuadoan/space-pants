@@ -15,12 +15,23 @@ import { DEFAULT_SHIP_SPEED } from "../consts";
 import type { Actor } from "excalibur";
 import { Meeple } from "../entities/Meeple";
 
+// ============================================================================
 // Constants
+// ============================================================================
+
+/** Width of the game world in pixels */
 const WORLD_WIDTH = 1000;
+
+/** Height of the game world in pixels */
 const WORLD_HEIGHT = 1000;
+
+/** Initial camera zoom level */
 const CAMERA_ZOOM = 2;
+
+/** Interval in milliseconds for updating the meeple list in React state */
 const MEEPLE_UPDATE_INTERVAL_MS = 300;
 
+/** Number of each entity type to spawn in the game world */
 const ENTITY_COUNTS = {
   TRADERS: 10,
   SPACE_STATIONS: 5,
@@ -30,33 +41,44 @@ const ENTITY_COUNTS = {
   SPACE_APARTMENTS: 3,
 } as const;
 
+/** Size range for randomly generated asteroids */
 const ASTEROID_SIZE_RANGE = {
   MIN: 15,
   MAX: 30,
 } as const;
 
+// ============================================================================
+// Types
+// ============================================================================
+
+/** Action to update the list of meeples in the game */
 type SetMeeplesAction = {
   type: "set-meeples";
   payload: Meeple[];
 };
 
+/** Action to update the loading state */
 type SetIsLoadingAction = {
   type: "set-is-loading";
   payload: boolean;
 };
 
+/** Action to set the game instance */
 type SetGameAction = {
   type: "set-game";
   payload: Game;
 };
 
+/** Action to zoom the camera to a specific entity */
 type ZoomToEntityAction = {
   type: "zoom-to-entity";
   payload: Meeple | null;
 };
 
-type GameAction =  SetMeeplesAction | SetIsLoadingAction | SetGameAction | ZoomToEntityAction;
+/** Union type of all possible game actions */
+type GameAction = SetMeeplesAction | SetIsLoadingAction | SetGameAction | ZoomToEntityAction;
 
+/** State shape for the game hook */
 type GameState = {
   game: Game | null;
   isLoading: boolean;
@@ -64,7 +86,10 @@ type GameState = {
   activeMeeple: Meeple | null;
 };
 
-// Initial state
+// ============================================================================
+// Initial State
+// ============================================================================
+
 const initialState: GameState = {
   game: null,
   isLoading: true,
@@ -72,7 +97,14 @@ const initialState: GameState = {
   activeMeeple: null,
 };
 
+// ============================================================================
 // Reducer
+// ============================================================================
+
+/**
+ * Reducer function to manage game state updates.
+ * Handles all game-related state changes in a predictable way.
+ */
 function gameReducer(state: GameState, action: GameAction): GameState {
   switch (action.type) {
     case "set-is-loading":
@@ -101,7 +133,14 @@ function gameReducer(state: GameState, action: GameAction): GameState {
   }
 }
 
-// Helper functions
+// ============================================================================
+// Helper Functions
+// ============================================================================
+
+/**
+ * Generates a random position within the game world bounds.
+ * @returns A Vector with random x and y coordinates
+ */
 function getRandomPosition(): Vector {
   return new Vector(
     Math.random() * WORLD_WIDTH,
@@ -109,6 +148,10 @@ function getRandomPosition(): Vector {
   );
 }
 
+/**
+ * Generates a random asteroid size within the configured range.
+ * @returns A random size value between MIN and MAX
+ */
 function getRandomAsteroidSize(): number {
   return (
     ASTEROID_SIZE_RANGE.MIN +
@@ -116,6 +159,10 @@ function getRandomAsteroidSize(): number {
   );
 }
 
+/**
+ * Creates and initializes the player character at the center of the world.
+ * The camera is locked to follow the player.
+ */
 function initializePlayer(game: Game): Player {
   const player = new Player(
     new Vector(WORLD_WIDTH / 2, WORLD_HEIGHT / 2),
@@ -127,6 +174,10 @@ function initializePlayer(game: Game): Player {
   return player;
 }
 
+/**
+ * Creates space stations at random positions in the world.
+ * Space stations convert ore into products and facilitate trading.
+ */
 function createSpaceStations(game: Game): void {
   for (let i = 0; i < ENTITY_COUNTS.SPACE_STATIONS; i++) {
     const spaceStation = new SpaceStation(
@@ -137,6 +188,10 @@ function createSpaceStations(game: Game): void {
   }
 }
 
+/**
+ * Creates asteroids at random positions with random sizes.
+ * Asteroids are sources of ore that miners can extract.
+ */
 function createAsteroids(game: Game): void {
   for (let i = 0; i < ENTITY_COUNTS.ASTEROIDS; i++) {
     const asteroid = new Asteroid(
@@ -147,6 +202,10 @@ function createAsteroids(game: Game): void {
   }
 }
 
+/**
+ * Creates miner entities that follow mining and trading rules.
+ * Miners extract ore from asteroids and trade it at space stations.
+ */
 function createMiners(game: Game): void {
   for (let i = 0; i < ENTITY_COUNTS.MINERS; i++) {
     const miner = new Miner(getRandomPosition(), 1, generateSpaceName());
@@ -155,6 +214,10 @@ function createMiners(game: Game): void {
   }
 }
 
+/**
+ * Creates trader entities that buy and sell products.
+ * Traders follow trading rules to move goods between stations.
+ */
 function createTraders(game: Game): void {
   for (let i = 0; i < ENTITY_COUNTS.TRADERS; i++) {
     const trader = new Trader(getRandomPosition(), 1, generateSpaceName());
@@ -163,6 +226,9 @@ function createTraders(game: Game): void {
   }
 }
 
+/**
+ * Creates space bars where entities can socialize and spend money.
+ */
 function createSpaceBars(game: Game): void {
   for (let i = 0; i < ENTITY_COUNTS.SPACE_BARS; i++) {
     const spaceBar = new SpaceBar(getRandomPosition(), generateSpaceName());
@@ -171,6 +237,9 @@ function createSpaceBars(game: Game): void {
   }
 }
 
+/**
+ * Creates space apartments in the game world.
+ */
 function createSpaceApartments(game: Game): void {
   for (let i = 0; i < ENTITY_COUNTS.SPACE_APARTMENTS; i++) {
     const spaceApartment = new SpaceApartments(
@@ -182,6 +251,10 @@ function createSpaceApartments(game: Game): void {
   }
 }
 
+/**
+ * Creates a single treasure collector entity.
+ * Treasure collectors buy treasure from other entities.
+ */
 function createTreasureCollector(game: Game): void {
   const treasureCollector = new TreasureCollector(
     getRandomPosition(),
@@ -192,6 +265,10 @@ function createTreasureCollector(game: Game): void {
   game.currentScene.add(treasureCollector);
 }
 
+/**
+ * Initializes all game entities in the correct order.
+ * This includes the player, background stars, and all NPC entities.
+ */
 function initializeGameEntities(game: Game): void {
   initializePlayer(game);
   addStars(game);
@@ -204,28 +281,121 @@ function initializeGameEntities(game: Game): void {
   createTreasureCollector(game);
 }
 
-function initializeGame(): Promise<Game> {
-  const game = new Game(WORLD_WIDTH, WORLD_HEIGHT);
-  game.currentScene.camera.zoom = CAMERA_ZOOM;
-  initializeGameEntities(game);
-  return game.start().then(() => game);
+// ============================================================================
+// Canvas Utilities
+// ============================================================================
+
+/**
+ * Configuration for waiting for the canvas element to appear in the DOM.
+ * This is necessary because React may not have rendered the canvas
+ * when the game initialization code runs, especially in production builds.
+ */
+const CANVAS_WAIT_CONFIG = {
+  /** Maximum number of retry attempts */
+  MAX_RETRIES: 100,
+  /** Delay between retries in milliseconds */
+  RETRY_DELAY_MS: 10,
+  /** Total maximum wait time: 100 * 10ms = 1000ms (1 second) */
+} as const;
+
+/**
+ * Waits for the canvas element to be available in the DOM.
+ * This handles the race condition where React hasn't rendered the canvas yet.
+ * 
+ * @param canvasId - The ID of the canvas element to wait for
+ * @returns A promise that resolves with the canvas element
+ * @throws {Error} If the canvas is not found after maximum retries
+ */
+function waitForCanvas(canvasId: string): Promise<HTMLCanvasElement> {
+  return new Promise((resolve, reject) => {
+    let retries = 0;
+
+    const checkCanvas = () => {
+      const canvas = document.getElementById(canvasId) as HTMLCanvasElement;
+
+      if (canvas) {
+        resolve(canvas);
+      } else if (retries < CANVAS_WAIT_CONFIG.MAX_RETRIES) {
+        retries++;
+        setTimeout(checkCanvas, CANVAS_WAIT_CONFIG.RETRY_DELAY_MS);
+      } else {
+        reject(
+          new Error(
+            `Canvas element '${canvasId}' not found after ${CANVAS_WAIT_CONFIG.MAX_RETRIES} retries. ` +
+            "Make sure the canvas is rendered in the DOM before initializing the game."
+          )
+        );
+      }
+    };
+
+    checkCanvas();
+  });
 }
 
-// Hook
+// ============================================================================
+// Game Initialization
+// ============================================================================
+
+/**
+ * Initializes the Excalibur game engine and all game entities.
+ * 
+ * This function:
+ * 1. Waits for the canvas element to be available in the DOM
+ * 2. Creates a new Game instance with the configured world size
+ * 3. Sets up the camera zoom
+ * 4. Initializes all game entities (player, NPCs, stations, etc.)
+ * 5. Starts the Excalibur game engine
+ * 
+ * @returns A promise that resolves with the initialized Game instance
+ * @throws {Error} If canvas is not found or game initialization fails
+ */
+function initializeGame(): Promise<Game> {
+  return waitForCanvas("game-canvas")
+    .then(() => {
+      // Canvas is now available, create and start the game
+      const game = new Game(WORLD_WIDTH, WORLD_HEIGHT);
+      game.currentScene.camera.zoom = CAMERA_ZOOM;
+      initializeGameEntities(game);
+      return game.start().then(() => game);
+    });
+}
+
+// ============================================================================
+// React Hook
+// ============================================================================
+
+/**
+ * Custom React hook that manages the game state and lifecycle.
+ * 
+ * This hook:
+ * - Initializes the Excalibur game engine on mount
+ * - Periodically updates the meeple list for React to render
+ * - Manages camera zoom to specific entities
+ * - Provides a function to zoom to any meeple
+ * 
+ * @returns Game state and utility functions
+ */
 export const useGame = () => {
   const [gameState, dispatch] = useReducer(gameReducer, initialState);
   const gameRef = useRef<Game | null>(null);
 
-  // Initialize game on mount
+  // Initialize the game engine when the component mounts
   useEffect(() => {
-    initializeGame().then((game) => {
-      gameRef.current = game;
-      dispatch({ type: "set-game", payload: game });
-      dispatch({ type: "set-is-loading", payload: false });
-    });
+    initializeGame()
+      .then((game) => {
+        gameRef.current = game;
+        dispatch({ type: "set-game", payload: game });
+        dispatch({ type: "set-is-loading", payload: false });
+        console.log("Game initialized successfully");
+      })
+      .catch((error) => {
+        console.error("Failed to initialize game:", error);
+        dispatch({ type: "set-is-loading", payload: false });
+      });
   }, []);
 
-  // Update meeples periodically
+  // Periodically update the meeple list from the game scene
+  // This allows React to re-render when entities are added/removed
   useEffect(() => {
     const interval = setInterval(() => {
       if (gameRef.current) {
@@ -239,14 +409,19 @@ export const useGame = () => {
     return () => clearInterval(interval);
   }, []);
 
+  // Update camera to follow the active meeple when it changes
   useEffect(() => {
-    if (gameState.activeMeeple) {
-      gameRef.current?.currentScene.camera.strategy.lockToActor(gameState.activeMeeple);
+    if (gameState.activeMeeple && gameRef.current) {
+      gameRef.current.currentScene.camera.strategy.lockToActor(gameState.activeMeeple);
     }
   }, [gameState.activeMeeple]);
 
   return {
     ...gameState,
+    /**
+     * Zooms the camera to follow a specific meeple entity.
+     * @param meeple - The meeple entity to zoom to
+     */
     zoomToEntity: (meeple: Meeple) => {
       dispatch({ type: "zoom-to-entity", payload: meeple });
     },

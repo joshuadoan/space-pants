@@ -28,8 +28,6 @@ export function useKeyboardControls(
       return;
     }
 
-    console.log("player", player);
-
     // Track which keys are currently pressed
     const keysPressed = new Set<Keys>();
 
