@@ -2,6 +2,8 @@
 
 A real-time space economy simulation game built with React, TypeScript, and Excalibur.js. Watch autonomous entities mine, trade, socialize, and interact in a dynamic space economy with customizable behavior rules.
 
+![Zight Recording 2025-12-12 at 08 25 38 AM](https://github.com/user-attachments/assets/4c30ae58-b49b-43ea-af79-4fd282f5a193)
+
 ## 🚀 Features
 
 ### Core Gameplay
