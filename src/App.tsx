@@ -7,7 +7,7 @@ import { useGame } from "./hooks/useGame";
 import { Tabs } from "./components/Tabs";
 
 import { Asteroid } from "./entities/Asteroid";
-import { Meeple } from "./entities/Meeple";
+// import { Meeple } from "./entities/Meeple";
 import { Miner } from "./entities/Miner";
 import { Player } from "./entities/Player";
 import { SpaceBar } from "./entities/SpaceBar";
@@ -182,7 +182,7 @@ function App() {
             </div>
           )}
         </nav>
-        <div className="flex-1 min-w-0 min-h-0">
+        <div className="flex-1">
           <canvas id="game-canvas" className="w-full h-full" />
         </div>
       </div>

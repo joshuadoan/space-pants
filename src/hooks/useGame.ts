@@ -45,12 +45,17 @@ type SetIsLoadingAction = {
   payload: boolean;
 };
 
+type SetGameAction = {
+  type: "set-game";
+  payload: Game;
+};
+
 type ZoomToEntityAction = {
   type: "zoom-to-entity";
   payload: Meeple | null;
 };
 
-type GameAction =  SetMeeplesAction | SetIsLoadingAction | ZoomToEntityAction;
+type GameAction =  SetMeeplesAction | SetIsLoadingAction | SetGameAction | ZoomToEntityAction;
 
 type GameState = {
   game: Game | null;
@@ -74,6 +79,11 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       return {
         ...state,
         isLoading: action.payload,
+      };
+    case "set-game":
+      return {
+        ...state,
+        game: action.payload,
       };
     case "set-meeples":
       return {
@@ -210,6 +220,7 @@ export const useGame = () => {
   useEffect(() => {
     initializeGame().then((game) => {
       gameRef.current = game;
+      dispatch({ type: "set-game", payload: game });
       dispatch({ type: "set-is-loading", payload: false });
     });
   }, []);
