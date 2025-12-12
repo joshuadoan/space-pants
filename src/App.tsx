@@ -37,32 +37,25 @@ type SetActiveTabAction = {
   payload: TabType;
 };
 
-type ZoomToEntityAction = {
-  type: "zoom-to-entity";
-  payload: Meeple | null;
-};
-
 type SetReadmeContentAction = {
   type: "set-readme-content";
   payload: string;
 };
 
-type Action = SetActiveTabAction | ZoomToEntityAction | SetReadmeContentAction;
+type Action = SetActiveTabAction | SetReadmeContentAction;
 
 type State = {
   activeTab: TabType;
-  activeEntity: Meeple | null;
   readmeContent: string;
 };
 
 const initialState: State = {
   activeTab: "player",
-  activeEntity: null,
   readmeContent: "",
 };
 
 function App() {
-  const { game, meeples } = useGame();
+  const { game, meeples, zoomToEntity, activeMeeple} = useGame();
 
   const [state, dispatch] = useReducer((state: State, action: Action) => {
     switch (action.type) {
@@ -70,12 +63,6 @@ function App() {
         return {
           ...state,
           activeTab: action.payload,
-        };
-      }
-      case "zoom-to-entity": {
-        return {
-          ...state,
-          activeEntity: action?.payload || null,
         };
       }
       case "set-readme-content": {
@@ -91,11 +78,6 @@ function App() {
     }
   }, initialState);
 
-  useEffect(() => {
-    if (state.activeEntity) {
-      game?.currentScene.camera.strategy.lockToActor(state.activeEntity);
-    }
-  }, [state.activeEntity]);
 
   async function getReadmeMarkdownFromFile() {
     try {
@@ -115,18 +97,6 @@ function App() {
       );
     }
   }, [state.activeTab, state.readmeContent]);
-
-  // Auto-select first player when on player tab and no entity is selected
-  useEffect(() => {
-    if (state.activeTab === "player" && !state.activeEntity) {
-      const players = meeples.filter(
-        (meeple) => meeple instanceof Player
-      );
-      if (players.length > 0) {
-        dispatch({ type: "zoom-to-entity", payload: players[0] });
-      }
-    }
-  }, [state.activeTab, state.activeEntity, meeples]);
 
   const { avgFps, maxFps, currentFps } = useFps(20);
 
@@ -188,7 +158,7 @@ function App() {
             <div
               key={index}
               className={`card bg-base-100 shadow-md hover:shadow-lg transition-all duration-200 border rounded-lg p-4 m-2 ${
-                state.activeEntity?.id === entity.id
+                activeMeeple?.id === entity.id
                   ? "border-primary border-2"
                   : "border-base-300"
               }`}
@@ -196,9 +166,9 @@ function App() {
               <MeepleCard
                 meeple={entity}
                 onMeepleNameClick={() =>
-                  dispatch({ type: "zoom-to-entity", payload: entity })
+                  zoomToEntity(entity)
                 }
-                activeEntity={state.activeEntity}
+                activeEntity={activeMeeple}
               />
             </div>
           ))}

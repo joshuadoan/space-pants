@@ -15,187 +15,229 @@ import { DEFAULT_SHIP_SPEED } from "../consts";
 import type { Actor } from "excalibur";
 import { Meeple } from "../entities/Meeple";
 
+// Constants
 const WORLD_WIDTH = 1000;
 const WORLD_HEIGHT = 1000;
-const NUMBER_OF_TRADERS = 10;
-const NUMBER_OF_SPACE_STATIONS = 5;
-const NUMBER_OF_ASTEROIDS = 5;
-const NUMBER_OF_MINERS = 10;
-const NUMBER_OF_SPACE_BARS = 3;
-const NUMBER_OF_SPACE_APARTMENTS = 3;
+const CAMERA_ZOOM = 2;
+const MEEPLE_UPDATE_INTERVAL_MS = 300;
 
-type SetGameAction = {
-  type: "set-game";
-  payload: Game;
-};
+const ENTITY_COUNTS = {
+  TRADERS: 10,
+  SPACE_STATIONS: 5,
+  ASTEROIDS: 5,
+  MINERS: 10,
+  SPACE_BARS: 3,
+  SPACE_APARTMENTS: 3,
+} as const;
+
+const ASTEROID_SIZE_RANGE = {
+  MIN: 15,
+  MAX: 30,
+} as const;
 
 type SetMeeplesAction = {
   type: "set-meeples";
   payload: Meeple[];
 };
 
-type GameAction = SetGameAction | SetMeeplesAction;
+type SetIsLoadingAction = {
+  type: "set-is-loading";
+  payload: boolean;
+};
+
+type ZoomToEntityAction = {
+  type: "zoom-to-entity";
+  payload: Meeple | null;
+};
+
+type GameAction =  SetMeeplesAction | SetIsLoadingAction | ZoomToEntityAction;
 
 type GameState = {
   game: Game | null;
   isLoading: boolean;
   meeples: Meeple[];
+  activeMeeple: Meeple | null;
 };
 
+// Initial state
 const initialState: GameState = {
   game: null,
   isLoading: true,
   meeples: [],
+  activeMeeple: null,
 };
 
+// Reducer
 function gameReducer(state: GameState, action: GameAction): GameState {
   switch (action.type) {
-    case "set-game": {
+    case "set-is-loading":
       return {
         ...state,
-        game: action.payload,
-        isLoading: false,
+        isLoading: action.payload,
       };
-    }
-    case "set-meeples": {
+    case "set-meeples":
       return {
         ...state,
         meeples: action.payload,
+      };
+    case "zoom-to-entity": {
+      return {
+        ...state,
+        activeMeeple: action.payload,
       };
     }
     default:
       return state;
   }
 }
+
+// Helper functions
+function getRandomPosition(): Vector {
+  return new Vector(
+    Math.random() * WORLD_WIDTH,
+    Math.random() * WORLD_HEIGHT
+  );
+}
+
+function getRandomAsteroidSize(): number {
+  return (
+    ASTEROID_SIZE_RANGE.MIN +
+    Math.random() * (ASTEROID_SIZE_RANGE.MAX - ASTEROID_SIZE_RANGE.MIN)
+  );
+}
+
+function initializePlayer(game: Game): Player {
+  const player = new Player(
+    new Vector(WORLD_WIDTH / 2, WORLD_HEIGHT / 2),
+    DEFAULT_SHIP_SPEED,
+    "Player"
+  );
+  game.currentScene.add(player);
+  game.currentScene.camera.strategy.lockToActor(player);
+  return player;
+}
+
+function createSpaceStations(game: Game): void {
+  for (let i = 0; i < ENTITY_COUNTS.SPACE_STATIONS; i++) {
+    const spaceStation = new SpaceStation(
+      getRandomPosition(),
+      generateSpaceName()
+    );
+    game.currentScene.add(spaceStation);
+  }
+}
+
+function createAsteroids(game: Game): void {
+  for (let i = 0; i < ENTITY_COUNTS.ASTEROIDS; i++) {
+    const asteroid = new Asteroid(
+      getRandomPosition(),
+      getRandomAsteroidSize()
+    );
+    game.currentScene.add(asteroid);
+  }
+}
+
+function createMiners(game: Game): void {
+  for (let i = 0; i < ENTITY_COUNTS.MINERS; i++) {
+    const miner = new Miner(getRandomPosition(), 1, generateSpaceName());
+    miner.name = generateSpaceName();
+    game.currentScene.add(miner);
+  }
+}
+
+function createTraders(game: Game): void {
+  for (let i = 0; i < ENTITY_COUNTS.TRADERS; i++) {
+    const trader = new Trader(getRandomPosition(), 1, generateSpaceName());
+    trader.name = generateSpaceName();
+    game.currentScene.add(trader);
+  }
+}
+
+function createSpaceBars(game: Game): void {
+  for (let i = 0; i < ENTITY_COUNTS.SPACE_BARS; i++) {
+    const spaceBar = new SpaceBar(getRandomPosition(), generateSpaceName());
+    spaceBar.name = generateSpaceName();
+    game.currentScene.add(spaceBar);
+  }
+}
+
+function createSpaceApartments(game: Game): void {
+  for (let i = 0; i < ENTITY_COUNTS.SPACE_APARTMENTS; i++) {
+    const spaceApartment = new SpaceApartments(
+      getRandomPosition(),
+      generateSpaceName()
+    );
+    spaceApartment.name = generateSpaceName();
+    game.currentScene.add(spaceApartment);
+  }
+}
+
+function createTreasureCollector(game: Game): void {
+  const treasureCollector = new TreasureCollector(
+    getRandomPosition(),
+    1,
+    generateSpaceName()
+  );
+  treasureCollector.name = generateSpaceName();
+  game.currentScene.add(treasureCollector);
+}
+
+function initializeGameEntities(game: Game): void {
+  initializePlayer(game);
+  addStars(game);
+  createSpaceStations(game);
+  createAsteroids(game);
+  createMiners(game);
+  createTraders(game);
+  createSpaceBars(game);
+  createSpaceApartments(game);
+  createTreasureCollector(game);
+}
+
+function initializeGame(): Promise<Game> {
+  const game = new Game(WORLD_WIDTH, WORLD_HEIGHT);
+  game.currentScene.camera.zoom = CAMERA_ZOOM;
+  initializeGameEntities(game);
+  return game.start().then(() => game);
+}
+
+// Hook
 export const useGame = () => {
-  //   const [game, setGame] = useState<Game | null>(null);
   const [gameState, dispatch] = useReducer(gameReducer, initialState);
   const gameRef = useRef<Game | null>(null);
 
+  // Initialize game on mount
   useEffect(() => {
-    const game = new Game(WORLD_WIDTH, WORLD_HEIGHT);
-
-    const cameraZoom = 2; // Zoom in 5x - shows 1/5th of the world
-    game.currentScene.camera.zoom = cameraZoom;
-    //Create player
-    const playerSpeed = DEFAULT_SHIP_SPEED;
-    const player = new Player(
-      new Vector(WORLD_WIDTH / 2, WORLD_HEIGHT / 2),
-      playerSpeed,
-      "Player"
-    );
-
-    game.currentScene.add(player);
-
-    // Make camera follow the player
-    game.currentScene.camera.strategy.lockToActor(player);
-    addStars(game);
-
-    // seed 10 randsom space stations
-    for (let i = 0; i < NUMBER_OF_SPACE_STATIONS; i++) {
-      const spaceStation = new SpaceStation(
-        new Vector(Math.random() * WORLD_WIDTH, Math.random() * WORLD_HEIGHT),
-        generateSpaceName()
-      );
-      game.currentScene.add(spaceStation);
-    }
-
-    // seed 20 asteroids at random spots
-    for (let i = 0; i < NUMBER_OF_ASTEROIDS; i++) {
-      const asteroid = new Asteroid(
-        new Vector(Math.random() * WORLD_WIDTH, Math.random() * WORLD_HEIGHT),
-        15 + Math.random() * 15 // Random size between 15 and 30
-      );
-      game.currentScene.add(asteroid);
-    }
-
-    // create miners
-    for (let i = 0; i < NUMBER_OF_MINERS; i++) {
-      const miner = new Miner(
-        new Vector(Math.random() * WORLD_WIDTH, Math.random() * WORLD_HEIGHT),
-        1,
-        generateSpaceName()
-      );
-      miner.name = generateSpaceName();
-
-      game.currentScene.add(miner);
-    }
-
-    // create 20 space meeples and seed random positions
-    for (let i = 0; i < NUMBER_OF_TRADERS; i++) {
-      const meeple = new Trader(
-        new Vector(Math.random() * WORLD_WIDTH, Math.random() * WORLD_HEIGHT),
-        1,
-        generateSpaceName()
-      );
-      meeple.name = generateSpaceName();
-
-      game.currentScene.add(meeple);
-    }
-
-    // create 10 space bars at random positions
-    for (let i = 0; i < NUMBER_OF_SPACE_BARS; i++) {
-      const spaceBar = new SpaceBar(
-        new Vector(Math.random() * WORLD_WIDTH, Math.random() * WORLD_HEIGHT),
-        generateSpaceName()
-      );
-      spaceBar.name = generateSpaceName();
-
-      game.currentScene.add(spaceBar);
-    }
-
-    // create 10 space apartments at random positions
-    for (let i = 0; i < NUMBER_OF_SPACE_APARTMENTS; i++) {
-      const spaceApartment = new SpaceApartments(
-        new Vector(Math.random() * WORLD_WIDTH, Math.random() * WORLD_HEIGHT),
-        generateSpaceName()
-      );
-      spaceApartment.name = generateSpaceName();
-
-      game.currentScene.add(spaceApartment);
-    }
-
-    // create 1 treasure collector at random position
-    const treasureCollector = new TreasureCollector(
-      new Vector(Math.random() * WORLD_WIDTH, Math.random() * WORLD_HEIGHT),
-      1,
-      generateSpaceName()
-    );
-    treasureCollector.name = generateSpaceName();
-
-    game.currentScene.add(treasureCollector);
-
-    game.start().then(() => {
-      dispatch({ type: "set-game", payload: game });
+    initializeGame().then((game) => {
+      gameRef.current = game;
+      dispatch({ type: "set-is-loading", payload: false });
     });
   }, []);
 
-  // Update gameRef when game changes
+  // Update meeples periodically
   useEffect(() => {
-    gameRef.current = gameState.game;
-  }, [gameState.game]);
-
-  // Start entities interval only after game has started
-  useEffect(() => {
-    if (!gameState.game || gameState.isLoading) {
-      return;
-    }
-
     const interval = setInterval(() => {
       if (gameRef.current) {
-        const actors = gameRef.current.currentScene.actors;
-        const meeples = actors.filter(
+        const meeples = gameRef.current.currentScene.actors.filter(
           (actor: Actor) => actor instanceof Meeple
-        );
+        ) as Meeple[];
         dispatch({ type: "set-meeples", payload: meeples });
       }
-    }, 300);
+    }, MEEPLE_UPDATE_INTERVAL_MS);
 
     return () => clearInterval(interval);
-  }, [gameState.game, gameState.isLoading]);
+  }, []);
+
+  useEffect(() => {
+    if (gameState.activeMeeple) {
+      gameRef.current?.currentScene.camera.strategy.lockToActor(gameState.activeMeeple);
+    }
+  }, [gameState.activeMeeple]);
 
   return {
     ...gameState,
-    meeples: gameState.meeples,
+    zoomToEntity: (meeple: Meeple) => {
+      dispatch({ type: "zoom-to-entity", payload: meeple });
+    },
   };
 };
