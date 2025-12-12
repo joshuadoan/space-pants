@@ -1,6 +1,13 @@
-import { Resources, ComparisonOperator, LogicRuleActionType, type LogicRule } from "./types";
+import { Resources, MeepleStats, ComparisonOperator, LogicRuleActionType, type LogicRule } from "./types";
 
 export const TRADER_RULES: LogicRule[] = [
+  {
+    id: "go-home-if-health-low",
+    good: MeepleStats.Health,
+    operator: ComparisonOperator.LessThanOrEqual,
+    value: 0,
+    action: LogicRuleActionType.ChillAtHome,
+  },
   {
     id: "go-shopping",
     good: Resources.Money,

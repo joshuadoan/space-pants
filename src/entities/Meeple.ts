@@ -1,6 +1,6 @@
 import { Actor, Scene, Vector, Rectangle } from "excalibur";
 import { createSpaceShipOutOfShapes } from "./utils/createSpaceShipOutOfShapes";
-import { MeepleStats, Resources, type Goods, type GoodType } from "./types";
+import { MeepleStats, Resources, Products, type Goods, type GoodType } from "./types";
 import type { Game } from "./Game";
 import {
   LogicRuleActionType,
@@ -46,6 +46,10 @@ export class Meeple extends Actor {
       [MeepleStats.Health]: 100,
       [MeepleStats.Energy]: 100,
     };
+    // Initialize all products to 0
+    Object.values(Products).forEach((product) => {
+      this.goods[product] = 0;
+    });
     this.rules = [];
     const meepleDesign = createSpaceShipOutOfShapes();
     this.graphics.add(meepleDesign);
@@ -192,6 +196,9 @@ export class Meeple extends Actor {
       case LogicRuleActionType.SellTreasure:
         this.executeSellTreasure();
         break;
+      case LogicRuleActionType.ChillAtHome:
+        this.executeChillingAtHome();
+        break;
     }
   }
 
@@ -225,6 +232,16 @@ export class Meeple extends Actor {
     this.visitTarget(spaceBar, MeepleStateType.Socializing, () => {
       this.transact("remove", Resources.Money, moneyAmount);
       spaceBar.transact("add", Resources.Money, moneyAmount);
+      this.goods[MeepleStats.Health] = 0;
+    }, 5000);
+  }
+
+  private executeChillingAtHome(): void {
+    const spaceApartments = this.getRandomSpaceApartments();
+    if (!spaceApartments) return;
+
+    this.visitTarget(spaceApartments, MeepleStateType.Chilling, () => {
+      this.goods[MeepleStats.Health] = 100;
     }, 3000);
   }
 
@@ -370,6 +387,18 @@ export class Meeple extends Actor {
     );
     return (
       spaceBars?.[Math.floor(Math.random() * spaceBars.length)] ?? undefined
+    );
+  }
+
+  getRandomSpaceApartments(): Meeple | undefined {
+    const meeples = this.scene?.actors.filter(
+      (a: Actor) => a instanceof Meeple
+    );
+    const spaceApartments = meeples?.filter(
+      (meeple: Meeple) => meeple.type === MeepleType.SpaceApartments && meeple !== this
+    );
+    return (
+      spaceApartments?.[Math.floor(Math.random() * spaceApartments.length)] ?? undefined
     );
   }
 

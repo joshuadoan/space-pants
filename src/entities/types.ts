@@ -113,4 +113,5 @@ export enum LogicRuleActionType {
   GoShopping = "Go Shopping",
   GoSelling = "Go Selling",
   SellTreasure = "Sell Treasure",
+  ChillAtHome = "Chill At Home",
 }

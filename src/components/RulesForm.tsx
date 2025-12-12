@@ -4,6 +4,8 @@ import {
   LogicRuleActionType,
   type LogicRule,
   Resources,
+  Products,
+  MeepleStats,
 } from "../entities/types";
 import { TRADER_RULES, MINER_RULES } from "../entities/ruleTemplates";
 import { useToast } from "./Toast";
@@ -117,11 +119,27 @@ function DraggableRuleItem({
               <option disabled={true} value="">
                 Pick a good
               </option>
-              {Object.values(Resources).map((good) => (
-                <option key={good} value={good}>
-                  {good}
-                </option>
-              ))}
+              <optgroup label="Resources">
+                {Object.values(Resources).map((good) => (
+                  <option key={good} value={good}>
+                    {good}
+                  </option>
+                ))}
+              </optgroup>
+              <optgroup label="Products">
+                {Object.values(Products).map((good) => (
+                  <option key={good} value={good}>
+                    {good}
+                  </option>
+                ))}
+              </optgroup>
+              <optgroup label="Stats">
+                {Object.values(MeepleStats).map((good) => (
+                  <option key={good} value={good}>
+                    {good}
+                  </option>
+                ))}
+              </optgroup>
             </select>
           </div>
           <div className="flex-1">
@@ -317,7 +335,7 @@ export function RulesForm({
         </button>
         {!isExpanded && (
           <div className="bg-base-200/50 rounded-lg px-3 py-2 flex items-center gap-2 text-xs text-base-content/80 flex-1">
-            <IconMoodSmile size={16} className="text-primary flex-shrink-0" />
+            <IconMoodSmile size={16} className="text-primary shrink-0" />
             <span>
               Click to expand and customize your AI rules! <IconChevronDown size={14} className="inline text-primary" />
             </span>
@@ -342,19 +360,19 @@ export function RulesForm({
                 </p>
                 <div className="space-y-1.5 pl-2 border-l-2 border-primary/30">
                   <div className="flex items-start gap-2">
-                    <IconGripVertical size={14} className="text-base-content/50 mt-0.5 flex-shrink-0" />
+                    <IconGripVertical size={14} className="text-base-content/50 mt-0.5 shrink-0" />
                     <span>Drag the <span className="font-semibold">≡</span> icon to reorder rules (they run in order!)</span>
                   </div>
                   <div className="flex items-start gap-2">
-                    <IconPlus size={14} className="text-secondary mt-0.5 flex-shrink-0" />
+                    <IconPlus size={14} className="text-secondary mt-0.5 shrink-0" />
                     <span>Click <span className="font-semibold">"Add New Rule"</span> to create more rules</span>
                   </div>
                   <div className="flex items-start gap-2">
-                    <IconTrash size={14} className="text-error mt-0.5 flex-shrink-0" />
+                    <IconTrash size={14} className="text-error mt-0.5 shrink-0" />
                     <span>Click <span className="font-semibold">"Delete"</span> on any rule to remove it</span>
                   </div>
                   <div className="flex items-start gap-2">
-                    <IconDeviceFloppy size={14} className="text-success mt-0.5 flex-shrink-0" />
+                    <IconDeviceFloppy size={14} className="text-success mt-0.5 shrink-0" />
                     <span>Don't forget to <span className="font-semibold">"Save Rules"</span> when you're done!</span>
                   </div>
                 </div>
