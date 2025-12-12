@@ -1,5 +1,4 @@
-import { Resources } from "../types";
-import { ComparisonOperator, LogicRuleActionType, type LogicRule } from "./types";
+import { Resources, ComparisonOperator, LogicRuleActionType, type LogicRule } from "./types";
 
 export const TRADER_RULES: LogicRule[] = [
   {

@@ -1,7 +1,6 @@
 import { Actor, Scene, Vector, Rectangle } from "excalibur";
 import { createSpaceShipOutOfShapes } from "./utils/createSpaceShipOutOfShapes";
-import { Resources, type Goods } from "../types";
-import type { GoodType } from "../types";
+import { MeepleStats, Resources, type Goods, type GoodType } from "./types";
 import type { Game } from "./Game";
 import {
   LogicRuleActionType,
@@ -12,8 +11,6 @@ import {
 } from "./types";
 import { getGoodColor, getGoodWithMostAmount } from "../utils/goodsUtils";
 import { evaluateRule } from "../utils/ruleUtils";
-
-const MAX_ACIONS_BEFORE_GOING_HOME = 10;
 
 export class Meeple extends Actor {
   speed: number;
@@ -26,8 +23,6 @@ export class Meeple extends Actor {
   private followers: Map<GoodType, Actor> = new Map();
 
   private lastUpdateTime: number = 0;
-  private homePosition: Vector;
-  private actionCount: number = 0;
 
   constructor(
     position: Vector,
@@ -48,6 +43,8 @@ export class Meeple extends Actor {
       [Resources.Ore]: 0,
       [Resources.Money]: 0,
       [Resources.Treasure]: 0,
+      [MeepleStats.Health]: 100,
+      [MeepleStats.Energy]: 100,
     };
     this.rules = [];
     const meepleDesign = createSpaceShipOutOfShapes();
@@ -57,8 +54,6 @@ export class Meeple extends Actor {
     };
     this.type = this.constructor.name as MeepleType;
     this.visitors = new Set();
-    this.homePosition = position.clone();
-    this.actionCount = 0;
   }
   onInitialize(_engine: Game): void {
     // if (this.state.type !== MeepleStateType.Idle) return;
@@ -169,12 +164,6 @@ export class Meeple extends Actor {
     if (currentTime - this.lastUpdateTime < 1000) return;
     this.lastUpdateTime = currentTime;
 
-    // Check if meeple needs to go home
-    if (this.actionCount >= MAX_ACIONS_BEFORE_GOING_HOME) {
-      this.goHome();
-      return;
-    }
-
     for (const rule of this.rules) {
       if (evaluateRule(rule, this.goods[rule.good] ?? 0)) {
         this.executeRuleAction(rule.action);
@@ -210,7 +199,6 @@ export class Meeple extends Actor {
     const asteroid = this.getRandomAsteroid();
     if (!asteroid) return;
 
-    this.actionCount++;
     this.visitTarget(asteroid, MeepleStateType.Mining, () => {
       this.transact("add", Resources.Ore, 10);
       asteroid.transact("remove", Resources.Ore, 10);
@@ -221,7 +209,6 @@ export class Meeple extends Actor {
     const station = this.getRandomStation();
     if (!station) return;
 
-    this.actionCount++;
     this.visitTarget(station, MeepleStateType.Trading, () => {
       this.transact("remove", Resources.Ore, 10);
       this.transact("add", Resources.Money, 10);
@@ -234,7 +221,6 @@ export class Meeple extends Actor {
     const spaceBar = this.getRandomSpaceBar();
     if (!spaceBar) return;
 
-    this.actionCount++;
     const moneyAmount = this.goods[Resources.Money] ?? 0;
     this.visitTarget(spaceBar, MeepleStateType.Socializing, () => {
       this.transact("remove", Resources.Money, moneyAmount);
@@ -270,7 +256,6 @@ export class Meeple extends Actor {
     const station = this.getRandomStation();
     if (!station) return;
 
-    this.actionCount++;
     this.visitTarget(station, MeepleStateType.Trading, () => {
       const good = getGoodWithMostAmount(station.goods);
       if (good && station.goods[good] && station.goods[good] >= 1) {
@@ -286,7 +271,6 @@ export class Meeple extends Actor {
     const station = this.getRandomStation();
     if (!station) return;
 
-    this.actionCount++;
     this.visitTarget(station, MeepleStateType.Trading, () => {
       const goods = Object.keys(this.goods).filter(
         (good): good is GoodType =>
@@ -311,7 +295,6 @@ export class Meeple extends Actor {
     const treasureAmount = this.goods[Resources.Treasure] ?? 0;
     if (treasureAmount <= 0) return;
 
-    this.actionCount++;
     this.visitTarget(treasureCollector, MeepleStateType.Trading, () => {
       this.transact("remove", Resources.Treasure, 1);
       this.transact("add", Resources.Money, 100);
@@ -350,26 +333,6 @@ export class Meeple extends Actor {
         };
       });
   }
-
-  private goHome(): void {
-    this.actions
-      .callMethod(() => {
-        // Use 'this' as target for state type compatibility (not actually used)
-        this.state = {
-          type: MeepleStateType.Traveling,
-          target: this,
-        };
-      })
-      .moveTo(this.homePosition, this.speed)
-      .delay(10000) // Wait 10 seconds at home
-      .callMethod(() => {
-        this.actionCount = 0; // Reset action counter
-        this.state = {
-          type: MeepleStateType.Idle,
-        };
-      });
-  }
-
 
   getRandomVisitor(): Meeple | undefined {
     const visitors = Array.from(this.visitors);

@@ -1,5 +1,29 @@
-import type { GoodType } from "../types";
 import type { Meeple } from "./Meeple";
+
+export enum Products {
+    Gruffle = "gruffle",
+    Druffle = "druffle",
+    Klintzpaw = "klintzpaw",
+    Grogin = "grogin",
+    Fizz = "fizz",
+}
+
+export enum Resources {
+    Ore = "ore",
+    Money = "money",
+    Treasure = "treasure",
+}
+
+export enum MeepleStats {
+  Health = "health",
+  Energy = "energy",
+}
+
+
+
+export type GoodType = Products | Resources | MeepleStats;
+export type Goods = Record<Products | Resources | MeepleStats, number>;
+
 
 export enum MeepleType {
   Miner = "Miner",

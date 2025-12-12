@@ -3,8 +3,8 @@ import {
   ComparisonOperator,
   LogicRuleActionType,
   type LogicRule,
+  Resources,
 } from "../entities/types";
-import { Resources } from "../types";
 import { TRADER_RULES, MINER_RULES } from "../entities/ruleTemplates";
 import { useToast } from "./Toast";
 import { DndProvider, useDrag, useDrop } from "react-dnd";

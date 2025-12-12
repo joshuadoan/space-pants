@@ -1,4 +1,4 @@
-import { Products, Resources, type GoodType } from "../types";
+import { Products, Resources, type GoodType } from "../entities/types";
 import {
   IconCurrencyDollar,
   IconPick,

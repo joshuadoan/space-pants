@@ -1,4 +1,4 @@
-import { Resources } from "../types";
+import { Resources } from "./types";
 import type { Vector } from "excalibur";
 import { Meeple } from "./Meeple";
 import { TRADER_RULES } from "./ruleTemplates";

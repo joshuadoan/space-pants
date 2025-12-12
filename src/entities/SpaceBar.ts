@@ -1,6 +1,6 @@
 import { Vector, Rectangle, GraphicsGroup, Color } from "excalibur";
 import { Meeple } from "./Meeple";
-import { Products, Resources, type GoodType } from "../types";
+import { Products, Resources, type GoodType } from "./types";
 
 import { MeepleStateType } from "./types";
 import type { Game } from "./Game";

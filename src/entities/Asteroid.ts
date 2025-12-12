@@ -1,6 +1,6 @@
 import { Color, Polygon, Vector } from "excalibur";
 import { Meeple } from "./Meeple";
-import { Resources } from "../types";
+import { Resources } from "./types";
 import type { Game } from "./Game";
 import { MeepleStateType } from "./types";
 

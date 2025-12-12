@@ -1,6 +1,5 @@
 import { Vector, Rectangle, GraphicsGroup, Color } from "excalibur";
 import { Meeple } from "./Meeple";
-import { Resources } from "../types";
 
 const MAX_CAPACITY = 5; // Maximum number of visitors at once
 
@@ -10,13 +9,6 @@ export class SpaceApartments extends Meeple {
   constructor(position: Vector, name: string) {
     // Call super with position, speed (0 for stationary apartments), name, and size
     super(position, 0, name, 50, 40);
-
-    // Start with zero goods
-    this.goods = {
-      [Resources.Ore]: 0,
-      [Resources.Money]: 0,
-      [Resources.Treasure]: 0,
-    };
 
     // Create an apartment building design
     const apartmentDesign = this.createApartmentDesign();

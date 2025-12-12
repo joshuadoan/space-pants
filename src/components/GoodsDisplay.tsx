@@ -1,5 +1,5 @@
-import type { Goods, GoodType } from "../types";
-import { Resources } from "../types";
+import type { Goods, GoodType } from "../entities/types";
+import { Resources } from "../entities/types";
 import { getGoodMetadata, getGoodIcon, getGoodLabel } from "../utils/goodsMetadata";
 import { IconMailOff } from "@tabler/icons-react";
 
