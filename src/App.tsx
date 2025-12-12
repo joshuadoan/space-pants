@@ -217,8 +217,8 @@ function App() {
             </div>
           )}
         </nav>
-        <div className="flex-1">
-          <canvas id="game-canvas" />
+        <div className="flex-1 min-w-0 min-h-0">
+          <canvas id="game-canvas" className="w-full h-full" />
         </div>
       </div>
       <div className="absolute bottom-2 right-2 text-sm text-white">
