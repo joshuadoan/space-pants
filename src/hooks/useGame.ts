@@ -2,7 +2,7 @@ import { useEffect, useReducer, useRef } from "react";
 import { Game } from "../entities/Game";
 import { Player } from "../entities/Player";
 import { Vector } from "excalibur";
-import { addStars } from "../utils/addStars";
+import { createStarTilemap } from "../utils/createStarTilemap";
 import { SpaceStation } from "../entities/SpaceStation";
 import { Trader } from "../entities/Trader";
 import { Asteroid } from "../entities/Asteroid";
@@ -271,7 +271,7 @@ function createTreasureCollector(game: Game): void {
  */
 function initializeGameEntities(game: Game): void {
   initializePlayer(game);
-  // addStars(game);
+  createStarTilemap(game);
   createSpaceStations(game);
   createAsteroids(game);
   createMiners(game);
