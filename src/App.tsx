@@ -30,6 +30,7 @@ import "./App.css";
 import { MeepleCard } from "./components/MeepleCard";
 import { SpaceApartments } from "./entities/SpaceApartments";
 import { useKeyboardControls } from "./hooks/useKeyboardControls";
+import { Bartender } from "./entities/Bartender";
 
 type TabType =
   | "player"
@@ -40,6 +41,7 @@ type TabType =
   | "spacebars"
   | "spaceapartments"
   | "treasurecollectors"
+  | "bartenders"
   | "all"
   | "readme";
 
@@ -126,6 +128,7 @@ function App() {
       treasurecollectors: meeples.filter(
         (meeple) => meeple instanceof TreasureCollector
       ),
+      bartenders: meeples.filter((meeple) => meeple instanceof Bartender),
     }[state.activeTab];
   }, [state.activeTab, meeples.length]);
 
@@ -143,6 +146,7 @@ function App() {
       treasurecollectors: meeples.filter(
         (meeple) => meeple instanceof TreasureCollector
       ).length,
+      bartenders: meeples.filter((meeple) => meeple instanceof Bartender).length,
     };
   }, [meeples.length]);
 
@@ -158,7 +162,7 @@ function App() {
       <div className="navbar bg-base-100 shadow-lg sticky top-0 z-50">
         <div className="flex-1 flex flex-col items-start">
           <div className="flex items-center gap-2 mb-2 px-2 w-full justify-between">
-            <div>
+            <div className="flex items-center gap-2">
               <IconRocket size={28} className="text-primary" />
               <h1 className="text-2xl font-bold text-base-content">
                 Space Pants
@@ -236,6 +240,15 @@ function App() {
               >
                 <IconStar size={14} aria-hidden="true" />
                 {meepleCounts.treasurecollectors}
+              </span>
+              <span
+                className="badge badge-sm badge-secondary badge-outline flex items-center gap-1"
+                title={`${meepleCounts.bartenders} Bartender${meepleCounts.bartenders !== 1 ? "s" : ""}`}
+                aria-label={`${meepleCounts.bartenders} Bartender${meepleCounts.bartenders !== 1 ? "s" : ""}`}
+                role="listitem"
+              >
+                <IconUser size={14} aria-hidden="true" />
+                {meepleCounts.bartenders}
               </span>
             </div>
           </div>

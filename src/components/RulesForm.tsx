@@ -7,7 +7,7 @@ import {
   Products,
   MeepleStats,
 } from "../entities/types";
-import { TRADER_RULES, MINER_RULES } from "../entities/ruleTemplates";
+import { TRADER_RULES, MINER_RULES, BARTENDER_RULES } from "../entities/ruleTemplates";
 import { useToast } from "./Toast";
 import { DndProvider, useDrag, useDrop } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
@@ -17,11 +17,13 @@ const RULE_TEMPLATES = {
   "": "Select a template...",
   trader: "Trader",
   miner: "Miner",
+  bartender: "Bartender",
 } as const;
 
 const TEMPLATE_MAP: Record<string, LogicRule[]> = {
   trader: TRADER_RULES,
   miner: MINER_RULES,
+  bartender: BARTENDER_RULES,
 };
 
 const DRAG_TYPE = "RULE";

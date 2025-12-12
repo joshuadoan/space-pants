@@ -288,3 +288,77 @@ export function createTreasureCollectorShipOutOfShapes(): GraphicsGroup {
     })),
   });
 }
+
+// Bartender-specific color palette - bar/service themed
+const BARTENDER_COLORS = [
+  Color.fromHex("#8B4513"), // Saddle brown
+  Color.fromHex("#A0522D"), // Sienna
+  Color.fromHex("#CD853F"), // Peru
+  Color.fromHex("#D2691E"), // Chocolate
+  Color.fromHex("#DEB887"), // Burlywood
+  Color.fromHex("#F4A460"), // Sandy brown
+  Color.fromHex("#FFD700"), // Gold
+  Color.fromHex("#FFA500"), // Orange
+  Color.fromHex("#FF6347"), // Tomato
+  Color.fromHex("#DC143C"), // Crimson
+  Color.fromHex("#8B0000"), // Dark red
+  Color.fromHex("#654321"), // Dark brown
+];
+
+export function createBartenderShipOutOfShapes(): GraphicsGroup {
+  const blocks: { rect: Rectangle; offset: Vector }[] = [];
+  
+  // Generate a random seed for this bartender design
+  const seed = Math.random();
+  
+  // Select random colors from bartender palette
+  const primaryColor = BARTENDER_COLORS[Math.floor(Math.random() * BARTENDER_COLORS.length)];
+  const secondaryColor = BARTENDER_COLORS[Math.floor(Math.random() * BARTENDER_COLORS.length)];
+  const accentColor = BARTENDER_COLORS[Math.floor(Math.random() * BARTENDER_COLORS.length)];
+  
+  // Bartender design patterns - bar/service themed
+  const pattern = Math.floor(seed * 4); // 4 different patterns
+  
+  switch (pattern) {
+    case 0: // Classic bartender - sleek with serving tray
+      blocks.push({ rect: new Rectangle({ width: 10, height: 8, color: primaryColor }), offset: new Vector(0, 0) }); // Main body
+      blocks.push({ rect: new Rectangle({ width: 8, height: 3, color: accentColor }), offset: new Vector(0, 5) }); // Serving tray
+      blocks.push({ rect: new Rectangle({ width: 3, height: 4, color: secondaryColor }), offset: new Vector(-6, -2) }); // Left drink
+      blocks.push({ rect: new Rectangle({ width: 3, height: 4, color: secondaryColor }), offset: new Vector(6, -2) }); // Right drink
+      blocks.push({ rect: new Rectangle({ width: 4, height: 2, color: accentColor }), offset: new Vector(0, -6) }); // Top hat/visor
+      break;
+      
+    case 1: // Mobile bar cart - wide with multiple bottles
+      blocks.push({ rect: new Rectangle({ width: 14, height: 6, color: primaryColor }), offset: new Vector(0, 0) }); // Main body
+      blocks.push({ rect: new Rectangle({ width: 2, height: 5, color: accentColor }), offset: new Vector(-8, 1) }); // Left bottle
+      blocks.push({ rect: new Rectangle({ width: 2, height: 5, color: accentColor }), offset: new Vector(-4, 1) }); // Left-center bottle
+      blocks.push({ rect: new Rectangle({ width: 2, height: 5, color: accentColor }), offset: new Vector(4, 1) }); // Right-center bottle
+      blocks.push({ rect: new Rectangle({ width: 2, height: 5, color: accentColor }), offset: new Vector(8, 1) }); // Right bottle
+      blocks.push({ rect: new Rectangle({ width: 6, height: 2, color: secondaryColor }), offset: new Vector(0, -5) }); // Top counter
+      break;
+      
+    case 2: // Compact service bot - vertical with shaker
+      blocks.push({ rect: new Rectangle({ width: 8, height: 10, color: primaryColor }), offset: new Vector(0, -1) }); // Main body
+      blocks.push({ rect: new Rectangle({ width: 3, height: 4, color: accentColor }), offset: new Vector(0, -7) }); // Shaker top
+      blocks.push({ rect: new Rectangle({ width: 4, height: 5, color: secondaryColor }), offset: new Vector(-5, 1) }); // Left glass
+      blocks.push({ rect: new Rectangle({ width: 4, height: 5, color: secondaryColor }), offset: new Vector(5, 1) }); // Right glass
+      blocks.push({ rect: new Rectangle({ width: 6, height: 2, color: accentColor }), offset: new Vector(0, 6) }); // Base
+      break;
+      
+    case 3: // Elegant mixologist - ornate design with side garnishes
+      blocks.push({ rect: new Rectangle({ width: 10, height: 8, color: primaryColor }), offset: new Vector(0, -1) }); // Body
+      blocks.push({ rect: new Rectangle({ width: 3, height: 4, color: accentColor }), offset: new Vector(-6, 0) }); // Left garnish
+      blocks.push({ rect: new Rectangle({ width: 3, height: 4, color: accentColor }), offset: new Vector(6, 0) }); // Right garnish
+      blocks.push({ rect: new Rectangle({ width: 4, height: 3, color: secondaryColor }), offset: new Vector(0, -6) }); // Top decoration
+      blocks.push({ rect: new Rectangle({ width: 6, height: 2, color: accentColor }), offset: new Vector(0, 5) }); // Serving platform
+      break;
+  }
+  
+  // Create graphics group with all blocks
+  return new GraphicsGroup({
+    members: blocks.map(block => ({
+      graphic: block.rect,
+      offset: block.offset,
+    })),
+  });
+}

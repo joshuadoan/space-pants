@@ -11,6 +11,7 @@ import { SpaceBar } from "../entities/SpaceBar";
 import { generateSpaceName } from "../entities/utils/generateSpaceName";
 import { SpaceApartments } from "../entities/SpaceApartments";
 import { TreasureCollector } from "../entities/TreasureCollector";
+import { Bartender } from "../entities/Bartender";
 import { DEFAULT_SHIP_SPEED } from "../consts";
 import type { Actor } from "excalibur";
 import { Meeple } from "../entities/Meeple";
@@ -266,6 +267,38 @@ function createTreasureCollector(game: Game): void {
 }
 
 /**
+ * Creates bartender entities - 3 bartenders per space bar.
+ * Bartenders work at space bars to earn money.
+ */
+function createBartenders(game: Game): void {
+  // Find all space bars in the scene
+  const spaceBars = game.currentScene.actors.filter(
+    (actor: Actor) => actor instanceof SpaceBar
+  ) as SpaceBar[];
+
+  // Create 3 bartenders for each space bar
+  for (const spaceBar of spaceBars) {
+    for (let i = 0; i < 3; i++) {
+      // Position bartenders near the space bar (within 50 pixels)
+      const offsetX = (Math.random() - 0.5) * 100;
+      const offsetY = (Math.random() - 0.5) * 100;
+      const bartenderPosition = new Vector(
+        spaceBar.pos.x + offsetX,
+        spaceBar.pos.y + offsetY
+      );
+
+      const bartender = new Bartender(
+        bartenderPosition,
+        DEFAULT_SHIP_SPEED,
+        generateSpaceName()
+      );
+      bartender.name = generateSpaceName();
+      game.currentScene.add(bartender);
+    }
+  }
+}
+
+/**
  * Initializes all game entities in the correct order.
  * This includes the player, background stars, and all NPC entities.
  */
@@ -277,6 +310,7 @@ function initializeGameEntities(game: Game): void {
   createMiners(game);
   createTraders(game);
   createSpaceBars(game);
+  createBartenders(game); // Create bartenders after space bars so they can be positioned near them
   createSpaceApartments(game);
   createTreasureCollector(game);
 }

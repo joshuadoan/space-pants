@@ -187,6 +187,9 @@ export class Meeple extends Actor {
       case LogicRuleActionType.Socialize:
         this.executeSocialize();
         break;
+      case LogicRuleActionType.Work:
+        this.executeWork();
+        break;
       case LogicRuleActionType.GoShopping:
         this.executeGoShopping();
         break;
@@ -232,7 +235,20 @@ export class Meeple extends Actor {
     this.visitTarget(spaceBar, MeepleStateType.Socializing, () => {
       this.transact("remove", Resources.Money, moneyAmount);
       spaceBar.transact("add", Resources.Money, moneyAmount);
-      this.goods[MeepleStats.Health] = 0;
+      this.goods[MeepleStats.Energy] = 0;
+    }, 5000);
+  }
+
+  private executeWork(): void {
+    const spaceBar = this.getRandomSpaceBar();
+    if (!spaceBar) return;
+
+    // Bartenders earn money from the space bar and lose energy from working
+    const earnings = 20; // Amount of money earned per work session
+    this.visitTarget(spaceBar, MeepleStateType.Working, () => {
+      this.transact("add", Resources.Money, earnings);
+      spaceBar.transact("remove", Resources.Money, earnings);
+      this.goods[MeepleStats.Energy] = 0; // Working exhausts them
     }, 5000);
   }
 
@@ -241,7 +257,7 @@ export class Meeple extends Actor {
     if (!spaceApartments) return;
 
     this.visitTarget(spaceApartments, MeepleStateType.Chilling, () => {
-      this.goods[MeepleStats.Health] = 100;
+      this.goods[MeepleStats.Energy] = 100;
     }, 3000);
   }
 

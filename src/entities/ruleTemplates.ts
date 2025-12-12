@@ -1,10 +1,10 @@
 import { Resources, MeepleStats, Products, ComparisonOperator, LogicRuleActionType, type LogicRule } from "./types";
 
 export const TRADER_RULES: LogicRule[] = [
-  // Priority 1: Health check - always go home if health is low
+  // Priority 1: Energy check - always go home if energy is low
   {
-    id: "go-home-if-health-low",
-    good: MeepleStats.Health,
+    id: "go-home-if-energy-low",
+    good: MeepleStats.Energy,
     operator: ComparisonOperator.LessThanOrEqual,
     value: 0,
     action: LogicRuleActionType.ChillAtHome,
@@ -54,12 +54,12 @@ export const TRADER_RULES: LogicRule[] = [
     value: 0,
     action: LogicRuleActionType.GoSelling,
   },
-  // Priority 4: If money is 15-49, go shopping for products
+  // Priority 4: If money is 6-49, go shopping for products
   {
     id: "go-shopping",
     good: Resources.Money,
     operator: ComparisonOperator.GreaterThanOrEqual,
-    value: 15,
+    value: 6,
     action: LogicRuleActionType.GoShopping,
   },
   // Priority 5: If money is low (<= 5), try to sell (fallback)
@@ -73,6 +73,14 @@ export const TRADER_RULES: LogicRule[] = [
 ];
 
 export const MINER_RULES: LogicRule[] = [
+  // Priority 1: Energy check - always go home if energy is low
+  {
+    id: "go-home-if-energy-low",
+    good: MeepleStats.Energy,
+    operator: ComparisonOperator.LessThanOrEqual,
+    value: 0,
+    action: LogicRuleActionType.ChillAtHome,
+  },
   {
     id: "sell-treasure",
     good: Resources.Treasure,
@@ -103,6 +111,33 @@ export const MINER_RULES: LogicRule[] = [
     operator: ComparisonOperator.GreaterThanOrEqual,
     value: 10,
     action: LogicRuleActionType.TradeOreForMoney,
+  },
+];
+
+export const BARTENDER_RULES: LogicRule[] = [
+  // Priority 1: If energy is 0 or less, go home to recover
+  {
+    id: "go-home-if-energy-low",
+    good: MeepleStats.Energy,
+    operator: ComparisonOperator.LessThanOrEqual,
+    value: 0,
+    action: LogicRuleActionType.ChillAtHome,
+  },
+  // Priority 2: If money is 50+, go shopping for products
+  {
+    id: "go-shopping",
+    good: Resources.Money,
+    operator: ComparisonOperator.GreaterThanOrEqual,
+    value: 50,
+    action: LogicRuleActionType.GoShopping,
+  },
+  // Priority 3: If energy is above 0, go to space bar to work (make money)
+  {
+    id: "go-to-space-bar-to-work",
+    good: MeepleStats.Energy,
+    operator: ComparisonOperator.GreaterThan,
+    value: 0,
+    action: LogicRuleActionType.Work,
   },
 ];
 

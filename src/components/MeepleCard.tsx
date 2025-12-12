@@ -10,14 +10,16 @@ import {
   IconArrowUp,
   IconArrowDown,
   IconArrowLeft,
-  IconArrowRight
+  IconArrowRight,
+  IconHeart,
+  IconBolt
 } from "@tabler/icons-react";
 import { IconShip } from "@tabler/icons-react";
 import { IconPick } from "@tabler/icons-react";
 import { IconMeteor } from "@tabler/icons-react";
 import { IconSatellite } from "@tabler/icons-react";
 import { IconBeer } from "@tabler/icons-react";
-import { MeepleStateType } from "../entities/types";
+import { MeepleStateType, MeepleStats } from "../entities/types";
 import { GoodsDisplay } from "./GoodsDisplay";
 import { RulesForm } from "./RulesForm";
 import { Player } from "../entities/Player";
@@ -35,15 +37,39 @@ export function MeepleCard({
   return (
     <div className="card-body p-0 gap-2">
       <div className="flex items-center justify-between mb-1">
-        <h3
-          className="font-semibold text-base text-base-content truncate flex-1 cursor-pointer hover:text-primary underline"
-          title={`Click to zoom to ${meeple.name}`}
-          role="button"
-          onClick={onMeepleNameClick}
-        >
-          {meeple.name}
-        </h3>
-        <span className="text-sm text-base-content/50">
+        <div className="flex items-center gap-2 flex-1 min-w-0">
+          <h3
+            className="font-semibold text-base text-base-content truncate cursor-pointer hover:text-primary underline"
+            title={`Click to zoom to ${meeple.name}`}
+            role="button"
+            onClick={onMeepleNameClick}
+          >
+            {meeple.name}
+          </h3>
+          <div className="flex items-center gap-1.5 flex-shrink-0">
+            <span className="flex items-center gap-0.5 text-xs" title="Health">
+              <IconHeart 
+                size={14} 
+                className="text-error" 
+                fill={meeple.goods[MeepleStats.Health] > 50 ? "currentColor" : "none"}
+              />
+              <span className="text-base-content/70 font-medium">
+                {Math.round(meeple.goods[MeepleStats.Health] ?? 0)}
+              </span>
+            </span>
+            <span className="flex items-center gap-0.5 text-xs" title="Energy">
+              <IconBolt 
+                size={14} 
+                className="text-warning" 
+                fill={meeple.goods[MeepleStats.Energy] > 50 ? "currentColor" : "none"}
+              />
+              <span className="text-base-content/70 font-medium">
+                {Math.round(meeple.goods[MeepleStats.Energy] ?? 0)}
+              </span>
+            </span>
+          </div>
+        </div>
+        <span className="text-sm text-base-content/50 flex-shrink-0">
           pos {Math.round(meeple.pos.x)}° {Math.round(meeple.pos.y)}°
         </span>
       </div>
@@ -132,6 +158,12 @@ export function MeepleCard({
               <span className="badge badge-sm badge-info badge-outline flex items-center gap-1">
                 <IconUsers size={14} />
                 Socializing
+              </span>
+            ),
+            [MeepleStateType.Working]: (
+              <span className="badge badge-sm badge-success badge-outline flex items-center gap-1">
+                <IconBeer size={14} />
+                Working
               </span>
             ),
             [MeepleStateType.Transacting]: (
