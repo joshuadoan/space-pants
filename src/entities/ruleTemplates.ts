@@ -8,19 +8,29 @@ export const TRADER_RULES: LogicRule[] = [
     value: 0,
     action: LogicRuleActionType.ChillAtHome,
   },
+  // if money is greater than or equal to 50, go socialize at space bar
   {
-    id: "go-shopping",
+    id: "go-to-space-bar",
     good: Resources.Money,
-    operator: ComparisonOperator.GreaterThan,
-    value: 0,
-    action: LogicRuleActionType.GoShopping,
+    operator: ComparisonOperator.GreaterThanOrEqual,
+    value: 50,
+    action: LogicRuleActionType.Socialize,
   },
+  // if money is less than or equal to 5, sell products to get more money
   {
     id: "go-selling",
     good: Resources.Money,
     operator: ComparisonOperator.LessThanOrEqual,
-    value: 0,
+    value: 5,
     action: LogicRuleActionType.GoSelling,
+  },
+  // if money is greater than or equal to 15, go shopping for products
+  {
+    id: "go-shopping",
+    good: Resources.Money,
+    operator: ComparisonOperator.GreaterThanOrEqual,
+    value: 15,
+    action: LogicRuleActionType.GoShopping,
   },
 ];
 
