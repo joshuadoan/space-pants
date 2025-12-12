@@ -386,6 +386,16 @@ export const useGame = () => {
         gameRef.current = game;
         dispatch({ type: "set-game", payload: game });
         dispatch({ type: "set-is-loading", payload: false });
+        
+        // Find and select the player as active once the game is loaded
+        const player = game.currentScene.actors.find(
+          (actor: Actor) => actor instanceof Player
+        ) as Player | undefined;
+        
+        if (player) {
+          dispatch({ type: "zoom-to-entity", payload: player });
+        }
+        
         console.log("Game initialized successfully");
       })
       .catch((error) => {

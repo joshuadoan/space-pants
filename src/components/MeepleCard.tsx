@@ -6,7 +6,11 @@ import {
   IconMoodSmile,
   IconUser,
   IconUsers,
-  IconStar
+  IconStar,
+  IconArrowUp,
+  IconArrowDown,
+  IconArrowLeft,
+  IconArrowRight
 } from "@tabler/icons-react";
 import { IconShip } from "@tabler/icons-react";
 import { IconPick } from "@tabler/icons-react";
@@ -145,6 +149,35 @@ export function MeepleCard({
           }[meeple.state.type]
         }
       </div>
+      {meeple.type === MeepleType.Player && (
+        <>
+          <div className="divider my-1"></div>
+          <div className="bg-base-200/50 rounded-lg p-3 space-y-2">
+            <div className="text-xs font-semibold text-base-content/70 flex items-center gap-1">
+              <IconMoodSmile size={14} />
+              How to Move
+            </div>
+            <div className="grid grid-cols-2 gap-2 text-xs">
+              <div className="flex items-center gap-1.5 text-base-content/80">
+                <IconArrowUp size={16} className="text-primary" />
+                <span>Up</span>
+              </div>
+              <div className="flex items-center gap-1.5 text-base-content/80">
+                <IconArrowDown size={16} className="text-primary" />
+                <span>Down</span>
+              </div>
+              <div className="flex items-center gap-1.5 text-base-content/80">
+                <IconArrowLeft size={16} className="text-primary" />
+                <span>Left</span>
+              </div>
+              <div className="flex items-center gap-1.5 text-base-content/80">
+                <IconArrowRight size={16} className="text-primary" />
+                <span>Right</span>
+              </div>
+            </div>
+          </div>
+        </>
+      )}
       <div className="divider my-1"></div>
       <GoodsDisplay goods={meeple.goods} />
       {/* <-- Visitors */}

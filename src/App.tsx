@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useReducer } from "react";
 import { useFps } from "react-fps";
 import Markdown from "react-markdown";
+import { IconRocket } from "@tabler/icons-react";
 
 import { useGame } from "./hooks/useGame";
 
@@ -142,6 +143,10 @@ function App() {
       {/* Sticky navbar at the top */}
       <div className="navbar bg-base-100 shadow-lg sticky top-0 z-50">
         <div className="flex-1 flex flex-col items-start">
+          <div className="flex items-center gap-2 mb-2 px-2">
+            <IconRocket size={28} className="text-primary" />
+            <h1 className="text-2xl font-bold text-base-content">Space Pants</h1>
+          </div>
           <Tabs
             activeTab={state.activeTab}
             onTabChange={(tab) =>

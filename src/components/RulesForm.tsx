@@ -9,6 +9,7 @@ import { TRADER_RULES, MINER_RULES } from "../entities/ruleTemplates";
 import { useToast } from "./Toast";
 import { DndProvider, useDrag, useDrop } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
+import { IconBulb, IconGripVertical, IconTrash, IconPlus, IconDeviceFloppy, IconMoodSmile, IconChevronDown } from "@tabler/icons-react";
 
 const RULE_TEMPLATES = {
   "": "Select a template...",
@@ -307,12 +308,22 @@ export function RulesForm({
 
   return (
     <div className="w-full">
-      <button
-        className="btn btn-primary mb-2 w-full sm:w-auto sm:self-end"
-        onClick={() => setIsExpanded(!isExpanded)}
-      >
-        {isExpanded ? "Collapse Rules" : "Expand Rules"}
-      </button>{" "}
+      <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 mb-2">
+        <button
+          className="btn btn-primary w-full sm:w-auto"
+          onClick={() => setIsExpanded(!isExpanded)}
+        >
+          {isExpanded ? "Collapse Rules" : "Expand Rules"}
+        </button>
+        {!isExpanded && (
+          <div className="bg-base-200/50 rounded-lg px-3 py-2 flex items-center gap-2 text-xs text-base-content/80 flex-1">
+            <IconMoodSmile size={16} className="text-primary flex-shrink-0" />
+            <span>
+              Click to expand and customize your AI rules! <IconChevronDown size={14} className="inline text-primary" />
+            </span>
+          </div>
+        )}
+      </div>
       {isExpanded && (
         <DndProvider backend={HTML5Backend}>
           <form
@@ -320,6 +331,35 @@ export function RulesForm({
             ref={formRef}
             className="flex flex-col gap-4"
           >
+            <div className="bg-base-200/50 rounded-lg p-4 space-y-3">
+              <div className="text-sm font-semibold text-base-content flex items-center gap-2">
+                <IconBulb size={18} className="text-warning" />
+                How to Create Rules
+              </div>
+              <div className="text-xs text-base-content/80 space-y-2">
+                <p>
+                  Rules work like: <span className="font-semibold text-primary">IF</span> [Good] [Operator] [Value] <span className="font-semibold text-primary">THEN</span> [Action]
+                </p>
+                <div className="space-y-1.5 pl-2 border-l-2 border-primary/30">
+                  <div className="flex items-start gap-2">
+                    <IconGripVertical size={14} className="text-base-content/50 mt-0.5 flex-shrink-0" />
+                    <span>Drag the <span className="font-semibold">≡</span> icon to reorder rules (they run in order!)</span>
+                  </div>
+                  <div className="flex items-start gap-2">
+                    <IconPlus size={14} className="text-secondary mt-0.5 flex-shrink-0" />
+                    <span>Click <span className="font-semibold">"Add New Rule"</span> to create more rules</span>
+                  </div>
+                  <div className="flex items-start gap-2">
+                    <IconTrash size={14} className="text-error mt-0.5 flex-shrink-0" />
+                    <span>Click <span className="font-semibold">"Delete"</span> on any rule to remove it</span>
+                  </div>
+                  <div className="flex items-start gap-2">
+                    <IconDeviceFloppy size={14} className="text-success mt-0.5 flex-shrink-0" />
+                    <span>Don't forget to <span className="font-semibold">"Save Rules"</span> when you're done!</span>
+                  </div>
+                </div>
+              </div>
+            </div>
             <div className="w-full">
               <label className="label py-1">
                 <span className="label-text text-xs text-base-content/70">
