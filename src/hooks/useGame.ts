@@ -1,4 +1,4 @@
-import { useEffect, useReducer } from "react";
+import { useEffect, useReducer, useRef } from "react";
 import { Game } from "../entities/Game";
 import { Player } from "../entities/Player";
 import { Vector } from "excalibur";
@@ -12,6 +12,8 @@ import { generateSpaceName } from "../entities/utils/generateSpaceName";
 import { SpaceApartments } from "../entities/SpaceApartments";
 import { TreasureCollector } from "../entities/TreasureCollector";
 import { DEFAULT_SHIP_SPEED } from "../consts";
+import type { Actor } from "excalibur";
+import { Meeple } from "../entities/Meeple";
 
 const WORLD_WIDTH = 1000;
 const WORLD_HEIGHT = 1000;
@@ -22,30 +24,43 @@ const NUMBER_OF_MINERS = 10;
 const NUMBER_OF_SPACE_BARS = 3;
 const NUMBER_OF_SPACE_APARTMENTS = 3;
 
-type SetGameAtion = {
-  name: "set-game";
+type SetGameAction = {
+  type: "set-game";
   payload: Game;
 };
 
-type GameAction = SetGameAtion;
+type SetMeeplesAction = {
+  type: "set-meeples";
+  payload: Meeple[];
+};
+
+type GameAction = SetGameAction | SetMeeplesAction;
 
 type GameState = {
   game: Game | null;
   isLoading: boolean;
+  meeples: Meeple[];
 };
 
 const initialState: GameState = {
   game: null,
   isLoading: true,
+  meeples: [],
 };
 
 function gameReducer(state: GameState, action: GameAction): GameState {
-  switch (action.name) {
+  switch (action.type) {
     case "set-game": {
       return {
         ...state,
         game: action.payload,
         isLoading: false,
+      };
+    }
+    case "set-meeples": {
+      return {
+        ...state,
+        meeples: action.payload,
       };
     }
     default:
@@ -55,6 +70,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
 export const useGame = () => {
   //   const [game, setGame] = useState<Game | null>(null);
   const [gameState, dispatch] = useReducer(gameReducer, initialState);
+  const gameRef = useRef<Game | null>(null);
 
   useEffect(() => {
     const game = new Game(WORLD_WIDTH, WORLD_HEIGHT);
@@ -150,9 +166,36 @@ export const useGame = () => {
     game.currentScene.add(treasureCollector);
 
     game.start().then(() => {
-      dispatch({ name: "set-game", payload: game });
+      dispatch({ type: "set-game", payload: game });
     });
   }, []);
 
-  return gameState;
+  // Update gameRef when game changes
+  useEffect(() => {
+    gameRef.current = gameState.game;
+  }, [gameState.game]);
+
+  // Start entities interval only after game has started
+  useEffect(() => {
+    if (!gameState.game || gameState.isLoading) {
+      return;
+    }
+
+    const interval = setInterval(() => {
+      if (gameRef.current) {
+        const actors = gameRef.current.currentScene.actors;
+        const meeples = actors.filter(
+          (actor: Actor) => actor instanceof Meeple
+        );
+        dispatch({ type: "set-meeples", payload: meeples });
+      }
+    }, 300);
+
+    return () => clearInterval(interval);
+  }, [gameState.game, gameState.isLoading]);
+
+  return {
+    ...gameState,
+    meeples: gameState.meeples,
+  };
 };

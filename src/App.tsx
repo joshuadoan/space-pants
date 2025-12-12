@@ -3,7 +3,6 @@ import { useFps } from "react-fps";
 import Markdown from "react-markdown";
 
 import { useGame } from "./hooks/useGame";
-import { useGameEntities } from "./hooks/useGameEntities";
 
 import { Tabs } from "./components/Tabs";
 
@@ -63,7 +62,7 @@ const initialState: State = {
 };
 
 function App() {
-  const { game } = useGame();
+  const { game, meeples } = useGame();
 
   const [state, dispatch] = useReducer((state: State, action: Action) => {
     switch (action.type) {
@@ -92,15 +91,11 @@ function App() {
     }
   }, initialState);
 
-  const { gameRef, state: gameEntitiesState } = useGameEntities(game);
-
   useEffect(() => {
     if (state.activeEntity) {
-      gameRef?.current?.currentScene.camera.strategy.lockToActor(
-        state.activeEntity
-      );
+      game?.currentScene.camera.strategy.lockToActor(state.activeEntity);
     }
-  }, [state.activeEntity, gameRef]);
+  }, [state.activeEntity]);
 
   async function getReadmeMarkdownFromFile() {
     try {
@@ -124,52 +119,52 @@ function App() {
   // Auto-select first player when on player tab and no entity is selected
   useEffect(() => {
     if (state.activeTab === "player" && !state.activeEntity) {
-      const players = gameEntitiesState.meeples.filter(
+      const players = meeples.filter(
         (meeple) => meeple instanceof Player
       );
       if (players.length > 0) {
         dispatch({ type: "zoom-to-entity", payload: players[0] });
       }
     }
-  }, [state.activeTab, state.activeEntity, gameEntitiesState.meeples]);
+  }, [state.activeTab, state.activeEntity, meeples]);
 
   const { avgFps, maxFps, currentFps } = useFps(20);
 
   const filteredEntities = useMemo(() => {
     return {
-      traders: gameEntitiesState.meeples.filter(
+      traders: meeples.filter(
         (meeple) => meeple instanceof Trader
       ),
-      miners: gameEntitiesState.meeples.filter(
+      miners: meeples.filter(
         (meeple) => meeple instanceof Miner
       ),
-      spacebars: gameEntitiesState.meeples.filter(
+      spacebars: meeples.filter(
         (meeple) => meeple instanceof SpaceBar
       ),
-      stations: gameEntitiesState.meeples.filter(
+      stations: meeples.filter(
         (meeple) => meeple instanceof SpaceStation
       ),
-      asteroids: gameEntitiesState.meeples.filter(
+      asteroids: meeples.filter(
         (meeple) => meeple instanceof Asteroid
       ),
-      player: gameEntitiesState.meeples.filter(
+      player: meeples.filter(
         (meeple) => meeple instanceof Player
       ),
-      all: [...gameEntitiesState.meeples],
+      all: [...meeples],
       readme: [],
-      spaceapartments: gameEntitiesState.meeples.filter(
+      spaceapartments: meeples.filter(
         (meeple) => meeple instanceof SpaceApartments
       ),
-      treasurecollectors: gameEntitiesState.meeples.filter(
+      treasurecollectors: meeples.filter(
         (meeple) => meeple instanceof TreasureCollector
       ),
     }[state.activeTab];
-  }, [state.activeTab, gameEntitiesState.meeples.length]);
+    }, [state.activeTab, meeples.length]);
 
   // keyboard
   useKeyboardControls(
     game,
-    gameEntitiesState.meeples.find((meeple) => meeple instanceof Player) || null
+    meeples.find((meeple) => meeple instanceof Player) || null
   );
 
   return (
