@@ -1,18 +1,29 @@
 import { useState } from "react";
 import type { LogicRule } from "../entities/types";
 import { getGoodIcon } from "../utils/goodsMetadata";
+import { IconMoodSmile, IconChevronDown } from "@tabler/icons-react";
 
 export function RulesReadOnly({ rules }: { rules: LogicRule[] }) {
   const [isExpanded, setIsExpanded] = useState(false);
 
   return (
     <div className="w-full">
-      <button
-        className="btn btn-primary mb-2 w-full sm:w-auto sm:self-end"
-        onClick={() => setIsExpanded(!isExpanded)}
-      >
-        {isExpanded ? "Collapse Rules" : "Expand Rules"}
-      </button>
+      <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 mb-2">
+        <button
+          className="btn btn-primary w-full sm:w-auto"
+          onClick={() => setIsExpanded(!isExpanded)}
+        >
+          {isExpanded ? "Collapse Rules" : "Expand Rules"}
+        </button>
+        {!isExpanded && (
+          <div className="bg-base-200/50 rounded-lg px-3 py-2 flex items-center gap-2 text-xs text-base-content/80 flex-1">
+            <IconMoodSmile size={16} className="text-primary shrink-0" />
+            <span>
+              Click to expand and view AI rules! <IconChevronDown size={14} className="inline text-primary" />
+            </span>
+          </div>
+        )}
+      </div>
       {isExpanded && (
         <div className="flex flex-col gap-4">
           {rules.length === 0 ? (

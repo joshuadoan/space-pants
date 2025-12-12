@@ -20,16 +20,16 @@ import { Meeple } from "../entities/Meeple";
 // ============================================================================
 
 /** Width of the game world in pixels */
-const WORLD_WIDTH = 1000;
+const WORLD_WIDTH = 2500;
 
 /** Height of the game world in pixels */
-const WORLD_HEIGHT = 1000;
+const WORLD_HEIGHT = 2500;
 
 /** Initial camera zoom level */
 const CAMERA_ZOOM = 2;
 
 /** Interval in milliseconds for updating the meeple list in React state */
-const MEEPLE_UPDATE_INTERVAL_MS = 300;
+const MEEPLE_UPDATE_INTERVAL_MS = 1000;
 
 /** Number of each entity type to spawn in the game world */
 const ENTITY_COUNTS = {
@@ -271,7 +271,7 @@ function createTreasureCollector(game: Game): void {
  */
 function initializeGameEntities(game: Game): void {
   initializePlayer(game);
-  addStars(game);
+  // addStars(game);
   createSpaceStations(game);
   createAsteroids(game);
   createMiners(game);
