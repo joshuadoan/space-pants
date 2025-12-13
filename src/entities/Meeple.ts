@@ -86,7 +86,9 @@ export class Meeple extends Actor {
     this.visitors = new Set();
   }
   onInitialize(_engine: Game): void {
-    // if (this.state.type !== MeepleStateType.Idle) return;
+    // Initialize lastUpdateTime to current time to ensure first update happens
+    // This fixes an issue where meeples don't start moving in production builds
+    this.lastUpdateTime = Date.now();
     
     // Only create followers for miner and trader type meeples
     // Followers will be created dynamically in onPreUpdate based on goods
@@ -191,9 +193,21 @@ export class Meeple extends Actor {
       this.updateFollowers();
     }
 
-    if (!this.actions.getQueue().isComplete()) return;
+    // Only evaluate rules if action queue is complete (no active movement/actions)
+    // This ensures meeples don't start new actions while already performing one
+    try {
+      if (!this.actions.getQueue().isComplete()) return;
+    } catch (error) {
+      // If action queue check fails (shouldn't happen, but be defensive in production),
+      // log error and continue to allow rule evaluation
+      console.warn("Action queue check failed for", this.name, error);
+    }
 
     const currentTime = Date.now();
+    // Ensure lastUpdateTime is initialized (defensive check for production builds)
+    if (this.lastUpdateTime === 0) {
+      this.lastUpdateTime = currentTime;
+    }
     if (currentTime - this.lastUpdateTime < MEEPLE_UPDATE_INTERVAL_MS) return;
     this.lastUpdateTime = currentTime;
 
@@ -406,6 +420,7 @@ export class Meeple extends Actor {
   ): void {
     this.actions
       .callMethod(() => {
+        console.log("Traveling to", target.name);
         this.state = {
           type: MeepleStateType.Traveling,
           target,
