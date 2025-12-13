@@ -1,4 +1,3 @@
-import { IconPlus } from "@tabler/icons-react";
 import type { RuleBehavior } from "../../entities/types";
 import { BUILT_IN_BEHAVIORS } from "../../entities/ruleTemplates";
 
@@ -6,14 +5,12 @@ interface BehaviorSelectorProps {
   selectedBehavior: string;
   customBehaviors: RuleBehavior[];
   onBehaviorChange: (behaviorId: string) => void;
-  onCreateNew: () => void;
 }
 
 export function BehaviorSelector({
   selectedBehavior,
   customBehaviors,
   onBehaviorChange,
-  onCreateNew,
 }: BehaviorSelectorProps) {
   return (
     <>
@@ -52,14 +49,6 @@ export function BehaviorSelector({
             </optgroup>
           )}
         </select>
-        <button
-          type="button"
-          onClick={onCreateNew}
-          className="btn btn-secondary btn-sm btn-square"
-          title="Create New Rule Behavior"
-        >
-          <IconPlus size={16} />
-        </button>
       </div>
     </>
   );

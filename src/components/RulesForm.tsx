@@ -32,7 +32,7 @@ export function RulesForm({
 }) {
   const formRef = useRef<HTMLFormElement>(null);
   const [state, dispatch] = useReducer(rulesFormReducer, {
-    localRules: rules,
+    localRules: mode === "create" && rules.length === 0 ? [createDefaultRule()] : rules,
     selectedBehavior: "",
     saveStatus: "idle",
     customBehaviors: [],
@@ -43,8 +43,15 @@ export function RulesForm({
 
   // Update internal mode when prop changes
   useEffect(() => {
+    const prevMode = state.internalMode;
     dispatch({ type: "set-internal-mode", payload: mode });
-  }, [mode]);
+    // Initialize create mode with default rule when switching to create mode
+    if (mode === "create" && prevMode !== "create") {
+      dispatch({ type: "set-local-rules", payload: [createDefaultRule()] });
+      dispatch({ type: "set-selected-behavior", payload: "" });
+      dispatch({ type: "set-rules-list-name", payload: "" });
+    }
+  }, [mode, state.internalMode]);
 
   // Load custom behaviors on mount
   useEffect(() => {
@@ -105,12 +112,9 @@ export function RulesForm({
         showToast(`Behavior "${newBehavior.name}" saved successfully!`, "success");
         setTimeout(() => {
           dispatch({ type: "set-save-status", payload: "idle" });
-          // Switch to edit mode and select the newly created behavior
-          dispatch({ type: "set-internal-mode", payload: "edit" });
-          dispatch({
-            type: "load-behavior",
-            payload: { behavior: newBehavior, behaviorId: behaviorId },
-          });
+          // Reset form after successful save
+          dispatch({ type: "set-rules-list-name", payload: "" });
+          dispatch({ type: "set-local-rules", payload: [createDefaultRule()] });
         }, 2000);
       }, 100);
     } else {
@@ -205,16 +209,6 @@ export function RulesForm({
     });
   };
 
-  const handleCreateNew = () => {
-    dispatch({
-      type: "set-internal-mode",
-      payload: "create",
-    });
-    dispatch({ type: "set-selected-behavior", payload: "" });
-    dispatch({ type: "set-rules-list-name", payload: "" });
-    dispatch({ type: "set-local-rules", payload: [createDefaultRule()] });
-  };
-
   const handleAddRule = () => {
     dispatch({ type: "add-rule", payload: createNewRule() });
   };
@@ -249,7 +243,6 @@ export function RulesForm({
                 selectedBehavior={state.selectedBehavior}
                 customBehaviors={state.customBehaviors}
                 onBehaviorChange={handleBehaviorChange}
-                onCreateNew={handleCreateNew}
               />
             )}
           </div>

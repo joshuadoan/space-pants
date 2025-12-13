@@ -51,9 +51,12 @@ Five distinct product types that space stations produce:
 - Sell products to stations that don't produce them (1 product → 2 money, 3s delay)
 - Each trader specializes in one product type
 
-**Starting Resources**: 42 money
+**Behavior Rules** (priority order):
+1. If energy ≤ 0 → Rest at apartments
+2. If product > 0 (of trader's type) → Sell product to station
+3. If money ≥ 2 → Buy product from station
 
-**Note**: Currently traders have no default behavior rules defined, requiring custom rule configuration.
+**Starting Resources**: 42 money
 
 ### Space Stations
 **Count**: 5  
@@ -265,10 +268,9 @@ Key economic parameters (from `game-config.ts`):
 
 ## Potential Economic Issues
 
-1. **Traders**: No default behavior rules, requiring manual configuration
-2. **Money Accumulation**: No money sinks beyond socializing, potential for inflation
-3. **Product Accumulation**: Stations may accumulate products they don't produce without consumption
-4. **Energy Balance**: Long work shifts (30s) vs quick rest (3s) may create energy surplus
+1. **Money Accumulation**: No money sinks beyond socializing, potential for inflation
+2. **Product Accumulation**: Stations may accumulate products they don't produce without consumption
+3. **Energy Balance**: Long work shifts (30s) vs quick rest (3s) may create energy surplus
 
 ## Future Economic Considerations
 

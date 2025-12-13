@@ -1,8 +1,12 @@
+---
+alwaysApply: true
+---
+
 # Space Pants - Cursor Rules
 
 ## Game Description
 
-Space Pants is a real-time space economy simulation game built with React, TypeScript, and Excalibur.js. The game features autonomous entities (miners, traders, space stations, space bars, space apartments, asteroids, treasure collectors, and a player) that interact in a dynamic space economy. Entities follow customizable behavior rules that determine their actions based on resource conditions (ore, money, products). Players can observe the simulation, control a player character, edit entity rules, and watch the economy evolve in real-time.
+Space Pants is a real-time space economy simulation game built with React, TypeScript, and Excalibur.js. The game features autonomous entities (miners, traders, space stations, space bars, space apartments, asteroids, bartenders, and a player) that interact in a dynamic space economy. Entities follow customizable behavior rules that determine their actions based on resource conditions (ore, money, products). Players can observe the simulation, control a player character, edit entity rules, and watch the economy evolve in real-time.
 
 ## State Management: Prefer useReducer and Actions
 
@@ -81,5 +85,6 @@ Space Pants is a real-time space economy simulation game built with React, TypeS
 - Follow existing code patterns and conventions
 - Use descriptive variable and function names
 - Add JSDoc comments for complex functions and types
+
 
 

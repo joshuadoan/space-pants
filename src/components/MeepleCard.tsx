@@ -29,7 +29,7 @@ import { GoodsDisplay } from "./GoodsDisplay";
 import { RulesForm } from "./RulesForm";
 import { RulesReadOnly } from "./RulesReadOnly";
 
-type TabType = "goods" | "rules" | "help";
+type TabType = "goods" | "rules" | "create" | "help";
 
 type TabStateAction =
   | { type: "set-tab"; payload: TabType };
@@ -136,6 +136,18 @@ function MeepleTabsSection({
         <a
           role="tab"
           className={`tab flex items-center gap-2 font-semibold transition-all duration-200 ${
+            tabState.activeTab === "create" 
+              ? "tab-active bg-info text-info-content shadow-lg scale-105" 
+              : "hover:bg-base-300/50"
+          }`}
+          onClick={() => dispatchTab({ type: "set-tab", payload: "create" })}
+        >
+          <IconPlus size={18} />
+          Create
+        </a>
+        <a
+          role="tab"
+          className={`tab flex items-center gap-2 font-semibold transition-all duration-200 ${
             tabState.activeTab === "help" 
               ? "tab-active bg-accent text-accent-content shadow-lg scale-105" 
               : "hover:bg-base-300/50"
@@ -157,6 +169,7 @@ function MeepleTabsSection({
                 rules={meeple.rules}
                 onUpdateRules={handleSave}
                 onCancel={handleCancel}
+                mode="edit"
               />
             ) : (
               <>
@@ -178,6 +191,15 @@ function MeepleTabsSection({
                 />
               </>
             )}
+          </div>
+        )}
+        {tabState.activeTab === "create" && (
+          <div className="space-y-2">
+            <RulesForm
+              rules={[]}
+              onUpdateRules={() => {}}
+              mode="create"
+            />
           </div>
         )}
         {tabState.activeTab === "help" && (
