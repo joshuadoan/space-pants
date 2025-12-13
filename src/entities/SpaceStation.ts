@@ -12,6 +12,7 @@ import {
   SPACE_STATION_REGENERATION_RATE_MS,
   SPACE_STATION_ORE_REGENERATION_AMOUNT,
   SPACE_STATION_STARTING_MONEY,
+  SPACE_STATION_CONVERSION_DELAY_MS,
 } from "./game-config";
 import {
   updateRegeneration,
@@ -37,6 +38,7 @@ export const STATION_COLORS = [
 
 export class SpaceStation extends Meeple {
   private lastProductionTime: number = 0;
+  private conversionStartTime: number = 0;
   private regenerationState: RegenerationState = { lastRegenerationTime: 0 };
   private readonly regenerationConfig: RegenerationConfig = {
     goodType: Resources.Ore,
@@ -80,34 +82,81 @@ export class SpaceStation extends Meeple {
     }
 
     const currentTime = Date.now();
+
+    // Check if we're currently converting
+    if (this.state.type === MeepleStateType.Converting) {
+      const elapsedConversionTime = currentTime - this.conversionStartTime;
+      
+      // If conversion delay has passed, complete the conversion
+      if (elapsedConversionTime >= SPACE_STATION_CONVERSION_DELAY_MS) {
+        const oreAmount = this.goods[Resources.Ore] || 0;
+        const productionRate = Math.floor(oreAmount / ORE_PER_PRODUCT);
+
+        if (productionRate > 0) {
+          // Generate only the specific product type this station produces
+          this.goods[this.productType] = (this.goods[this.productType] || 0) + productionRate;
+
+          // Deduct ore used for production
+          const oreToDeduct = productionRate * ORE_PER_PRODUCT;
+          this.goods[Resources.Ore] = Math.max(
+            0,
+            (this.goods[Resources.Ore] || 0) - oreToDeduct
+          );
+        }
+
+        // Reset state after conversion completes
+        if (this.visitors.size > 1) {
+          const randomVisitor = this.getRandomVisitor();
+          if (randomVisitor) {
+            this.state = {
+              type: MeepleStateType.Transacting,
+              target: randomVisitor,
+            };
+          } else {
+            this.state = {
+              type: MeepleStateType.Idle,
+            };
+          }
+        } else {
+          this.state = {
+            type: MeepleStateType.Idle,
+          };
+        }
+
+        this.lastProductionTime = currentTime;
+      }
+      return; // Don't start new conversion while already converting
+    }
+
     const elapsedSeconds = (currentTime - this.lastProductionTime) / 1000;
 
-    // Generate products every second based on ore
+    // Check if it's time to start a new conversion
     if (elapsedSeconds >= SPACE_STATION_PRODUCTION_INTERVAL_SECONDS) {
       const oreAmount = this.goods[Resources.Ore] || 0;
       const productionRate = Math.floor(oreAmount / ORE_PER_PRODUCT);
 
       if (productionRate > 0) {
-        // Generate only the specific product type this station produces
-        this.goods[this.productType] = (this.goods[this.productType] || 0) + productionRate;
-
-        // Deduct ore used for production
-        const oreToDeduct = productionRate * ORE_PER_PRODUCT;
-        this.goods[Resources.Ore] = Math.max(
-          0,
-          (this.goods[Resources.Ore] || 0) - oreToDeduct
-        );
-      }
-
-      this.lastProductionTime = currentTime;
-
-      if (this.visitors.size > 1) {
-        const randomVisitor = this.getRandomVisitor();
-        if (randomVisitor) {
-          this.state = {
-            type: MeepleStateType.Transacting,
-            target: randomVisitor,
-          };
+        // Start converting state
+        this.state = {
+          type: MeepleStateType.Converting,
+          productType: this.productType,
+        };
+        this.conversionStartTime = currentTime;
+      } else {
+        // No ore to convert, update lastProductionTime and set state
+        this.lastProductionTime = currentTime;
+        if (this.visitors.size > 1) {
+          const randomVisitor = this.getRandomVisitor();
+          if (randomVisitor) {
+            this.state = {
+              type: MeepleStateType.Transacting,
+              target: randomVisitor,
+            };
+          } else {
+            this.state = {
+              type: MeepleStateType.Idle,
+            };
+          }
         } else {
           this.state = {
             type: MeepleStateType.Idle,

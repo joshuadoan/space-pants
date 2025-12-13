@@ -188,6 +188,9 @@ export const SELLING_DELAY_MS = 3000;
 /** Delay for selling treasure action in milliseconds */
 export const SELL_TREASURE_DELAY_MS = 3000;
 
+/** Delay for space station converting ore to product in milliseconds */
+export const SPACE_STATION_CONVERSION_DELAY_MS = 3000;
+
 /** Default transaction time in milliseconds */
 export const DEFAULT_TRANSACTION_TIME_MS = 1000;
 

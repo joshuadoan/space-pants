@@ -45,6 +45,7 @@ export class Meeple extends Actor {
   state: MeepleState;
   type: MeepleType;
   visitors: Set<Meeple>;
+  activeRuleId: string | null = null;
   private followers: Map<GoodType, Actor> = new Map();
 
   private lastUpdateTime: number = 0;
@@ -196,11 +197,18 @@ export class Meeple extends Actor {
     if (currentTime - this.lastUpdateTime < MEEPLE_UPDATE_INTERVAL_MS) return;
     this.lastUpdateTime = currentTime;
 
+    let ruleMatched = false;
     for (const rule of this.rules) {
       if (evaluateRule(rule, this.goods[rule.good] ?? 0)) {
+        this.activeRuleId = rule.id;
         this.executeRuleAction(rule.action);
+        ruleMatched = true;
         break; // Only execute one rule per update cycle
       }
+    }
+    // Clear active rule if no rule matched and meeple is idle
+    if (!ruleMatched && this.state.type === MeepleStateType.Idle) {
+      this.activeRuleId = null;
     }
   }
 

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useReducer } from "react";
+import { useEffect, useMemo, useReducer, useRef } from "react";
 import { useFps } from "react-fps";
 import Markdown from "react-markdown";
 import { IconRocket } from "@tabler/icons-react";
@@ -59,6 +59,7 @@ const initialState: State = {
 
 function App() {
   const { game, meeples, zoomToEntity, activeMeeple } = useGame();
+  const cardRefs = useRef<Map<string, HTMLDivElement>>(new Map());
 
   const [state, dispatch] = useReducer((state: State, action: Action) => {
     switch (action.type) {
@@ -173,6 +174,13 @@ function App() {
           {filteredEntities.map((entity, index) => (
             <div
               key={index}
+              ref={(el) => {
+                if (el) {
+                  cardRefs.current.set(entity.id, el);
+                } else {
+                  cardRefs.current.delete(entity.id);
+                }
+              }}
               className={`card bg-base-100 shadow-md hover:shadow-lg transition-all duration-200 border rounded-lg p-4 m-2 ${
                 activeMeeple?.id === entity.id
                   ? "border-primary border-2"
@@ -183,6 +191,13 @@ function App() {
                 meeple={entity}
                 onMeepleNameClick={() => zoomToEntity(entity)}
                 activeEntity={activeMeeple}
+                onScrollToCard={() => {
+                  const cardElement = cardRefs.current.get(entity.id);
+                  cardElement?.scrollIntoView({
+                    behavior: "smooth",
+                    block: "nearest",
+                  });
+                }}
               />
             </div>
           ))}

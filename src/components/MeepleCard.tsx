@@ -1,3 +1,4 @@
+import { useReducer } from "react";
 import type { Meeple } from "../entities/Meeple";
 import { MeepleType } from "../entities/types";
 import {
@@ -12,27 +13,119 @@ import {
   IconArrowLeft,
   IconArrowRight,
   IconHeart,
-  IconBolt
+  IconBolt,
+  IconEdit
 } from "@tabler/icons-react";
 import { IconShip } from "@tabler/icons-react";
 import { IconPick } from "@tabler/icons-react";
 import { IconMeteor } from "@tabler/icons-react";
 import { IconSatellite } from "@tabler/icons-react";
 import { IconBeer } from "@tabler/icons-react";
-import { MeepleStateType, MeepleStats } from "../entities/types";
+import { IconRefresh } from "@tabler/icons-react";
+import { MeepleStateType, MeepleStats, Products } from "../entities/types";
+import { getGoodLabel } from "../utils/goodsMetadata";
 import { GoodsDisplay } from "./GoodsDisplay";
 import { RulesForm } from "./RulesForm";
-import { Player } from "../entities/Player";
 import { RulesReadOnly } from "./RulesReadOnly";
+
+type EditStateAction =
+  | { type: "start-edit" }
+  | { type: "cancel-edit" }
+  | { type: "save-edit" };
+
+type EditState = {
+  isEditing: boolean;
+};
+
+const initialEditState: EditState = {
+  isEditing: false,
+};
+
+function editStateReducer(state: EditState, action: EditStateAction): EditState {
+  switch (action.type) {
+    case "start-edit":
+      return { isEditing: true };
+    case "cancel-edit":
+    case "save-edit":
+      return { isEditing: false };
+    default:
+      return state;
+  }
+}
+
+function MeepleRulesSection({ 
+  meeple, 
+  onScrollToCard 
+}: { 
+  meeple: Meeple;
+  onScrollToCard?: () => void;
+}) {
+  const [editState, dispatch] = useReducer(editStateReducer, initialEditState);
+
+  const handleSave = (rules: typeof meeple.rules) => {
+    meeple.rules = rules;
+    dispatch({ type: "save-edit" });
+    // Scroll after a brief delay to ensure state update is complete
+    setTimeout(() => {
+      onScrollToCard?.();
+    }, 100);
+  };
+
+  const handleCancel = () => {
+    dispatch({ type: "cancel-edit" });
+    // Scroll after a brief delay to ensure state update is complete
+    setTimeout(() => {
+      onScrollToCard?.();
+    }, 100);
+  };
+
+  if (editState.isEditing) {
+    return (
+      <>
+        <div className="divider my-1"></div>
+        <RulesForm
+          rules={meeple.rules}
+          onUpdateRules={handleSave}
+          onCancel={handleCancel}
+          defaultExpanded={true}
+        />
+      </>
+    );
+  }
+
+  return (
+    <>
+      <div className="divider my-1"></div>
+      <div className="space-y-2">
+        <div className="flex items-center justify-end">
+          <button
+            className="btn btn-sm btn-primary btn-outline"
+            onClick={() => dispatch({ type: "start-edit" })}
+            title="Edit rules"
+          >
+            <IconEdit size={14} />
+            Edit Rules
+          </button>
+        </div>
+        <RulesReadOnly
+          rules={meeple.rules}
+          activeRuleId={meeple.activeRuleId}
+        />
+      </div>
+    </>
+  );
+}
 
 export function MeepleCard({
   meeple,
   onMeepleNameClick,
   activeEntity,
+  onScrollToCard,
 }: {
   meeple: Meeple;
   onMeepleNameClick: () => void;
   activeEntity: Meeple | null;
+  onScrollToCard?: () => void;
 }) {
   return (
     <div className="card-body p-0 gap-2">
@@ -272,6 +365,22 @@ export function MeepleCard({
                 </span>
               </div>
             ),
+            [MeepleStateType.Converting]: (
+              <div className="tooltip">
+                <div className="tooltip-content">
+                  <div className="text-sm font-semibold text-base-content">
+                    Converting ore to {meeple.state.type === MeepleStateType.Converting &&
+                      getGoodLabel(meeple.state.productType)}
+                  </div>
+                </div>
+                <span className="badge badge-sm badge-accent badge-outline flex items-center gap-1">
+                  <IconRefresh size={14} className="cursor-pointer" />
+                  Converting to{" "}
+                  {meeple.state.type === MeepleStateType.Converting &&
+                    getGoodLabel(meeple.state.productType)}
+                </span>
+              </div>
+            ),
           }[meeple.state.type]
         }
       </div>
@@ -356,23 +465,7 @@ export function MeepleCard({
         </>
       )}
       {activeEntity && activeEntity.id === meeple.id && (
-        <>
-          <div className="divider my-1"></div>
-          {
-            meeple instanceof Player ? (
-              <RulesForm
-                rules={meeple.rules}
-                onUpdateRules={(rules) => {
-                  meeple.rules = rules;
-                }}
-              />
-            ) : ( 
-              <RulesReadOnly
-                rules={meeple.rules}
-              />
-            )
-          }
-        </>
+        <MeepleRulesSection meeple={meeple} onScrollToCard={onScrollToCard} />
       )}
     </div>
   );

@@ -46,6 +46,7 @@ export enum MeepleStateType {
   Chilling = "chilling",
   Transacting = "transacting",
   Working = "working",
+  Converting = "converting",
 }
 
 export type MeepleStateIdle = {
@@ -87,6 +88,11 @@ export type MeepleStateTrading = {
   target: Meeple;
 };
 
+export type MeepleStateConverting = {
+  type: MeepleStateType.Converting;
+  productType: Products;
+};
+
 export type MeepleState =
   | MeepleStateIdle
   | MeepleStateMining
@@ -95,7 +101,8 @@ export type MeepleState =
   | MeepleStateChilling
   | MeepleStateSocializing
   | MeepleStateTransacting
-  | MeepleStateWorking;
+  | MeepleStateWorking
+  | MeepleStateConverting;
 
 export enum ComparisonOperator {
   Equal = "=",

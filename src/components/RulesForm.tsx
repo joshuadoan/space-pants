@@ -11,7 +11,7 @@ import { TRADER_RULES, MINER_RULES, BARTENDER_RULES } from "../entities/ruleTemp
 import { useToast } from "./Toast";
 import { DndProvider, useDrag, useDrop } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
-import { IconBulb, IconGripVertical, IconTrash, IconPlus, IconDeviceFloppy, IconMoodSmile, IconChevronDown } from "@tabler/icons-react";
+import { IconBulb, IconGripVertical, IconTrash, IconPlus, IconDeviceFloppy, IconMoodSmile, IconChevronDown, IconX } from "@tabler/icons-react";
 
 const RULE_TEMPLATES = {
   "": "Select a template...",
@@ -225,13 +225,17 @@ function DraggableRuleItem({
 export function RulesForm({
   rules,
   onUpdateRules,
+  onCancel,
+  defaultExpanded = false,
 }: {
   rules: LogicRule[];
   onUpdateRules: (rules: LogicRule[]) => void;
+  onCancel?: () => void;
+  defaultExpanded?: boolean;
 }) {
   const formRef = useRef<HTMLFormElement>(null);
   const [localRules, setLocalRules] = useState<LogicRule[]>(rules);
-  const [isExpanded, setIsExpanded] = useState(false);
+  const [isExpanded, setIsExpanded] = useState(defaultExpanded);
   const [selectedTemplate, setSelectedTemplate] = useState<string>("");
   const [saveStatus, setSaveStatus] = useState<"idle" | "saving" | "saved">(
     "idle"
@@ -419,6 +423,16 @@ export function RulesForm({
               >
                 Add New Rule
               </button>
+              {onCancel && (
+                <button
+                  type="button"
+                  onClick={onCancel}
+                  className="btn btn-ghost w-full sm:w-auto"
+                >
+                  <IconX size={14} className="mr-1" />
+                  Cancel
+                </button>
+              )}
               <button
                 type="submit"
                 className={`btn btn-primary w-full sm:w-auto transition-all duration-300 ${
