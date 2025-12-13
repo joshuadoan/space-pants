@@ -87,7 +87,10 @@ export const DEFAULT_HEALTH = 100;
 export const DEFAULT_ENERGY = 100;
 
 /** Starting money for traders */
-export const TRADER_STARTING_MONEY = 10; // Give traders enough capital to start trading
+export const TRADER_STARTING_MONEY = 42; // Give traders enough capital to start trading
+
+/** Starting money for space stations */
+export const SPACE_STATION_STARTING_MONEY = 42;
 
 /** Starting ore for asteroids */
 export const ASTEROID_STARTING_ORE = 1;

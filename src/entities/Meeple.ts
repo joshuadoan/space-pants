@@ -233,13 +233,22 @@ export class Meeple extends Actor {
     const asteroid = this.getRandomAsteroid();
     if (!asteroid) return;
 
+    // Double-check that the asteroid has ore before attempting to mine
+    const asteroidOre = asteroid.goods[Resources.Ore] ?? 0;
+    if (asteroidOre <= 0) return;
+
     this.visitTarget(asteroid, MeepleStateType.Mining, () => {
-      this.transact("add", Resources.Ore, MINING_ORE_AMOUNT);
-      asteroid.transact("remove", Resources.Ore, MINING_ORE_AMOUNT);
-      
-      // Rare chance to find treasure while mining
-      if (Math.random() < MINING_TREASURE_CHANCE) {
-        this.transact("add", Resources.Treasure, 1);
+      // Check again at mining time to ensure asteroid still has ore
+      const currentAsteroidOre = asteroid.goods[Resources.Ore] ?? 0;
+      if (currentAsteroidOre > 0) {
+        const actualMiningAmount = Math.min(MINING_ORE_AMOUNT, currentAsteroidOre);
+        this.transact("add", Resources.Ore, actualMiningAmount);
+        asteroid.transact("remove", Resources.Ore, actualMiningAmount);
+        
+        // Rare chance to find treasure while mining
+        if (Math.random() < MINING_TREASURE_CHANCE) {
+          this.transact("add", Resources.Treasure, 1);
+        }
       }
     }, MINING_DELAY_MS);
   }
@@ -314,14 +323,20 @@ export class Meeple extends Actor {
   }
 
   private executeGoShopping(): void {
-    const station = this.getRandomStation();
+    // Find a random product type to buy
+    const productTypes = Object.values(Products);
+    const randomProductType = productTypes[Math.floor(Math.random() * productTypes.length)];
+    
+    // Find a station that produces this product
+    const station = this.getRandomStationThatProduces(randomProductType);
     if (!station) return;
 
     this.visitTarget(station, MeepleStateType.Trading, () => {
-      const good = getGoodWithMostAmount(station.goods);
-      if (good && station.goods[good] && station.goods[good] >= 1) {
-        this.transact("add", good, 1);
-        station.transact("remove", good, 1);
+      // Buy the product that this station produces
+      const productType = "productType" in station ? (station as any).productType as Products : undefined;
+      if (productType && station.goods[productType] && station.goods[productType] >= 1) {
+        this.transact("add", productType, 1);
+        station.transact("remove", productType, 1);
         this.transact("remove", Resources.Money, PRODUCT_SELL_PRICE);
         station.transact("add", Resources.Money, PRODUCT_SELL_PRICE);
       }
@@ -329,22 +344,29 @@ export class Meeple extends Actor {
   }
 
   private executeGoSelling(): void {
-    const station = this.getRandomStation();
+    // Find products the trader has
+    const products = Object.keys(this.goods).filter(
+      (good): good is Products =>
+        Object.values(Products).includes(good as Products) &&
+        (this.goods as Record<string, number>)[good] > 0
+    );
+
+    if (products.length === 0) return;
+
+    // Pick a random product to sell
+    const productToSell = products[Math.floor(Math.random() * products.length)];
+    
+    // Find a station that does NOT produce this product (so they want to buy it)
+    const station = this.getRandomStationThatDoesNotProduce(productToSell);
     if (!station) return;
 
     this.visitTarget(station, MeepleStateType.Trading, () => {
-      const goods = Object.keys(this.goods).filter(
-        (good): good is GoodType =>
-          good !== Resources.Ore && good !== Resources.Money
-      );
-      for (const good of goods) {
-        const quantity = this.goods[good] ?? 0;
-        if (quantity > 0) {
-          this.transact("remove", good, quantity);
-          station.transact("add", good, quantity);
-          this.transact("add", Resources.Money, quantity * PRODUCT_SELL_PRICE);
-          station.transact("remove", Resources.Money, quantity * PRODUCT_SELL_PRICE);
-        }
+      const quantity = this.goods[productToSell] ?? 0;
+      if (quantity > 0) {
+        this.transact("remove", productToSell, quantity);
+        station.transact("add", productToSell, quantity);
+        this.transact("add", Resources.Money, quantity * PRODUCT_SELL_PRICE);
+        station.transact("remove", Resources.Money, quantity * PRODUCT_SELL_PRICE);
       }
     }, SELLING_DELAY_MS);
   }
@@ -405,7 +427,10 @@ export class Meeple extends Actor {
       (a: Actor) => a instanceof Meeple
     );
     const asteroids = meeples?.filter(
-      (meeple: Meeple) => meeple.type === MeepleType.Asteroid && meeple !== this
+      (meeple: Meeple) => 
+        meeple.type === MeepleType.Asteroid && 
+        meeple !== this &&
+        (meeple.goods[Resources.Ore] ?? 0) > 0 // Only return asteroids with ore
     );
     return (
       asteroids?.[Math.floor(Math.random() * asteroids.length)] ?? undefined
@@ -418,6 +443,44 @@ export class Meeple extends Actor {
     );
     const stations = meeples?.filter(
       (meeple: Meeple) => meeple.type === MeepleType.SpaceStation && meeple !== this
+    );
+    return stations?.[Math.floor(Math.random() * stations.length)] ?? undefined;
+  }
+
+  /**
+   * Gets a random station that produces the specified product type.
+   * Used by traders to find stations to buy products from.
+   */
+  getRandomStationThatProduces(productType: Products): Meeple | undefined {
+    const meeples = this.scene?.actors.filter(
+      (a: Actor) => a instanceof Meeple
+    );
+    const stations = meeples?.filter(
+      (meeple: Meeple) =>
+        meeple.type === MeepleType.SpaceStation &&
+        meeple !== this &&
+        // Check if meeple has productType property (SpaceStation has this)
+        "productType" in meeple &&
+        (meeple as any).productType === productType
+    );
+    return stations?.[Math.floor(Math.random() * stations.length)] ?? undefined;
+  }
+
+  /**
+   * Gets a random station that does NOT produce the specified product type.
+   * Used by traders to find stations to sell products to.
+   */
+  getRandomStationThatDoesNotProduce(productType: Products): Meeple | undefined {
+    const meeples = this.scene?.actors.filter(
+      (a: Actor) => a instanceof Meeple
+    );
+    const stations = meeples?.filter(
+      (meeple: Meeple) =>
+        meeple.type === MeepleType.SpaceStation &&
+        meeple !== this &&
+        // Check if meeple has productType property (SpaceStation has this)
+        "productType" in meeple &&
+        (meeple as any).productType !== productType
     );
     return stations?.[Math.floor(Math.random() * stations.length)] ?? undefined;
   }

@@ -11,6 +11,7 @@ import {
   SPACE_STATION_MIN_ORE_THRESHOLD,
   SPACE_STATION_REGENERATION_RATE_MS,
   SPACE_STATION_ORE_REGENERATION_AMOUNT,
+  SPACE_STATION_STARTING_MONEY,
 } from "./game-config";
 import {
   updateRegeneration,
@@ -44,10 +45,18 @@ export class SpaceStation extends Meeple {
     amountPerCycle: SPACE_STATION_ORE_REGENERATION_AMOUNT,
     rateMs: SPACE_STATION_REGENERATION_RATE_MS,
   };
+  /** The product type this station produces */
+  public readonly productType: Products;
 
-  constructor(position: Vector, name: string) {
+  constructor(position: Vector, name: string, productType: Products) {
     // Call super with position, speed (0 for stationary stations), name, and size
     super(position, 0, name, SPACE_STATION_SIZE.WIDTH, SPACE_STATION_SIZE.HEIGHT);
+
+    // Store the product type this station produces
+    this.productType = productType;
+
+    // Set starting money
+    this.goods[Resources.Money] = SPACE_STATION_STARTING_MONEY;
 
     // Create unique space station design
     const stationDesign = createRandomSpaceStation();
@@ -79,13 +88,8 @@ export class SpaceStation extends Meeple {
       const productionRate = Math.floor(oreAmount / ORE_PER_PRODUCT);
 
       if (productionRate > 0) {
-        // Generate random products (not ore or money)
-        const productTypes = Object.values(Products);
-        for (let i = 0; i < productionRate; i++) {
-          const randomProduct =
-            productTypes[Math.floor(Math.random() * productTypes.length)];
-          this.goods[randomProduct] = (this.goods[randomProduct] || 0) + 1;
-        }
+        // Generate only the specific product type this station produces
+        this.goods[this.productType] = (this.goods[this.productType] || 0) + productionRate;
 
         // Deduct ore used for production
         const oreToDeduct = productionRate * ORE_PER_PRODUCT;

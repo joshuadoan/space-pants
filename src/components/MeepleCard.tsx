@@ -46,12 +46,12 @@ export function MeepleCard({
           >
             {meeple.name}
           </h3>
-          <div className="flex items-center gap-1.5 flex-shrink-0">
+          <div className="flex items-center gap-1.5 shrink-0">
             <span className="flex items-center gap-0.5 text-xs" title="Health">
               <IconHeart 
                 size={14} 
-                className="text-error" 
-                fill={meeple.goods[MeepleStats.Health] > 50 ? "currentColor" : "none"}
+                className="text-error cursor-pointer" 
+                fill={(meeple.goods[MeepleStats.Health] ?? 0) > 50 ? "currentColor" : "none"}
               />
               <span className="text-base-content/70 font-medium">
                 {Math.round(meeple.goods[MeepleStats.Health] ?? 0)}
@@ -60,8 +60,8 @@ export function MeepleCard({
             <span className="flex items-center gap-0.5 text-xs" title="Energy">
               <IconBolt 
                 size={14} 
-                className="text-warning" 
-                fill={meeple.goods[MeepleStats.Energy] > 50 ? "currentColor" : "none"}
+                className="text-warning cursor-pointer" 
+                fill={(meeple.goods[MeepleStats.Energy] ?? 0) > 50 ? "currentColor" : "none"}
               />
               <span className="text-base-content/70 font-medium">
                 {Math.round(meeple.goods[MeepleStats.Energy] ?? 0)}
@@ -69,7 +69,7 @@ export function MeepleCard({
             </span>
           </div>
         </div>
-        <span className="text-sm text-base-content/50 flex-shrink-0">
+        <span className="text-sm text-base-content/50 shrink-0">
           pos {Math.round(meeple.pos.x)}° {Math.round(meeple.pos.y)}°
         </span>
       </div>
@@ -77,106 +77,200 @@ export function MeepleCard({
         {
           {
             [MeepleType.Player]: (
-              <span className="badge badge-sm badge-success badge-outline flex items-center gap-1">
-                <IconUser size={14} />
-                Player
-              </span>
+              <div className="tooltip">
+                <div className="tooltip-content">
+                  <div className="text-sm font-semibold text-base-content">Player</div>
+                </div>
+                <span className="badge badge-sm badge-success badge-outline flex items-center gap-1">
+                  <IconUser size={14} className="cursor-pointer" />
+                  Player
+                </span>
+              </div>
             ),
             [MeepleType.Trader]: (
-              <span className="badge badge-sm badge-primary badge-outline flex items-center gap-1">
-                <IconShip size={14} />
-                Trader
-              </span>
+              <div className="tooltip">
+                <div className="tooltip-content">
+                  <div className="text-sm font-semibold text-base-content">Trader</div>
+                </div>
+                <span className="badge badge-sm badge-primary badge-outline flex items-center gap-1">
+                  <IconShip size={14} className="cursor-pointer" />
+                  Trader
+                </span>
+              </div>
             ),
             [MeepleType.Miner]: (
-              <span className="badge badge-sm badge-secondary badge-outline flex items-center gap-1">
-                <IconPick size={14} />
-                Miner
-              </span>
+              <div className="tooltip">
+                <div className="tooltip-content">
+                  <div className="text-sm font-semibold text-base-content">Miner</div>
+                </div>
+                <span className="badge badge-sm badge-secondary badge-outline flex items-center gap-1">
+                  <IconPick size={14} className="cursor-pointer" />
+                  Miner
+                </span>
+              </div>
             ),
             [MeepleType.Asteroid]: (
-              <span className="badge badge-sm badge-accent badge-outline flex items-center gap-1">
-                <IconMeteor size={14} />
-                Asteroid
-              </span>
+              <div className="tooltip">
+                <div className="tooltip-content">
+                  <div className="text-sm font-semibold text-base-content">Asteroid</div>
+                </div>
+                <span className="badge badge-sm badge-accent badge-outline flex items-center gap-1">
+                  <IconMeteor size={14} className="cursor-pointer" />
+                  Asteroid
+                </span>
+              </div>
             ),
             [MeepleType.SpaceStation]: (
-              <span className="badge badge-sm badge-info badge-outline flex items-center gap-1">
-                <IconSatellite size={14} />
-                Space Station
-              </span>
+              <div className="tooltip">
+                <div className="tooltip-content">
+                  <div className="text-sm font-semibold text-base-content">Space Station</div>
+                </div>
+                <span className="badge badge-sm badge-info badge-outline flex items-center gap-1">
+                  <IconSatellite size={14} className="cursor-pointer" />
+                  Space Station
+                </span>
+              </div>
             ),
             [MeepleType.SpaceBar]: (
-              <span className="badge badge-sm badge-warning badge-outline flex items-center gap-1">
-                <IconBeer size={14} />
-                Space Bar
-              </span>
+              <div className="tooltip">
+                <div className="tooltip-content">
+                  <div className="text-sm font-semibold text-base-content">Space Bar</div>
+                </div>
+                <span className="badge badge-sm badge-warning badge-outline flex items-center gap-1">
+                  <IconBeer size={14} className="cursor-pointer" />
+                  Space Bar
+                </span>
+              </div>
             ),
             [MeepleType.SpaceApartments]: (
-              <span className="badge badge-sm badge-info badge-outline flex items-center gap-1">
-                <IconBuilding size={14} />
-                Space Apartments
-              </span>
+              <div className="tooltip">
+                <div className="tooltip-content">
+                  <div className="text-sm font-semibold text-base-content">Space Apartments</div>
+                </div>
+                <span className="badge badge-sm badge-info badge-outline flex items-center gap-1">
+                  <IconBuilding size={14} className="cursor-pointer" />
+                  Space Apartments
+                </span>
+              </div>
             ),
             [MeepleType.TreasureCollector]: (
-              <span className="badge badge-sm badge-warning flex items-center gap-1">
-                <IconStar size={14} />
-                Treasure Collector
-              </span>
+              <div className="tooltip">
+                <div className="tooltip-content">
+                  <div className="text-sm font-semibold text-base-content">Treasure Collector</div>
+                </div>
+                <span className="badge badge-sm badge-warning flex items-center gap-1">
+                  <IconStar size={14} className="cursor-pointer" />
+                  Treasure Collector
+                </span>
+              </div>
+            ),
+            [MeepleType.Bartender]: (
+              <div className="tooltip">
+                <div className="tooltip-content">
+                  <div className="text-sm font-semibold text-base-content">Bartender</div>
+                </div>
+                <span className="badge badge-sm badge-accent badge-outline flex items-center gap-1">
+                  <IconBeer size={14} className="cursor-pointer" />
+                  Bartender
+                </span>
+              </div>
             ),
           }[meeple.type]
         }
         {
           {
             [MeepleStateType.Idle]: (
-              <span className="badge badge-sm badge-ghost badge-outline flex items-center gap-1">
-                <IconMoodSmile size={14} />
-                Idle
-              </span>
+              <div className="tooltip">
+                <div className="tooltip-content">
+                  <div className="text-sm font-semibold text-base-content">Idle</div>
+                </div>
+                <span className="badge badge-sm badge-ghost badge-outline flex items-center gap-1">
+                  <IconMoodSmile size={14} className="cursor-pointer" />
+                  Idle
+                </span>
+              </div>
             ),
             [MeepleStateType.Mining]: (
-              <span className="badge badge-sm badge-secondary badge-outline flex items-center gap-1">
-                <IconPick size={14} />
-                Mining
-              </span>
+              <div className="tooltip">
+                <div className="tooltip-content">
+                  <div className="text-sm font-semibold text-base-content">Mining</div>
+                </div>
+                <span className="badge badge-sm badge-secondary badge-outline flex items-center gap-1">
+                  <IconPick size={14} className="cursor-pointer" />
+                  Mining
+                </span>
+              </div>
             ),
             [MeepleStateType.Traveling]: (
-              <span className="badge badge-sm badge-primary badge-outline flex items-center gap-1">
-                <IconShip size={14} />
-                Traveling to{" "}
-                {meeple.state.type === MeepleStateType.Traveling &&
-                  meeple.state.target.type}
-              </span>
+              <div className="tooltip">
+                <div className="tooltip-content">
+                  <div className="text-sm font-semibold text-base-content">
+                    Traveling to {meeple.state.type === MeepleStateType.Traveling &&
+                      meeple.state.target.type}
+                  </div>
+                </div>
+                <span className="badge badge-sm badge-primary badge-outline flex items-center gap-1">
+                  <IconShip size={14} className="cursor-pointer" />
+                  Traveling to{" "}
+                  {meeple.state.type === MeepleStateType.Traveling &&
+                    meeple.state.target.type}
+                </span>
+              </div>
             ),
             [MeepleStateType.Trading]: (
-              <span className="badge badge-sm badge-warning badge-outline flex items-center gap-1">
-                <IconCurrencyDollar size={14} />
-                Trading
-              </span>
+              <div className="tooltip">
+                <div className="tooltip-content">
+                  <div className="text-sm font-semibold text-base-content">Trading</div>
+                </div>
+                <span className="badge badge-sm badge-warning badge-outline flex items-center gap-1">
+                  <IconCurrencyDollar size={14} className="cursor-pointer" />
+                  Trading
+                </span>
+              </div>
             ),
             [MeepleStateType.Socializing]: (
-              <span className="badge badge-sm badge-info badge-outline flex items-center gap-1">
-                <IconUsers size={14} />
-                Socializing
-              </span>
+              <div className="tooltip">
+                <div className="tooltip-content">
+                  <div className="text-sm font-semibold text-base-content">Socializing</div>
+                </div>
+                <span className="badge badge-sm badge-info badge-outline flex items-center gap-1">
+                  <IconUsers size={14} className="cursor-pointer" />
+                  Socializing
+                </span>
+              </div>
             ),
             [MeepleStateType.Working]: (
-              <span className="badge badge-sm badge-success badge-outline flex items-center gap-1">
-                <IconBeer size={14} />
-                Working
-              </span>
+              <div className="tooltip">
+                <div className="tooltip-content">
+                  <div className="text-sm font-semibold text-base-content">Working</div>
+                </div>
+                <span className="badge badge-sm badge-success badge-outline flex items-center gap-1">
+                  <IconBeer size={14} className="cursor-pointer" />
+                  Working
+                </span>
+              </div>
             ),
             [MeepleStateType.Transacting]: (
-              <span className="badge badge-sm badge-warning badge-outline flex items-center gap-1">
-                <IconCurrencyDollar size={14} />
-                Transacting
-              </span>
+              <div className="tooltip">
+                <div className="tooltip-content">
+                  <div className="text-sm font-semibold text-base-content">Transacting</div>
+                </div>
+                <span className="badge badge-sm badge-warning badge-outline flex items-center gap-1">
+                  <IconCurrencyDollar size={14} className="cursor-pointer" />
+                  Transacting
+                </span>
+              </div>
             ),
             [MeepleStateType.Chilling]: (
-              <span className="badge badge-sm badge-ghost badge-outline flex items-center gap-1">
-                <IconMoodSmile size={14} />
-                Chilling
-              </span>
+              <div className="tooltip">
+                <div className="tooltip-content">
+                  <div className="text-sm font-semibold text-base-content">Chilling</div>
+                </div>
+                <span className="badge badge-sm badge-ghost badge-outline flex items-center gap-1">
+                  <IconMoodSmile size={14} className="cursor-pointer" />
+                  Chilling
+                </span>
+              </div>
             ),
           }[meeple.state.type]
         }
@@ -186,24 +280,24 @@ export function MeepleCard({
           <div className="divider my-1"></div>
           <div className="bg-base-200/50 rounded-lg p-3 space-y-2">
             <div className="text-xs font-semibold text-base-content/70 flex items-center gap-1">
-              <IconMoodSmile size={14} />
+              <IconMoodSmile size={14} className="cursor-pointer" />
               How to Move
             </div>
             <div className="grid grid-cols-2 gap-2 text-xs">
               <div className="flex items-center gap-1.5 text-base-content/80">
-                <IconArrowUp size={16} className="text-primary" />
+                <IconArrowUp size={16} className="text-primary cursor-pointer" />
                 <span>Up</span>
               </div>
               <div className="flex items-center gap-1.5 text-base-content/80">
-                <IconArrowDown size={16} className="text-primary" />
+                <IconArrowDown size={16} className="text-primary cursor-pointer" />
                 <span>Down</span>
               </div>
               <div className="flex items-center gap-1.5 text-base-content/80">
-                <IconArrowLeft size={16} className="text-primary" />
+                <IconArrowLeft size={16} className="text-primary cursor-pointer" />
                 <span>Left</span>
               </div>
               <div className="flex items-center gap-1.5 text-base-content/80">
-                <IconArrowRight size={16} className="text-primary" />
+                <IconArrowRight size={16} className="text-primary cursor-pointer" />
                 <span>Right</span>
               </div>
             </div>
@@ -222,7 +316,7 @@ export function MeepleCard({
           <div className="space-y-2">
             <div className="flex items-center gap-2">
               <span className="text-sm font-semibold text-base-content flex items-center gap-1">
-                <IconUsers size={16} />
+                <IconUsers size={16} className="cursor-pointer" />
                 Visitors
               </span>
               <span className="badge badge-sm badge-ghost">
@@ -240,14 +334,15 @@ export function MeepleCard({
                   >
                     {
                       {
-                        [MeepleType.Player]: <IconUser size={14} />,
-                        [MeepleType.Trader]: <IconShip size={14} />,
-                        [MeepleType.Miner]: <IconPick size={14} />,
-                        [MeepleType.Asteroid]: <IconMeteor size={14} />,
-                        [MeepleType.SpaceStation]: <IconSatellite size={14} />,
-                        [MeepleType.SpaceBar]: <IconBeer size={14} />,
-                        [MeepleType.SpaceApartments]: <IconBuilding size={14} />,
-                        [MeepleType.TreasureCollector]: <IconStar size={14} />,
+                        [MeepleType.Player]: <IconUser size={14} className="cursor-pointer" />,
+                        [MeepleType.Trader]: <IconShip size={14} className="cursor-pointer" />,
+                        [MeepleType.Miner]: <IconPick size={14} className="cursor-pointer" />,
+                        [MeepleType.Asteroid]: <IconMeteor size={14} className="cursor-pointer" />,
+                        [MeepleType.SpaceStation]: <IconSatellite size={14} className="cursor-pointer" />,
+                        [MeepleType.SpaceBar]: <IconBeer size={14} className="cursor-pointer" />,
+                        [MeepleType.SpaceApartments]: <IconBuilding size={14} className="cursor-pointer" />,
+                        [MeepleType.TreasureCollector]: <IconStar size={14} className="cursor-pointer" />,
+                        [MeepleType.Bartender]: <IconBeer size={14} className="cursor-pointer" />,
                       }[visitor.type]
                     }{" "}
                     {visitor.name}

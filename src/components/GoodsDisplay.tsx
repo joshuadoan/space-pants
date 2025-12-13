@@ -2,6 +2,7 @@ import type { Goods, GoodType } from "../entities/types";
 import { Resources } from "../entities/types";
 import { getGoodMetadata, getGoodIcon, getGoodLabel } from "../utils/goodsMetadata";
 import { IconMailOff } from "@tabler/icons-react";
+import { cloneElement } from "react";
 
 type GoodsDisplayProps = {
   goods: Partial<Goods>;
@@ -29,7 +30,7 @@ export function GoodsDisplay({ goods }: GoodsDisplayProps) {
   if (goodsEntries.length === 0) {
     return (
       <div className="text-base-content/50 text-sm italic flex items-center gap-1">
-        <IconMailOff size={16} />
+        <IconMailOff size={16} className="cursor-pointer" />
         <span>No goods</span>
       </div>
     );
@@ -43,16 +44,23 @@ export function GoodsDisplay({ goods }: GoodsDisplayProps) {
         const icon = getGoodIcon(good, 18);
         const label = metadata?.label || getGoodLabel(good);
         const badgeColor = getBadgeColor(good);
+        const iconWithPointer = cloneElement(icon, {
+          className: `${icon.props.className || ""} cursor-pointer`.trim(),
+        });
         
         return (
-          <div
-            key={key}
-            className={`badge ${badgeColor} badge-lg gap-1.5 px-3 py-2.5 shadow-sm hover:shadow-md transition-all duration-200 flex items-center`}
-            title={`${label}: ${quantity}`}
-          >
-            {icon}
-            <span className="font-semibold">{quantity}</span>
-        
+          <div key={key} className="tooltip">
+            <div className="tooltip-content">
+              <div className="text-sm font-semibold text-base-content">
+                {label}: {quantity}
+              </div>
+            </div>
+            <div
+              className={`badge ${badgeColor} badge-lg gap-1.5 px-3 py-2.5 shadow-sm hover:shadow-md transition-all duration-200 flex items-center`}
+            >
+              {iconWithPointer}
+              <span className="font-semibold">{quantity}</span>
+            </div>
           </div>
         );
       })}

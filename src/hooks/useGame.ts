@@ -24,6 +24,7 @@ import {
   DEFAULT_SHIP_SPEED,
   CANVAS_WAIT_CONFIG,
 } from "../entities/game-config";
+import { Products } from "../entities/types";
 
 // ============================================================================
 // Types
@@ -154,13 +155,19 @@ function initializePlayer(game: Game): Player {
 
 /**
  * Creates space stations at random positions in the world.
- * Space stations convert ore into products and facilitate trading.
+ * Each station produces one specific product type made from ore.
+ * Creates one station per product type that can be made with ore.
  */
 function createSpaceStations(game: Game): void {
-  for (let i = 0; i < ENTITY_COUNTS.SPACE_STATIONS; i++) {
+  // Get all product types that can be made with ore
+  const productTypes = Object.values(Products);
+  
+  // Create one station per product type
+  for (const productType of productTypes) {
     const spaceStation = new SpaceStation(
       getRandomPosition(),
-      generateSpaceName()
+      generateSpaceName(),
+      productType
     );
     game.currentScene.add(spaceStation);
   }
