@@ -1,7 +1,6 @@
 import { createContext, useContext, useEffect, useCallback, useReducer, useRef } from "react";
 import type { ReactNode } from "react";
 import { Game } from "../entities/Game";
-import { Player } from "../entities/Player";
 import { Vector } from "excalibur";
 import { createStarTilemap } from "../utils/createStarTilemap";
 import { SpaceStation } from "../entities/SpaceStation";
@@ -25,7 +24,7 @@ import {
 } from "../entities/game-config";
 import { MeepleType, Products, Resources } from "../entities/types";
 import { MINER_RULES, TRADER_RULES } from "../entities/ruleTemplates";
-import { createMinerShipOutOfShapes, createTraderShipOutOfShapes } from "../entities/utils/createSpaceShipOutOfShapes";
+import { createEntityGraphic, EntityGraphicStyle } from "../entities/utils/createSpaceShipOutOfShapes";
 
 // ============================================================================
 // Types
@@ -49,11 +48,6 @@ type SetGameAction = {
   payload: Game;
 };
 
-type SetZoomAction = {
-  type: "set-zoom";
-  payload: number;
-};
-
 /** Action to zoom the camera to a specific entity */
 type ZoomToEntityAction = {
   type: "zoom-to-entity";
@@ -61,7 +55,7 @@ type ZoomToEntityAction = {
 };
 
 /** Union type of all possible game actions */
-type GameAction = SetMeeplesAction | SetIsLoadingAction | SetGameAction | ZoomToEntityAction | SetZoomAction;
+type GameAction = SetMeeplesAction | SetIsLoadingAction | SetGameAction | ZoomToEntityAction;
 
 /** Categorized meeples by type */
 type CategorizedMeeples = {
@@ -70,7 +64,6 @@ type CategorizedMeeples = {
   spacebars: Meeple[];
   stations: Meeple[];
   asteroids: Meeple[];
-  player: Meeple[];
   spaceapartments: Meeple[];
   bartenders: Meeple[];
   all: Meeple[];
@@ -78,7 +71,6 @@ type CategorizedMeeples = {
 
 /** Counts of meeples by type */
 type MeepleCounts = {
-  player: number;
   traders: number;
   miners: number;
   asteroids: number;
@@ -96,7 +88,6 @@ type GameState = {
   activeMeeple: Meeple | null;
   categorizedMeeples: CategorizedMeeples;
   meepleCounts: MeepleCounts;
-  zoom: number;
 };
 
 // ============================================================================
@@ -109,14 +100,12 @@ const emptyCategorizedMeeples: CategorizedMeeples = {
   spacebars: [],
   stations: [],
   asteroids: [],
-  player: [],
   spaceapartments: [],
   bartenders: [],
   all: [],
 };
 
 const emptyMeepleCounts: MeepleCounts = {
-  player: 0,
   traders: 0,
   miners: 0,
   asteroids: 0,
@@ -133,7 +122,6 @@ const initialState: GameState = {
   activeMeeple: null,
   categorizedMeeples: emptyCategorizedMeeples,
   meepleCounts: emptyMeepleCounts,
-  zoom: CAMERA_ZOOM,
 };
 
 // ============================================================================
@@ -166,12 +154,6 @@ function gameReducer(state: GameState, action: GameAction): GameState {
         meepleCounts: counts,
       };
     }
-    case "set-zoom": {
-      return {
-        ...state,
-        zoom: action.payload,
-      };
-    }
     case "zoom-to-entity": {
       return {
         ...state,
@@ -198,7 +180,6 @@ function categorizeMeeples(meeples: Meeple[]): CategorizedMeeples {
     spacebars: [],
     stations: [],
     asteroids: [],
-    player: [],
     spaceapartments: [],
     bartenders: [],
     all: meeples,
@@ -215,8 +196,6 @@ function categorizeMeeples(meeples: Meeple[]): CategorizedMeeples {
       categorized.stations.push(meeple);
     } else if (meeple.type === MeepleType.Asteroid) {
       categorized.asteroids.push(meeple);
-    } else if (meeple.type === MeepleType.Player) {
-      categorized.player.push(meeple);
     } else if (meeple.type === MeepleType.SpaceApartments) {
       categorized.spaceapartments.push(meeple);
     } else if (meeple.type === MeepleType.Bartender) {
@@ -232,7 +211,6 @@ function categorizeMeeples(meeples: Meeple[]): CategorizedMeeples {
  */
 function calculateMeepleCounts(categorized: CategorizedMeeples): MeepleCounts {
   return {
-    player: categorized.player.length,
     traders: categorized.traders.length,
     miners: categorized.miners.length,
     asteroids: categorized.asteroids.length,
@@ -266,23 +244,13 @@ function getRandomAsteroidSize(): number {
 }
 
 /**
- * Creates and initializes the player character at the center of the world.
- * The camera is locked to follow the player.
+ * Initializes the camera at the center of the world.
  */
-function initializePlayer(game: Game): Player {
+function initializeCamera(game: Game): void {
   const centerX = WORLD_WIDTH / 2;
   const centerY = WORLD_HEIGHT / 2;
-  const player = new Player(
-    new Vector(centerX, centerY),
-    DEFAULT_SHIP_SPEED,
-    "Player"
-  );
-  // Player gets a random apartment as their home (will be assigned after apartments are created)
-  game.currentScene.add(player);
-  game.currentScene.camera.strategy.lockToActor(player);
-  // Explicitly center the camera on the player's starting position
+  // Center the camera on the world
   game.currentScene.camera.pos = new Vector(centerX, centerY);
-  return player;
 }
 
 /**
@@ -303,6 +271,10 @@ function createSpaceStations(game: Game): void {
     );
     // Destinations get themselves as their home
     spaceStation.home = spaceStation;
+    
+    const stationDesign = createEntityGraphic(EntityGraphicStyle.SpaceStation);
+    spaceStation.graphics.use(stationDesign);
+    
     game.currentScene.add(spaceStation);
   }
 }
@@ -337,7 +309,7 @@ function createMiners(game: Game): void {
     // Ships get a random apartment as their home
     miner.home = getRandomSpaceApartment(game);
 
-    const minerDesign = createMinerShipOutOfShapes();
+    const minerDesign = createEntityGraphic(EntityGraphicStyle.Miner);
     miner.graphics.use(minerDesign);
     game.currentScene.add(miner);
   }
@@ -365,7 +337,7 @@ function createTraders(game: Game): void {
     // Ships get a random apartment as their home
     trader.home = getRandomSpaceApartment(game);
 
-    const traderDesign = createTraderShipOutOfShapes();
+    const traderDesign = createEntityGraphic(EntityGraphicStyle.Trader);
     trader.graphics.use(traderDesign);
     game.currentScene.add(trader);
   }
@@ -380,6 +352,10 @@ function createSpaceBars(game: Game): void {
     spaceBar.name = generateSpaceName();
     // Destinations get themselves as their home
     spaceBar.home = spaceBar;
+    
+    const barDesign = createEntityGraphic(EntityGraphicStyle.SpaceBar);
+    spaceBar.graphics.use(barDesign);
+    
     game.currentScene.add(spaceBar);
   }
 }
@@ -396,6 +372,10 @@ function createSpaceApartments(game: Game): void {
     spaceApartment.name = generateSpaceName();
     // Destinations get themselves as their home
     spaceApartment.home = spaceApartment;
+    
+    const apartmentDesign = createEntityGraphic(EntityGraphicStyle.SpaceApartments);
+    spaceApartment.graphics.use(apartmentDesign);
+    
     game.currentScene.add(spaceApartment);
   }
 }
@@ -441,6 +421,10 @@ function createBartenders(game: Game): void {
       bartender.name = generateSpaceName();
       // Ships get a random apartment as their home
       bartender.home = getRandomSpaceApartment(game);
+      
+      const bartenderDesign = createEntityGraphic(EntityGraphicStyle.Bartender);
+      bartender.graphics.use(bartenderDesign);
+      
       game.currentScene.add(bartender);
     }
   }
@@ -448,26 +432,18 @@ function createBartenders(game: Game): void {
 
 /**
  * Initializes all game entities in the correct order.
- * This includes the player, background stars, and all NPC entities.
+ * This includes background stars and all NPC entities.
  */
 function initializeGameEntities(game: Game): void {
-  initializePlayer(game);
+  initializeCamera(game);
   createStarTilemap(game);
   createSpaceStations(game);
   createAsteroids(game);
   createSpaceBars(game);
-  createSpaceApartments(game); // Create apartments before ships/players so they can be assigned as homes
+  createSpaceApartments(game); // Create apartments before ships so they can be assigned as homes
   createMiners(game);
   createTraders(game);
   createBartenders(game); // Create bartenders after space bars so they can be positioned near them
-  
-  // Assign player's home after apartments are created
-  const player = game.currentScene.actors.find(
-    (actor: Actor) => actor instanceof Player
-  ) as Player | undefined;
-  if (player) {
-    player.home = getRandomSpaceApartment(game);
-  }
 }
 
 // ============================================================================
@@ -543,7 +519,6 @@ function initializeGame(): Promise<Game> {
 
 /** Tab type for filtering entities */
 export type TabType =
-  | "player"
   | "traders"
   | "miners"
   | "stations"
@@ -552,7 +527,10 @@ export type TabType =
   | "spaceapartments"
   | "bartenders"
   | "all"
-  | "readme";
+  | "player"
+  | "my-meeples"
+  | "create"
+  | "help";
 
 /** Type for the game context value */
 type GameContextValue = {
@@ -564,8 +542,7 @@ type GameContextValue = {
   meepleCounts: MeepleCounts;
   getFilteredEntities: (tab: TabType) => Meeple[];
   zoomToEntity: (meeple: Meeple) => void;
-  zoom: number;
-  setZoom: (zoom: number) => void;
+  createMeeple: (graphicStyle: EntityGraphicStyle, name: string, position?: Vector) => Meeple | null;
 };
 
 // ============================================================================
@@ -589,8 +566,8 @@ const GameContext = createContext<GameContextValue | undefined>(undefined);
  * This hook:
  * - Initializes the Excalibur game engine on mount
  * - Periodically updates the meeple list for React to render
- * - Manages camera zoom to specific entities
- * - Provides a function to zoom to any meeple
+ * - Makes the camera follow the active meeple
+ * - Provides a function to set the active meeple
  * 
  * @returns Game state and utility functions
  */
@@ -606,13 +583,13 @@ function useGameInternal(): GameContextValue {
         dispatch({ type: "set-game", payload: game });
         dispatch({ type: "set-is-loading", payload: false });
         
-        // Find and select the player as active once the game is loaded
-        const player = game.currentScene.actors.find(
-          (actor: Actor) => actor instanceof Player
-        ) as Player | undefined;
+        // Find and select the first trader as active once the game is loaded
+        const traders = game.currentScene.actors.filter(
+          (actor: Actor) => actor instanceof Meeple && actor.type === MeepleType.Trader
+        ) as Meeple[];
         
-        if (player) {
-          dispatch({ type: "zoom-to-entity", payload: player });
+        if (traders.length > 0) {
+          dispatch({ type: "zoom-to-entity", payload: traders[0] });
         }
         
         console.log("Game initialized successfully");
@@ -643,17 +620,13 @@ function useGameInternal(): GameContextValue {
 
   // Update camera to follow the active meeple when it changes
   useEffect(() => {
-    if (gameState.activeMeeple && gameRef.current) {
+    if (!gameRef.current) return;
+    
+    if (gameState.activeMeeple) {
       gameRef.current.currentScene.camera.strategy.lockToActor(gameState.activeMeeple);
     }
   }, [gameState.activeMeeple]);
 
-  // Update camera zoom when zoom state changes
-  useEffect(() => {
-    if (gameRef.current) {
-      gameRef.current.currentScene.camera.zoom = gameState.zoom;
-    }
-  }, [gameState.zoom]);
 
   /**
    * Gets filtered entities based on the active tab.
@@ -661,31 +634,72 @@ function useGameInternal(): GameContextValue {
    */
   const getFilteredEntities = useCallback(
     (tab: TabType): Meeple[] => {
-      if (tab === "readme") {
+      if (tab === "create" || tab === "player" || tab === "help") {
         return [];
+      }
+      if (tab === "my-meeples") {
+        // Filter for Custom type meeples
+        return gameState.meeples.filter((meeple) => meeple.type === MeepleType.Custom);
       }
       return gameState.categorizedMeeples[tab] || [];
     },
-    [gameState.categorizedMeeples]
+    [gameState.categorizedMeeples, gameState.meeples]
+  );
+
+  /**
+   * Creates a new meeple with the specified graphic style, name, and optional position.
+   * The meeple will have type "Custom" and will be added to the game scene.
+   * 
+   * @param graphicStyle - The EntityGraphicStyle to use for the meeple's appearance
+   * @param name - The name of the meeple
+   * @param position - Optional position vector. If not provided, uses a random position
+   * @returns The created Meeple instance, or null if the game is not initialized
+   */
+  const createMeeple = useCallback(
+    (graphicStyle: EntityGraphicStyle, name: string, position?: Vector): Meeple | null => {
+      if (!gameRef.current) {
+        console.warn("Cannot create meeple: game is not initialized");
+        return null;
+      }
+
+      const meeplePosition = position || getRandomPosition();
+      // Use a random product type for custom meeples
+      const productType = Object.values(Products)[
+        Math.floor(Math.random() * Object.values(Products).length)
+      ];
+
+      const meeple = new Meeple(
+        meeplePosition,
+        DEFAULT_SHIP_SPEED,
+        name,
+        productType
+      );
+      meeple.type = MeepleType.Custom;
+      meeple.speed = DEFAULT_SHIP_SPEED;
+      // Assign a random apartment as home
+      meeple.home = getRandomSpaceApartment(gameRef.current);
+
+      const meepleDesign = createEntityGraphic(graphicStyle);
+      meeple.graphics.use(meepleDesign);
+
+      gameRef.current.currentScene.add(meeple);
+
+      return meeple;
+    },
+    []
   );
 
   return {
     ...gameState,
     getFilteredEntities,
     /**
-     * Zooms the camera to follow a specific meeple entity.
-     * @param meeple - The meeple entity to zoom to
+     * Sets the active meeple entity.
+     * @param meeple - The meeple entity to set as active
      */
     zoomToEntity: (meeple: Meeple) => {
       dispatch({ type: "zoom-to-entity", payload: meeple });
     },
-    /**
-     * Sets the camera zoom level.
-     * @param zoom - The zoom level (0-100, will be converted to 0.1-5.0)
-     */
-    setZoom: (zoom: number) => {
-      dispatch({ type: "set-zoom", payload: zoom });
-    },
+    createMeeple,
   };
 }
 
@@ -715,8 +729,9 @@ export function GameProvider({ children }: { children: ReactNode }) {
  * - `game`: The Excalibur Game instance (null while loading)
  * - `isLoading`: Whether the game is still initializing
  * - `meeples`: Array of all meeple entities in the game
- * - `activeMeeple`: The currently selected/followed meeple
- * - `zoomToEntity`: Function to zoom the camera to a specific meeple
+ * - `activeMeeple`: The currently selected meeple (camera follows this)
+ * - `zoomToEntity`: Function to set the active meeple (camera will follow it)
+ * - `createMeeple`: Function to create a new custom meeple with specified graphic style and name
  * 
  * @returns Game state and utility functions
  * @throws {Error} If used outside of GameProvider
@@ -724,8 +739,9 @@ export function GameProvider({ children }: { children: ReactNode }) {
  * @example
  * ```tsx
  * function MyComponent() {
- *   const { game, meeples, zoomToEntity } = useGame();
+ *   const { game, meeples, zoomToEntity, createMeeple } = useGame();
  *   // Use game state...
+ *   const newMeeple = createMeeple(EntityGraphicStyle.Miner, "My Custom Meeple");
  * }
  * ```
  */

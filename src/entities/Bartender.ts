@@ -2,7 +2,6 @@ import type { Vector } from "excalibur";
 import { Meeple } from "./Meeple/Meeple";
 import { Resources, Products, MeepleType } from "./types";
 import { DEFAULT_SHIP_SPEED } from "./game-config";
-import { createBartenderShipOutOfShapes } from "./utils/createSpaceShipOutOfShapes";
 import { BARTENDER_RULES } from "./ruleTemplates";
 
 export class Bartender extends Meeple {
@@ -13,10 +12,6 @@ export class Bartender extends Meeple {
 
     // Set type explicitly (required for production builds where constructor.name is minified)
     this.type = MeepleType.Bartender;
-
-    // Override graphics with bartender-specific style
-    const bartenderDesign = createBartenderShipOutOfShapes();
-    this.graphics.use(bartenderDesign);
 
     this.speed = DEFAULT_SHIP_SPEED;
     this.goods[Resources.Ore] = 0;

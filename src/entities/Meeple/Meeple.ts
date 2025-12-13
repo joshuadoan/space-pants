@@ -1,5 +1,4 @@
 import { Actor, Scene, Vector } from "excalibur";
-import { createSpaceShipOutOfShapes } from "../utils/createSpaceShipOutOfShapes";
 import {
   MeepleStats,
   Resources,
@@ -86,8 +85,6 @@ export class Meeple extends Actor {
       this.goods[product] = 0;
     });
     this.rules = [];
-    const meepleDesign = createSpaceShipOutOfShapes();
-    this.graphics.add(meepleDesign);
     // Initialize state using reducer pattern
     this.state = {
       type: MeepleStateType.Idle,

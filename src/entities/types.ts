@@ -33,6 +33,7 @@ export enum MeepleType {
   SpaceBar = "SpaceBar",
   SpaceApartments = "SpaceApartments",
   Bartender = "Bartender",
+  Custom = "Custom",
 }
 
 export enum MeepleStateType {

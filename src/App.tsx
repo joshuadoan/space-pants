@@ -1,17 +1,15 @@
-import { useEffect, useMemo, useReducer, useRef } from "react";
+import { useMemo, useReducer, useRef } from "react";
 import { useFps } from "react-fps";
-import Markdown from "react-markdown";
-import { IconRocket } from "@tabler/icons-react";
+import { IconRocket, IconPlus, IconBulb, IconGripVertical, IconDeviceFloppy, IconTrash, IconUser, IconClick } from "@tabler/icons-react";
+import { Vector } from "excalibur";
 
 import { useGame, type TabType } from "./hooks/useGame";
+import { EntityGraphicStyle } from "./entities/utils/createSpaceShipOutOfShapes";
 
 import { Tabs } from "./components/Tabs";
 
-import { Player } from "./entities/Player";
-
 import "./App.css";
 import { MeepleCard } from "./components/MeepleCard";
-import { useKeyboardControls } from "./hooks/useKeyboardControls";
 
 
 type SetActiveTabAction = {
@@ -19,33 +17,23 @@ type SetActiveTabAction = {
   payload: TabType;
 };
 
-type SetReadmeContentAction = {
-  type: "set-readme-content";
-  payload: string;
-};
-
-type Action = SetActiveTabAction | SetReadmeContentAction;
+type Action = SetActiveTabAction;
 
 type State = {
   activeTab: TabType;
-  readmeContent: string;
 };
 
 const initialState: State = {
-  activeTab: "player",
-  readmeContent: "",
+  activeTab: "my-meeples",
 };
 
 function App() {
   const {
-    game,
-    meeples,
     zoomToEntity,
     activeMeeple,
     meepleCounts,
     getFilteredEntities,
-    zoom,
-    setZoom,
+    createMeeple,
   } = useGame();
   const cardRefs = useRef<Map<number | string, HTMLDivElement>>(new Map());
 
@@ -57,37 +45,12 @@ function App() {
           activeTab: action.payload,
         };
       }
-      case "set-readme-content": {
-        return {
-          ...state,
-          readmeContent: action.payload,
-        };
-      }
 
       default: {
         return state;
       }
     }
   }, initialState);
-
-  async function getReadmeMarkdownFromFile() {
-    try {
-      // In Vite, we can import text files using ?raw suffix
-      const readmeModule = await import("../README.md?raw");
-      return readmeModule.default;
-    } catch (error) {
-      console.error("Failed to load README.md:", error);
-      return "# Error\n\nFailed to load README.md file.";
-    }
-  }
-
-  useEffect(() => {
-    if (state.activeTab === "readme" && !state.readmeContent) {
-      getReadmeMarkdownFromFile().then((content) =>
-        dispatch({ type: "set-readme-content", payload: content })
-      );
-    }
-  }, [state.activeTab, state.readmeContent]);
 
   const { avgFps, maxFps, currentFps } = useFps(20);
 
@@ -96,11 +59,23 @@ function App() {
     [getFilteredEntities, state.activeTab]
   );
 
-  // keyboard
-  useKeyboardControls(
-    game,
-    meeples.find((meeple) => meeple instanceof Player) || null
-  );
+  const handleCreateEntity = () => {
+    const dummyName = `Entity-${Date.now()}`;
+    const dummyPosition = new Vector(
+      Math.random() * 2000,
+      Math.random() * 2000
+    );
+    const newMeeple = createMeeple(
+      EntityGraphicStyle.Default,
+      dummyName,
+      dummyPosition
+    );
+    if (newMeeple) {
+      zoomToEntity(newMeeple);
+      // Switch to my-meeples tab to see the newly created entity
+      dispatch({ type: "set-active-tab", payload: "my-meeples" });
+    }
+  };
 
   return (
     <main className="w-screen h-screen flex flex-col">
@@ -119,24 +94,6 @@ function App() {
               </h1>
             </div>
             <div className="flex-1" />
-            <div className="flex items-center gap-2 px-4">
-              <label className="text-sm text-base-content">Zoom</label>
-              <input
-                type="range"
-                min={0}
-                max={100}
-                value={Math.round(((zoom - 0.3) / (5.0 - 0.3)) * 100)}
-                onChange={(e) => {
-                  const rangeValue = parseInt(e.target.value, 10);
-                  const zoomValue = 0.3 + (rangeValue / 100) * (5.0 - 0.3);
-                  setZoom(zoomValue);
-                }}
-                className="range range-primary w-32"
-              />
-              <span className="text-sm text-base-content min-w-12">
-                {zoom.toFixed(1)}x
-              </span>
-            </div>
           </div>
           <div className="hidden md:block">
             <Tabs
@@ -183,12 +140,102 @@ function App() {
               />
             </div>
           ))}
-          {state.activeTab === "readme" && (
+          {state.activeTab === "create" && (
             <div className="card bg-base-100 shadow-md hover:shadow-lg transition-all duration-200 border border-base-300 rounded-lg p-4 m-2">
               <div className="card-body">
-                <Markdown>
-                  {state.readmeContent || "Loading README..."}
-                </Markdown>
+                <h2 className="text-xl font-bold mb-4">Create New Entity</h2>
+                <button
+                  className="btn btn-primary flex items-center gap-2"
+                  onClick={handleCreateEntity}
+                >
+                  <IconPlus size={16} />
+                  Create New Entity
+                </button>
+                <p className="text-sm text-base-content/70 mt-4">
+                  Creates a new entity with zero goods at a random position.
+                </p>
+              </div>
+            </div>
+          )}
+          {state.activeTab === "help" && (
+            <div className="card bg-base-100 shadow-md hover:shadow-lg transition-all duration-200 border border-base-300 rounded-lg p-4 m-2">
+              <div className="card-body space-y-6">
+                <h2 className="text-2xl font-bold mb-4 flex items-center gap-2">
+                  <IconBulb size={24} className="text-warning" />
+                  Help & Instructions
+                </h2>
+
+                {/* Selecting Meeples */}
+                <div className="bg-base-200/50 rounded-lg p-4 space-y-3">
+                  <div className="text-lg font-semibold text-base-content flex items-center gap-2">
+                    <IconUser size={20} className="text-primary" />
+                    Selecting & Viewing Meeples
+                  </div>
+                  <div className="text-sm text-base-content/80 space-y-2">
+                    <div className="flex items-start gap-2">
+                      <IconClick size={16} className="text-primary mt-0.5 shrink-0" />
+                      <span><span className="font-semibold">Click on any meeple's name</span> in the entity card to zoom the camera to that meeple and follow it</span>
+                    </div>
+                    <div className="flex items-start gap-2">
+                      <IconUser size={16} className="text-secondary mt-0.5 shrink-0" />
+                      <span>The <span className="font-semibold">active meeple</span> (the one you're following) will have a highlighted border around its card</span>
+                    </div>
+                    <div className="flex items-start gap-2">
+                      <IconRocket size={16} className="text-info mt-0.5 shrink-0" />
+                      <span>Use the tabs at the top to filter entities by type (Traders, Miners, Stations, etc.)</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Creating Rules */}
+                <div className="bg-base-200/50 rounded-lg p-4 space-y-3">
+                  <div className="text-lg font-semibold text-base-content flex items-center gap-2">
+                    <IconBulb size={20} className="text-warning" />
+                    How to Create Rules
+                  </div>
+                  <div className="text-sm text-base-content/80 space-y-2">
+                    <p>
+                      Rules work like: <span className="font-semibold text-primary">IF</span> [Good] [Operator] [Value] <span className="font-semibold text-primary">THEN</span> [Action]
+                    </p>
+                    <div className="space-y-1.5 pl-2 border-l-2 border-primary/30">
+                      <div className="flex items-start gap-2">
+                        <IconGripVertical size={14} className="text-base-content/50 mt-0.5 shrink-0" />
+                        <span>Drag the <span className="font-semibold">≡</span> icon to reorder rules (they run in order!)</span>
+                      </div>
+                      <div className="flex items-start gap-2">
+                        <IconPlus size={14} className="text-secondary mt-0.5 shrink-0" />
+                        <span>Click <span className="font-semibold">"Add New Rule"</span> to create more rules</span>
+                      </div>
+                      <div className="flex items-start gap-2">
+                        <IconTrash size={14} className="text-error mt-0.5 shrink-0" />
+                        <span>Click <span className="font-semibold">"Delete"</span> on any rule to remove it</span>
+                      </div>
+                      <div className="flex items-start gap-2">
+                        <IconDeviceFloppy size={14} className="text-success mt-0.5 shrink-0" />
+                        <span>Don't forget to <span className="font-semibold">"Save Behaviors"</span> when you're done!</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Creating Entities */}
+                <div className="bg-base-200/50 rounded-lg p-4 space-y-3">
+                  <div className="text-lg font-semibold text-base-content flex items-center gap-2">
+                    <IconPlus size={20} className="text-info" />
+                    Creating New Entities
+                  </div>
+                  <div className="text-sm text-base-content/80 space-y-2">
+                    <p>
+                      Go to the <span className="font-semibold text-primary">Player</span> tab and select <span className="font-semibold text-primary">Create</span> to create new custom entities.
+                    </p>
+                    <p>
+                      New entities start with <span className="font-semibold">zero goods</span> and can be customized with your own behavior rules.
+                    </p>
+                    <p>
+                      After creating, you'll automatically switch to the <span className="font-semibold">My Meeples</span> tab to see your new entity.
+                    </p>
+                  </div>
+                </div>
               </div>
             </div>
           )}

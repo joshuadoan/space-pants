@@ -5,12 +5,7 @@ import {
   IconBuilding,
   IconCurrencyDollar,
   IconMoodSmile,
-  IconUser,
   IconUsers,
-  IconArrowUp,
-  IconArrowDown,
-  IconArrowLeft,
-  IconArrowRight,
   IconHeart,
   IconBolt,
   IconEdit,
@@ -21,8 +16,9 @@ import { IconPick } from "@tabler/icons-react";
 import { IconMeteor } from "@tabler/icons-react";
 import { IconSatellite } from "@tabler/icons-react";
 import { IconBeer } from "@tabler/icons-react";
+import { IconRocket } from "@tabler/icons-react";
 import { IconRefresh } from "@tabler/icons-react";
-import { IconPackage, IconBulb, IconHelp, IconGripVertical, IconDeviceFloppy, IconPlus, IconTrash } from "@tabler/icons-react";
+import { IconPackage, IconBulb, IconGripVertical, IconDeviceFloppy, IconPlus, IconTrash } from "@tabler/icons-react";
 import { MeepleStateType, MeepleStats } from "../entities/types";
 import type { LogicRule } from "../entities/types";
 import { getGoodLabel } from "../utils/goodsMetadata";
@@ -30,7 +26,7 @@ import { GoodsDisplay } from "./GoodsDisplay";
 import { RulesForm } from "./RulesForm";
 import { RulesReadOnly } from "./RulesReadOnly";
 
-type TabType = "goods" | "rules" | "create" | "help";
+type TabType = "goods" | "rules" | "create";
 
 type TabStateAction =
   | { type: "set-tab"; payload: TabType };
@@ -146,18 +142,6 @@ function MeepleTabsSection({
           <IconPlus size={18} />
           Create
         </a>
-        <a
-          role="tab"
-          className={`tab flex items-center gap-2 font-semibold transition-all duration-200 ${
-            tabState.activeTab === "help" 
-              ? "tab-active bg-accent text-accent-content shadow-lg scale-105" 
-              : "hover:bg-base-300/50"
-          }`}
-          onClick={() => dispatchTab({ type: "set-tab", payload: "help" })}
-        >
-          <IconHelp size={18} />
-          Help
-        </a>
       </div>
       <div className="mt-3">
         {tabState.activeTab === "goods" && (
@@ -201,37 +185,6 @@ function MeepleTabsSection({
               onUpdateRules={() => {}}
               mode="create"
             />
-          </div>
-        )}
-        {tabState.activeTab === "help" && (
-          <div className="bg-base-200/50 rounded-lg p-4 space-y-3">
-            <div className="text-sm font-semibold text-base-content flex items-center gap-2">
-              <IconBulb size={18} className="text-warning" />
-              How to Create Rules
-            </div>
-            <div className="text-xs text-base-content/80 space-y-2">
-              <p>
-                Rules work like: <span className="font-semibold text-primary">IF</span> [Good] [Operator] [Value] <span className="font-semibold text-primary">THEN</span> [Action]
-              </p>
-              <div className="space-y-1.5 pl-2 border-l-2 border-primary/30">
-                <div className="flex items-start gap-2">
-                  <IconGripVertical size={14} className="text-base-content/50 mt-0.5 shrink-0" />
-                  <span>Drag the <span className="font-semibold">≡</span> icon to reorder rules (they run in order!)</span>
-                </div>
-                <div className="flex items-start gap-2">
-                  <IconPlus size={14} className="text-secondary mt-0.5 shrink-0" />
-                  <span>Click <span className="font-semibold">"Add New Rule"</span> to create more rules</span>
-                </div>
-                <div className="flex items-start gap-2">
-                  <IconTrash size={14} className="text-error mt-0.5 shrink-0" />
-                  <span>Click <span className="font-semibold">"Delete"</span> on any rule to remove it</span>
-                </div>
-                <div className="flex items-start gap-2">
-                  <IconDeviceFloppy size={14} className="text-success mt-0.5 shrink-0" />
-                  <span>Don't forget to <span className="font-semibold">"Save Behaviors"</span> when you're done!</span>
-                </div>
-              </div>
-            </div>
           </div>
         )}
       </div>
@@ -299,17 +252,6 @@ export function MeepleCard({
       <div className="flex items-center gap-2 mb-2 flex-wrap">
         {
           {
-            [MeepleType.Player]: (
-              <div className="tooltip">
-                <div className="tooltip-content">
-                  <div className="text-sm font-semibold text-base-content">Player</div>
-                </div>
-                <span className="badge badge-sm badge-success badge-outline flex items-center gap-1">
-                  <IconUser size={14} className="cursor-pointer" />
-                  Player
-                </span>
-              </div>
-            ),
             [MeepleType.Trader]: (
               <div className="tooltip">
                 <div className="tooltip-content">
@@ -384,6 +326,17 @@ export function MeepleCard({
                 <span className="badge badge-sm badge-accent badge-outline flex items-center gap-1">
                   <IconBeer size={14} className="cursor-pointer" />
                   Bartender
+                </span>
+              </div>
+            ),
+            [MeepleType.Player]: (
+              <div className="tooltip">
+                <div className="tooltip-content">
+                  <div className="text-sm font-semibold text-base-content">Player</div>
+                </div>
+                <span className="badge badge-sm badge-primary badge-outline flex items-center gap-1">
+                  <IconRocket size={14} className="cursor-pointer" />
+                  Player
                 </span>
               </div>
             ),
@@ -503,35 +456,6 @@ export function MeepleCard({
           }[meeple.state.type]
         }
       </div>
-      {meeple.type === MeepleType.Player && (
-        <>
-          <div className="divider my-1"></div>
-          <div className="bg-base-200/50 rounded-lg p-3 space-y-2">
-            <div className="text-xs font-semibold text-base-content/70 flex items-center gap-1">
-              <IconMoodSmile size={14} className="cursor-pointer" />
-              How to Move
-            </div>
-            <div className="grid grid-cols-2 gap-2 text-xs">
-              <div className="flex items-center gap-1.5 text-base-content/80">
-                <IconArrowUp size={16} className="text-primary cursor-pointer" />
-                <span>Up</span>
-              </div>
-              <div className="flex items-center gap-1.5 text-base-content/80">
-                <IconArrowDown size={16} className="text-primary cursor-pointer" />
-                <span>Down</span>
-              </div>
-              <div className="flex items-center gap-1.5 text-base-content/80">
-                <IconArrowLeft size={16} className="text-primary cursor-pointer" />
-                <span>Left</span>
-              </div>
-              <div className="flex items-center gap-1.5 text-base-content/80">
-                <IconArrowRight size={16} className="text-primary cursor-pointer" />
-                <span>Right</span>
-              </div>
-            </div>
-          </div>
-        </>
-      )}
       {/* <-- Visitors */}
       {(meeple.type === MeepleType.Asteroid ||
         meeple.type === MeepleType.SpaceStation ||
@@ -560,7 +484,6 @@ export function MeepleCard({
                   >
                     {
                       {
-                        [MeepleType.Player]: <IconUser size={14} className="cursor-pointer" />,
                         [MeepleType.Trader]: <IconShip size={14} className="cursor-pointer" />,
                         [MeepleType.Miner]: <IconPick size={14} className="cursor-pointer" />,
                         [MeepleType.Asteroid]: <IconMeteor size={14} className="cursor-pointer" />,
@@ -568,6 +491,7 @@ export function MeepleCard({
                         [MeepleType.SpaceBar]: <IconBeer size={14} className="cursor-pointer" />,
                         [MeepleType.SpaceApartments]: <IconBuilding size={14} className="cursor-pointer" />,
                         [MeepleType.Bartender]: <IconBeer size={14} className="cursor-pointer" />,
+                        [MeepleType.Player]: <IconRocket size={14} className="cursor-pointer" />,
                       }[visitor.type]
                     }{" "}
                     {visitor.name}

@@ -1,4 +1,4 @@
-import { Vector, Rectangle, GraphicsGroup, Color } from "excalibur";
+import { Vector } from "excalibur";
 import { Meeple } from "./Meeple/Meeple";
 import { getRandomVisitor } from "./Meeple/meepleFinders";
 import { Products, Resources, MeepleType, type GoodType } from "./types";
@@ -45,10 +45,6 @@ export class SpaceBar extends Meeple {
 
     // Set price for fizz
     this.prices.set(Products.Fizz, FIZZ_PRICE);
-
-    // Create a bar-like design (horizontal rectangle with some details)
-    const barDesign = this.createBarDesign();
-    this.graphics.add(barDesign);
   }
 
   transaction(good: GoodType, quantity: number, transactionType: "add" | "remove") {
@@ -90,51 +86,6 @@ export class SpaceBar extends Meeple {
         };
       }
     }
-  }
-
-  private createBarDesign(): GraphicsGroup {
-    const primaryColor = Color.fromHex("#FFD700"); // Gold color
-    const secondaryColor = Color.fromHex("#FFA500"); // Orange color
-    const accentColor = Color.fromHex("#FFFFFF"); // White for highlights
-
-    const blocks: { rect: Rectangle; offset: Vector }[] = [];
-    
-    // Main bar body (horizontal rectangle)
-    blocks.push({ 
-      rect: new Rectangle({ width: 24, height: 8, color: primaryColor }), 
-      offset: new Vector(0, 0) 
-    });
-    
-    // Left end cap
-    blocks.push({ 
-      rect: new Rectangle({ width: 4, height: 8, color: secondaryColor }), 
-      offset: new Vector(-14, 0) 
-    });
-    
-    // Right end cap
-    blocks.push({ 
-      rect: new Rectangle({ width: 4, height: 8, color: secondaryColor }), 
-      offset: new Vector(14, 0) 
-    });
-    
-    // Top highlight
-    blocks.push({ 
-      rect: new Rectangle({ width: 20, height: 2, color: accentColor }), 
-      offset: new Vector(0, -3) 
-    });
-    
-    // Bottom highlight
-    blocks.push({ 
-      rect: new Rectangle({ width: 20, height: 2, color: accentColor }), 
-      offset: new Vector(0, 3) 
-    });
-
-    return new GraphicsGroup({
-      members: blocks.map(block => ({
-        graphic: block.rect,
-        offset: block.offset,
-      })),
-    });
   }
 }
 

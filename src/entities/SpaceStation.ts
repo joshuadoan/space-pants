@@ -1,5 +1,4 @@
-import { Color, Vector } from "excalibur";
-import { createRandomSpaceStation } from "./createRandomSpaceStation";
+import { Vector, Color } from "excalibur";
 import { Products, Resources, MeepleType } from "./types";
 import { Meeple } from "./Meeple/Meeple";
 import { getRandomVisitor } from "./Meeple/meepleFinders";
@@ -58,10 +57,6 @@ export class SpaceStation extends Meeple {
 
     // Set starting money
     this.goods[Resources.Money] = SPACE_STATION_STARTING_MONEY;
-
-    // Create unique space station design
-    const stationDesign = createRandomSpaceStation();
-    this.graphics.add(stationDesign);
   }
 
   onPreUpdate(engine: Game): void {

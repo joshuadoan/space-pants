@@ -7,15 +7,16 @@ import {
   IconBeer,
   IconBuilding,
   IconMapPin,
-  IconBook,
+  IconUsers,
+  IconPlus,
+  IconHelp,
 } from "@tabler/icons-react";
 
-type TabType = "player" | "traders" | "miners" | "stations" | "asteroids" | "spacebars" | "spaceapartments" | "bartenders" | "all" | "readme";
+type TabType = "traders" | "miners" | "stations" | "asteroids" | "spacebars" | "spaceapartments" | "bartenders" | "all" | "player" | "my-meeples" | "create" | "help";
 
-type MainTabType = "player" | "ships" | "destinations" | "readme";
+type MainTabType = "ships" | "destinations" | "player" | "help";
 
 type MeepleCounts = {
-  player: number;
   traders: number;
   miners: number;
   asteroids: number;
@@ -33,8 +34,11 @@ type TabsProps = {
 
 // Map TabType to main tab and sub tab
 function getMainTabFromTabType(tab: TabType): MainTabType {
-  if (tab === "player" || tab === "readme") {
-    return tab;
+  if (tab === "help") {
+    return "help";
+  }
+  if (tab === "player" || tab === "my-meeples" || tab === "create") {
+    return "player";
   }
   if (tab === "traders" || tab === "miners" || tab === "bartenders") {
     return "ships";
@@ -43,8 +47,11 @@ function getMainTabFromTabType(tab: TabType): MainTabType {
 }
 
 function getSubTabFromTabType(tab: TabType): TabType | null {
-  if (tab === "player" || tab === "readme") {
-    return null;
+  if (tab === "player") {
+    return "my-meeples"; // Default to my-meeples when player tab is selected
+  }
+  if (tab === "my-meeples" || tab === "create") {
+    return tab;
   }
   return tab;
 }
@@ -66,7 +73,7 @@ const MAIN_TABS: { value: MainTabType; label: string; icon?: React.ComponentType
   { value: "player", label: "Player", icon: IconUser, badgeColor: "badge-success" },
   { value: "ships", label: "Ships", icon: IconShip, badgeColor: "badge-primary" },
   { value: "destinations", label: "Destinations", icon: IconMapPin, badgeColor: "badge-info" },
-  { value: "readme", label: "Readme", icon: IconBook, badgeColor: "badge-accent" },
+  { value: "help", label: "Help", icon: IconHelp, badgeColor: "badge-accent" },
 ];
 
 const SHIP_SUBTABS: { value: TabType; label: string; icon: React.ComponentType<{ size?: number; className?: string }>; badgeColor: string }[] = [
@@ -82,6 +89,11 @@ const DESTINATION_SUBTABS: { value: TabType; label: string; icon: React.Componen
   { value: "spaceapartments", label: "Space Apartments", icon: IconBuilding, badgeColor: "badge-info" },
 ];
 
+const PLAYER_SUBTABS: { value: TabType; label: string; icon: React.ComponentType<{ size?: number; className?: string }>; badgeColor: string }[] = [
+  { value: "my-meeples", label: "My Meeples", icon: IconUsers, badgeColor: "badge-success" },
+  { value: "create", label: "Create", icon: IconPlus, badgeColor: "badge-success" },
+];
+
 export function Tabs({ activeTab, onTabChange, meepleCounts }: TabsProps) {
   const currentMainTab = getMainTabFromTabType(activeTab);
   const currentSubTab = getSubTabFromTabType(activeTab);
@@ -92,10 +104,10 @@ export function Tabs({ activeTab, onTabChange, meepleCounts }: TabsProps) {
 
   const handleMainTabChange = (mainTab: MainTabType) => {
     // Update parent component with the appropriate tab
-    if (mainTab === "player") {
-      onTabChange("player");
-    } else if (mainTab === "readme") {
-      onTabChange("readme");
+    if (mainTab === "help") {
+      onTabChange("help");
+    } else if (mainTab === "player") {
+      onTabChange("my-meeples"); // Default to first sub tab
     } else if (mainTab === "ships") {
       onTabChange("traders"); // Default to first sub tab
     } else if (mainTab === "destinations") {
@@ -114,9 +126,7 @@ export function Tabs({ activeTab, onTabChange, meepleCounts }: TabsProps) {
         {MAIN_TABS.map((tab) => {
           const Icon = tab.icon;
           let count: number | undefined;
-          if (tab.value === "player") {
-            count = meepleCounts.player;
-          } else if (tab.value === "ships") {
+          if (tab.value === "ships") {
             count = shipsCount;
           } else if (tab.value === "destinations") {
             count = destinationsCount;
@@ -174,6 +184,26 @@ export function Tabs({ activeTab, onTabChange, meepleCounts }: TabsProps) {
                 <Icon size={14} aria-hidden="true" className={getIconColorClass(tab.badgeColor)} />
                 <span>{tab.label}</span>
                 <span className={getIconColorClass(tab.badgeColor)}>{count}</span>
+              </a>
+            );
+          })}
+        </div>
+      )}
+
+      {/* Subtabs for Player */}
+      {currentMainTab === "player" && (
+        <div role="tablist" className="tabs tabs-boxed">
+          {PLAYER_SUBTABS.map((tab) => {
+            const Icon = tab.icon;
+            return (
+              <a
+                key={tab.value}
+                role="tab"
+                className={`tab ${currentSubTab === tab.value ? "tab-active" : ""} flex items-center gap-1.5`}
+                onClick={() => handleSubTabChange(tab.value)}
+              >
+                <Icon size={14} aria-hidden="true" className={getIconColorClass(tab.badgeColor)} />
+                <span>{tab.label}</span>
               </a>
             );
           })}
