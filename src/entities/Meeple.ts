@@ -34,6 +34,56 @@ import {
   PRODUCT_SELL_PRICE,
 } from "./game-config";
 
+// Action types for Meeple state management
+type SetStateAction = {
+  type: "set-state";
+  payload: MeepleState;
+};
+
+type SetIdleAction = {
+  type: "set-idle";
+};
+
+type SetTravelingAction = {
+  type: "set-traveling";
+  payload: { target: Meeple };
+};
+
+type SetActiveStateAction = {
+  type: "set-active-state";
+  payload: { stateType: MeepleStateType; target: Meeple };
+};
+
+type AddGoodAction = {
+  type: "add-good";
+  payload: { good: GoodType; quantity: number };
+};
+
+type RemoveGoodAction = {
+  type: "remove-good";
+  payload: { good: GoodType; quantity: number };
+};
+
+type SetGoodAction = {
+  type: "set-good";
+  payload: { good: GoodType; quantity: number };
+};
+
+type MeepleAction =
+  | SetStateAction
+  | SetIdleAction
+  | SetTravelingAction
+  | SetActiveStateAction
+  | AddGoodAction
+  | RemoveGoodAction
+  | SetGoodAction;
+
+// State interface for the reducer
+interface MeepleReducerState {
+  goods: Partial<Goods>;
+  state: MeepleState;
+}
+
 export class Meeple extends Actor {
   speed: number;
   name: string;
@@ -43,14 +93,93 @@ export class Meeple extends Actor {
   type: MeepleType;
   visitors: Set<Meeple>;
   activeRuleId: string | null = null;
+  productType: Products;
   private followers: Map<GoodType, Actor> = new Map();
 
   private lastUpdateTime: number = 0;
+
+  /**
+   * Reducer function for managing Meeple state and goods
+   */
+  private reducer(state: MeepleReducerState, action: MeepleAction): MeepleReducerState {
+    switch (action.type) {
+      case "set-state":
+        return {
+          ...state,
+          state: action.payload,
+        };
+      case "set-idle":
+        return {
+          ...state,
+          state: {
+            type: MeepleStateType.Idle,
+          },
+        };
+      case "set-traveling":
+        return {
+          ...state,
+          state: {
+            type: MeepleStateType.Traveling,
+            target: action.payload.target,
+          },
+        };
+      case "set-active-state":
+        return {
+          ...state,
+          state: {
+            type: action.payload.stateType,
+            target: action.payload.target,
+          } as MeepleState,
+        };
+      case "add-good":
+        return {
+          ...state,
+          goods: {
+            ...state.goods,
+            [action.payload.good]: (state.goods[action.payload.good] || 0) + action.payload.quantity,
+          },
+        };
+      case "remove-good":
+        return {
+          ...state,
+          goods: {
+            ...state.goods,
+            [action.payload.good]: (state.goods[action.payload.good] || 0) - action.payload.quantity,
+          },
+        };
+      case "set-good":
+        return {
+          ...state,
+          goods: {
+            ...state.goods,
+            [action.payload.good]: action.payload.quantity,
+          },
+        };
+      default:
+        return state;
+    }
+  }
+
+  /**
+   * Dispatch an action to update state and goods
+   */
+  private dispatch(action: MeepleAction): void {
+    const newState = this.reducer(
+      {
+        goods: this.goods,
+        state: this.state,
+      },
+      action
+    );
+    this.goods = newState.goods;
+    this.state = newState.state;
+  }
 
   constructor(
     position: Vector,
     speed: number,
     name: string,
+    productType: Products,
     width: number = MEEPLE_SIZE.WIDTH,
     height: number = MEEPLE_SIZE.HEIGHT
   ) {
@@ -62,6 +191,8 @@ export class Meeple extends Actor {
 
     this.speed = speed;
     this.name = name;
+    this.productType = productType;
+    // Initialize goods
     this.goods = {
       [Resources.Ore]: 0,
       [Resources.Money]: 0,
@@ -75,6 +206,7 @@ export class Meeple extends Actor {
     this.rules = [];
     const meepleDesign = createSpaceShipOutOfShapes();
     this.graphics.add(meepleDesign);
+    // Initialize state using reducer pattern
     this.state = {
       type: MeepleStateType.Idle,
     };
@@ -287,7 +419,10 @@ export class Meeple extends Actor {
     this.visitTarget(spaceBar, MeepleStateType.Socializing, () => {
       this.transact("remove", Resources.Money, moneyAmount);
       spaceBar.transact("add", Resources.Money, moneyAmount);
-      this.goods[MeepleStats.Energy] = DEFAULT_ENERGY; // Restore energy instead of setting to 0
+      this.dispatch({
+        type: "set-good",
+        payload: { good: MeepleStats.Energy, quantity: DEFAULT_ENERGY },
+      });
     }, SOCIALIZING_DELAY_MS);
   }
 
@@ -299,7 +434,10 @@ export class Meeple extends Actor {
     this.visitTarget(spaceBar, MeepleStateType.Working, () => {
       this.transact("add", Resources.Money, WORK_EARNINGS);
       spaceBar.transact("remove", Resources.Money, WORK_EARNINGS);
-      this.goods[MeepleStats.Energy] = 0; // Working exhausts them
+      this.dispatch({
+        type: "set-good",
+        payload: { good: MeepleStats.Energy, quantity: 0 },
+      });
     }, WORKING_DELAY_MS);
   }
 
@@ -308,7 +446,10 @@ export class Meeple extends Actor {
     if (!spaceApartments) return;
 
     this.visitTarget(spaceApartments, MeepleStateType.Chilling, () => {
-      this.goods[MeepleStats.Energy] = DEFAULT_ENERGY;
+      this.dispatch({
+        type: "set-good",
+        payload: { good: MeepleStats.Energy, quantity: DEFAULT_ENERGY },
+      });
     }, CHILLING_DELAY_MS);
   }
 
@@ -347,7 +488,7 @@ export class Meeple extends Actor {
 
     this.visitTarget(station, MeepleStateType.Trading, () => {
       // Buy the product that this station produces
-      const productType = "productType" in station ? (station as any).productType as Products : undefined;
+      const productType = station.productType;
       if (productType && station.goods[productType] && station.goods[productType] >= 1) {
         this.transact("add", productType, 1);
         station.transact("remove", productType, 1);
@@ -395,27 +536,24 @@ export class Meeple extends Actor {
     this.actions
       .callMethod(() => {
         console.log("Traveling to", target.name);
-        this.state = {
-          type: MeepleStateType.Traveling,
-          target,
-        };
+        this.dispatch({
+          type: "set-traveling",
+          payload: { target },
+        });
       })
       .meet(target, this.speed)
       .callMethod(() => target.visitors.add(this))
       .callMethod(() => {
-        // Type assertion is safe because visitTarget is only called with state types that require a target
-        this.state = {
-          type: activeStateType,
-          target,
-        } as MeepleState;
+        this.dispatch({
+          type: "set-active-state",
+          payload: { stateType: activeStateType, target },
+        });
       })
       .callMethod(actionCallback)
       .delay(delayMs)
       .callMethod(() => target.visitors.delete(this))
       .callMethod(() => {
-        this.state = {
-          type: MeepleStateType.Idle,
-        };
+        this.dispatch({ type: "set-idle" });
       });
   }
 
@@ -461,9 +599,7 @@ export class Meeple extends Actor {
       (meeple: Meeple) =>
         meeple.type === MeepleType.SpaceStation &&
         meeple !== this &&
-        // Check if meeple has productType property (SpaceStation has this)
-        "productType" in meeple &&
-        (meeple as any).productType === productType
+        meeple.productType === productType
     );
     return stations?.[Math.floor(Math.random() * stations.length)] ?? undefined;
   }
@@ -480,9 +616,7 @@ export class Meeple extends Actor {
       (meeple: Meeple) =>
         meeple.type === MeepleType.SpaceStation &&
         meeple !== this &&
-        // Check if meeple has productType property (SpaceStation has this)
-        "productType" in meeple &&
-        (meeple as any).productType !== productType
+        meeple.productType !== productType
     );
     return stations?.[Math.floor(Math.random() * stations.length)] ?? undefined;
   }
@@ -522,11 +656,17 @@ export class Meeple extends Actor {
       setTimeout(() => {
         switch (type) {
           case "add":
-            this.goods[good] = (this.goods[good] || 0) + quantity;
+            this.dispatch({
+              type: "add-good",
+              payload: { good, quantity },
+            });
             resolve();
             break;
           case "remove":
-            this.goods[good] = (this.goods[good] || 0) - quantity;
+            this.dispatch({
+              type: "remove-good",
+              payload: { good, quantity },
+            });
             resolve();
             break;
           default:

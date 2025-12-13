@@ -1,13 +1,15 @@
 import type { Vector } from "excalibur";
 import { Meeple } from "./Meeple";
-import { Resources } from "./types";
+import { Resources, Products } from "./types";
 import { DEFAULT_SHIP_SPEED } from "./game-config";
 import { createBartenderShipOutOfShapes } from "./utils/createSpaceShipOutOfShapes";
 import { BARTENDER_RULES } from "./ruleTemplates";
 
 export class Bartender extends Meeple {
-  constructor(position: Vector, speed: number, name: string) {
-    super(position, speed, name);
+  constructor(position: Vector, speed: number, name: string, productType?: Products) {
+    // Assign random product type if not provided
+    const randomProductType = productType || Object.values(Products)[Math.floor(Math.random() * Object.values(Products).length)];
+    super(position, speed, name, randomProductType);
 
     // Override graphics with bartender-specific style
     const bartenderDesign = createBartenderShipOutOfShapes();

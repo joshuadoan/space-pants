@@ -47,15 +47,10 @@ export class SpaceStation extends Meeple {
     amountPerCycle: SPACE_STATION_ORE_REGENERATION_AMOUNT,
     rateMs: SPACE_STATION_REGENERATION_RATE_MS,
   };
-  /** The product type this station produces */
-  public readonly productType: Products;
 
   constructor(position: Vector, name: string, productType: Products) {
-    // Call super with position, speed (0 for stationary stations), name, and size
-    super(position, 0, name, SPACE_STATION_SIZE.WIDTH, SPACE_STATION_SIZE.HEIGHT);
-
-    // Store the product type this station produces
-    this.productType = productType;
+    // Call super with position, speed (0 for stationary stations), name, productType, and size
+    super(position, 0, name, productType, SPACE_STATION_SIZE.WIDTH, SPACE_STATION_SIZE.HEIGHT);
 
     // Set starting money
     this.goods[Resources.Money] = SPACE_STATION_STARTING_MONEY;

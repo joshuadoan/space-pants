@@ -1,6 +1,6 @@
 import { Color, Polygon, Vector } from "excalibur";
 import { Meeple } from "./Meeple";
-import { Resources } from "./types";
+import { Resources, Products } from "./types";
 import type { Game } from "./Game";
 import { MeepleStateType } from "./types";
 import {
@@ -57,7 +57,7 @@ export class Asteroid extends Meeple {
     rateMs: ASTEROID_REGENERATION_RATE_MS,
   };
 
-  constructor(position: Vector, size: number = 20, name?: string) {
+  constructor(position: Vector, size: number = 20, name?: string, productType?: Products) {
     // Randomize size slightly
     const actualSize = size * (0.8 + Math.random() * 0.4); // 80% to 120% of base size
 
@@ -65,8 +65,11 @@ export class Asteroid extends Meeple {
     const asteroidName =
       name || `Asteroid ${Math.floor(position.x)}-${Math.floor(position.y)}`;
 
-    // Call super with position, speed (0 for stationary asteroids), name, and size
-    super(position, 0, asteroidName, actualSize * 2, actualSize * 2);
+    // Assign random product type if not provided
+    const randomProductType = productType || Object.values(Products)[Math.floor(Math.random() * Object.values(Products).length)];
+
+    // Call super with position, speed (0 for stationary asteroids), name, productType, and size
+    super(position, 0, asteroidName, randomProductType, actualSize * 2, actualSize * 2);
 
     // Initialize asteroid with starting ore
     this.goods[Resources.Ore] = ASTEROID_STARTING_ORE;

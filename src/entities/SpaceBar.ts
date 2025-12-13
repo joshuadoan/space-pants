@@ -28,8 +28,10 @@ export class SpaceBar extends Meeple {
     rateMs: SPACE_BAR_FIZZ_REGENERATION_RATE_MS,
   };
 
-  constructor(position: Vector, name: string) {
-    super(position, 0, name, SPACE_BAR_SIZE.WIDTH, SPACE_BAR_SIZE.HEIGHT);
+  constructor(position: Vector, name: string, productType?: Products) {
+    // Assign random product type if not provided
+    const randomProductType = productType || Object.values(Products)[Math.floor(Math.random() * Object.values(Products).length)];
+    super(position, 0, name, randomProductType, SPACE_BAR_SIZE.WIDTH, SPACE_BAR_SIZE.HEIGHT);
     
     // Initialize with fizz stock
     this.goods = {

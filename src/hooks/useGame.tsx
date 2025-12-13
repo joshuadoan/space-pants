@@ -5,9 +5,7 @@ import { Player } from "../entities/Player";
 import { Vector } from "excalibur";
 import { createStarTilemap } from "../utils/createStarTilemap";
 import { SpaceStation } from "../entities/SpaceStation";
-import { Trader } from "../entities/Trader";
 import { Asteroid } from "../entities/Asteroid";
-import { Miner } from "../entities/Miner";
 import { SpaceBar } from "../entities/SpaceBar";
 import { generateSpaceName } from "../entities/utils/generateSpaceName";
 import { SpaceApartments } from "../entities/SpaceApartments";
@@ -23,8 +21,11 @@ import {
   ASTEROID_SIZE_RANGE,
   DEFAULT_SHIP_SPEED,
   CANVAS_WAIT_CONFIG,
+  TRADER_STARTING_MONEY,
 } from "../entities/game-config";
-import { Products } from "../entities/types";
+import { MeepleType, Products, Resources } from "../entities/types";
+import { MINER_RULES, TRADER_RULES } from "../entities/ruleTemplates";
+import { createMinerShipOutOfShapes, createTraderShipOutOfShapes } from "../entities/utils/createSpaceShipOutOfShapes";
 
 // ============================================================================
 // Types
@@ -59,14 +60,14 @@ type GameAction = SetMeeplesAction | SetIsLoadingAction | SetGameAction | ZoomTo
 
 /** Categorized meeples by type */
 type CategorizedMeeples = {
-  traders: Trader[];
-  miners: Miner[];
-  spacebars: SpaceBar[];
-  stations: SpaceStation[];
-  asteroids: Asteroid[];
-  player: Player[];
-  spaceapartments: SpaceApartments[];
-  bartenders: Bartender[];
+  traders: Meeple[];
+  miners: Meeple[];
+  spacebars: Meeple[];
+  stations: Meeple[];
+  asteroids: Meeple[];
+  player: Meeple[];
+  spaceapartments: Meeple[];
+  bartenders: Meeple[];
   all: Meeple[];
 };
 
@@ -191,21 +192,21 @@ function categorizeMeeples(meeples: Meeple[]): CategorizedMeeples {
   };
 
   for (const meeple of meeples) {
-    if (meeple instanceof Trader) {
+    if (meeple.type === MeepleType.Trader) {
       categorized.traders.push(meeple);
-    } else if (meeple instanceof Miner) {
+    } else if (meeple.type === MeepleType.Miner) {
       categorized.miners.push(meeple);
-    } else if (meeple instanceof SpaceBar) {
+    } else if (meeple.type === MeepleType.SpaceBar) {
       categorized.spacebars.push(meeple);
-    } else if (meeple instanceof SpaceStation) {
+    } else if (meeple.type === MeepleType.SpaceStation) {
       categorized.stations.push(meeple);
-    } else if (meeple instanceof Asteroid) {
+    } else if (meeple.type === MeepleType.Asteroid) {
       categorized.asteroids.push(meeple);
-    } else if (meeple instanceof Player) {
+    } else if (meeple.type === MeepleType.Player) {
       categorized.player.push(meeple);
-    } else if (meeple instanceof SpaceApartments) {
+    } else if (meeple.type === MeepleType.SpaceApartments) {
       categorized.spaceapartments.push(meeple);
-    } else if (meeple instanceof Bartender) {
+    } else if (meeple.type === MeepleType.Bartender) {
       categorized.bartenders.push(meeple);
     }
   }
@@ -306,8 +307,14 @@ function createAsteroids(game: Game): void {
  */
 function createMiners(game: Game): void {
   for (let i = 0; i < ENTITY_COUNTS.MINERS; i++) {
-    const miner = new Miner(getRandomPosition(), 1, generateSpaceName());
+    const miner = new Meeple(getRandomPosition(), 1, generateSpaceName(), Object.values(Products)[Math.floor(Math.random() * Object.values(Products).length)]);
     miner.name = generateSpaceName();
+    miner.type = MeepleType.Miner;
+    miner.rules = MINER_RULES;
+    miner.speed = DEFAULT_SHIP_SPEED;
+
+    const minerDesign = createMinerShipOutOfShapes();
+    miner.graphics.use(minerDesign);
     game.currentScene.add(miner);
   }
 }
@@ -318,8 +325,22 @@ function createMiners(game: Game): void {
  */
 function createTraders(game: Game): void {
   for (let i = 0; i < ENTITY_COUNTS.TRADERS; i++) {
-    const trader = new Trader(getRandomPosition(), 1, generateSpaceName());
+    const trader = new Meeple(
+      getRandomPosition(),
+      1,
+      generateSpaceName(),
+      Object.values(Products)[
+        Math.floor(Math.random() * Object.values(Products).length)
+      ]
+    );
     trader.name = generateSpaceName();
+    trader.type = MeepleType.Trader;
+    trader.rules = TRADER_RULES;
+    trader.goods[Resources.Money] = TRADER_STARTING_MONEY;
+    trader.speed = DEFAULT_SHIP_SPEED;
+
+    const traderDesign = createTraderShipOutOfShapes();
+    trader.graphics.use(traderDesign);
     game.currentScene.add(trader);
   }
 }
