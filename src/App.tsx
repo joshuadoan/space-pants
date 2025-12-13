@@ -1,10 +1,11 @@
-import { useMemo, useReducer, useRef } from "react";
+import { useMemo, useReducer, useRef, useEffect } from "react";
 import { useFps } from "react-fps";
 import { IconRocket, IconPlus, IconBulb, IconGripVertical, IconDeviceFloppy, IconTrash, IconUser, IconClick } from "@tabler/icons-react";
 import { Vector } from "excalibur";
 
 import { useGame, type TabType } from "./hooks/useGame";
 import { EntityGraphicStyle } from "./entities/utils/createSpaceShipOutOfShapes";
+import { MeepleType } from "./entities/types";
 
 import { Tabs } from "./components/Tabs";
 
@@ -23,10 +24,6 @@ type State = {
   activeTab: TabType;
 };
 
-const initialState: State = {
-  activeTab: "my-meeples",
-};
-
 function App() {
   const {
     zoomToEntity,
@@ -34,8 +31,10 @@ function App() {
     meepleCounts,
     getFilteredEntities,
     createMeeple,
+    meeples,
   } = useGame();
   const cardRefs = useRef<Map<number | string, HTMLDivElement>>(new Map());
+  const hasInitialized = useRef(false);
 
   const [state, dispatch] = useReducer((state: State, action: Action) => {
     switch (action.type) {
@@ -50,7 +49,18 @@ function App() {
         return state;
       }
     }
-  }, initialState);
+  }, { activeTab: "create" }); // Start with create, will update if custom meeples exist
+
+  // Check if there are custom meeples and set initial tab accordingly
+  useEffect(() => {
+    if (!hasInitialized.current && meeples.length > 0) {
+      const customMeeples = meeples.filter((meeple) => meeple.type === MeepleType.Custom);
+      if (customMeeples.length > 0 && state.activeTab === "create") {
+        dispatch({ type: "set-active-tab", payload: "my-meeples" });
+      }
+      hasInitialized.current = true;
+    }
+  }, [meeples, state.activeTab]);
 
   const { avgFps, maxFps, currentFps } = useFps(20);
 
@@ -102,6 +112,7 @@ function App() {
                 dispatch({ type: "set-active-tab", payload: tab })
               }
               meepleCounts={meepleCounts}
+              customMeeplesCount={meeples.filter((m) => m.type === MeepleType.Custom).length}
             />
           </div>
         </div>

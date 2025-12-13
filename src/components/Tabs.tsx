@@ -30,6 +30,7 @@ type TabsProps = {
   activeTab: TabType;
   onTabChange: (tab: TabType) => void;
   meepleCounts: MeepleCounts;
+  customMeeplesCount?: number;
 };
 
 // Map TabType to main tab and sub tab
@@ -46,9 +47,10 @@ function getMainTabFromTabType(tab: TabType): MainTabType {
   return "destinations";
 }
 
-function getSubTabFromTabType(tab: TabType): TabType | null {
+function getSubTabFromTabType(tab: TabType, customMeeplesCount: number = 0): TabType | null {
   if (tab === "player") {
-    return "my-meeples"; // Default to my-meeples when player tab is selected
+    // If no custom meeples, default to create tab, otherwise my-meeples
+    return customMeeplesCount === 0 ? "create" : "my-meeples";
   }
   if (tab === "my-meeples" || tab === "create") {
     return tab;
@@ -94,9 +96,9 @@ const PLAYER_SUBTABS: { value: TabType; label: string; icon: React.ComponentType
   { value: "create", label: "Create", icon: IconPlus, badgeColor: "badge-success" },
 ];
 
-export function Tabs({ activeTab, onTabChange, meepleCounts }: TabsProps) {
+export function Tabs({ activeTab, onTabChange, meepleCounts, customMeeplesCount = 0 }: TabsProps) {
   const currentMainTab = getMainTabFromTabType(activeTab);
-  const currentSubTab = getSubTabFromTabType(activeTab);
+  const currentSubTab = getSubTabFromTabType(activeTab, customMeeplesCount);
 
   // Calculate aggregate counts for main tabs
   const shipsCount = meepleCounts.traders + meepleCounts.miners + meepleCounts.bartenders;
@@ -107,7 +109,8 @@ export function Tabs({ activeTab, onTabChange, meepleCounts }: TabsProps) {
     if (mainTab === "help") {
       onTabChange("help");
     } else if (mainTab === "player") {
-      onTabChange("my-meeples"); // Default to first sub tab
+      // If no custom meeples, default to create tab, otherwise my-meeples
+      onTabChange(customMeeplesCount === 0 ? "create" : "my-meeples");
     } else if (mainTab === "ships") {
       onTabChange("traders"); // Default to first sub tab
     } else if (mainTab === "destinations") {
