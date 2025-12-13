@@ -81,13 +81,6 @@ export const MINER_RULES: LogicRule[] = [
     value: 0,
     action: LogicRuleActionType.ChillAtHome,
   },
-  {
-    id: "sell-treasure",
-    good: Resources.Treasure,
-    operator: ComparisonOperator.GreaterThan,
-    value: 0,
-    action: LogicRuleActionType.SellTreasure,
-  },
   // if money is greater than or equal to 50 go to space bar
   {
     id: "go-to-space-bar",

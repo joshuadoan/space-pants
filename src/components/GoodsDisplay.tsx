@@ -15,9 +15,6 @@ function getBadgeColor(good: GoodType): string {
   if (good === Resources.Ore) {
     return "badge-secondary";
   }
-  if (good === Resources.Treasure) {
-    return "badge-warning";
-  }
   // Products
   return "badge-primary";
 }

@@ -16,11 +16,9 @@ import {
   DEFAULT_ENERGY,
   MEEPLE_SIZE,
   MINING_ORE_AMOUNT,
-  MINING_TREASURE_CHANCE,
   TRADE_ORE_AMOUNT,
   TRADE_MONEY_AMOUNT,
   WORK_EARNINGS,
-  TREASURE_SELL_PRICE,
   MINING_DELAY_MS,
   TRADING_DELAY_MS,
   SOCIALIZING_DELAY_MS,
@@ -28,7 +26,6 @@ import {
   CHILLING_DELAY_MS,
   SHOPPING_DELAY_MS,
   SELLING_DELAY_MS,
-  SELL_TREASURE_DELAY_MS,
   DEFAULT_TRANSACTION_TIME_MS,
   MEEPLE_UPDATE_INTERVAL_MS,
   FOLLOWER_BASE_DISTANCE,
@@ -68,7 +65,6 @@ export class Meeple extends Actor {
     this.goods = {
       [Resources.Ore]: 0,
       [Resources.Money]: 0,
-      [Resources.Treasure]: 0,
       [MeepleStats.Health]: DEFAULT_HEALTH,
       [MeepleStats.Energy]: DEFAULT_ENERGY,
     };
@@ -246,9 +242,6 @@ export class Meeple extends Actor {
       case LogicRuleActionType.GoSelling:
         this.executeGoSelling();
         break;
-      case LogicRuleActionType.SellTreasure:
-        this.executeSellTreasure();
-        break;
       case LogicRuleActionType.ChillAtHome:
         this.executeChillingAtHome();
         break;
@@ -270,11 +263,6 @@ export class Meeple extends Actor {
         const actualMiningAmount = Math.min(MINING_ORE_AMOUNT, currentAsteroidOre);
         this.transact("add", Resources.Ore, actualMiningAmount);
         asteroid.transact("remove", Resources.Ore, actualMiningAmount);
-        
-        // Rare chance to find treasure while mining
-        if (Math.random() < MINING_TREASURE_CHANCE) {
-          this.transact("add", Resources.Treasure, 1);
-        }
       }
     }, MINING_DELAY_MS);
   }
@@ -397,20 +385,6 @@ export class Meeple extends Actor {
     }, SELLING_DELAY_MS);
   }
 
-  private executeSellTreasure(): void {
-    const treasureCollector = this.getRandomTreasureCollector();
-    if (!treasureCollector) return;
-
-    const treasureAmount = this.goods[Resources.Treasure] ?? 0;
-    if (treasureAmount <= 0) return;
-
-    this.visitTarget(treasureCollector, MeepleStateType.Trading, () => {
-      this.transact("remove", Resources.Treasure, 1);
-      this.transact("add", Resources.Money, TREASURE_SELL_PRICE);
-      treasureCollector.transact("add", Resources.Treasure, 1);
-      treasureCollector.transact("remove", Resources.Money, TREASURE_SELL_PRICE);
-    }, SELL_TREASURE_DELAY_MS);
-  }
 
   private visitTarget(
     target: Meeple,
@@ -537,17 +511,6 @@ export class Meeple extends Actor {
     );
   }
 
-  getRandomTreasureCollector(): Meeple | undefined {
-    const meeples = this.scene?.actors.filter(
-      (a: Actor) => a instanceof Meeple
-    );
-    const treasureCollectors = meeples?.filter(
-      (meeple: Meeple) => meeple.type === MeepleType.TreasureCollector && meeple !== this
-    );
-    return (
-      treasureCollectors?.[Math.floor(Math.random() * treasureCollectors.length)] ?? undefined
-    );
-  }
 
   transact(
     type: "add" | "remove",

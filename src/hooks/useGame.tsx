@@ -11,7 +11,6 @@ import { Miner } from "../entities/Miner";
 import { SpaceBar } from "../entities/SpaceBar";
 import { generateSpaceName } from "../entities/utils/generateSpaceName";
 import { SpaceApartments } from "../entities/SpaceApartments";
-import { TreasureCollector } from "../entities/TreasureCollector";
 import { Bartender } from "../entities/Bartender";
 import type { Actor } from "excalibur";
 import { Meeple } from "../entities/Meeple";
@@ -67,7 +66,6 @@ type CategorizedMeeples = {
   asteroids: Asteroid[];
   player: Player[];
   spaceapartments: SpaceApartments[];
-  treasurecollectors: TreasureCollector[];
   bartenders: Bartender[];
   all: Meeple[];
 };
@@ -81,7 +79,6 @@ type MeepleCounts = {
   stations: number;
   spacebars: number;
   spaceapartments: number;
-  treasurecollectors: number;
   bartenders: number;
 };
 
@@ -107,7 +104,6 @@ const emptyCategorizedMeeples: CategorizedMeeples = {
   asteroids: [],
   player: [],
   spaceapartments: [],
-  treasurecollectors: [],
   bartenders: [],
   all: [],
 };
@@ -120,7 +116,6 @@ const emptyMeepleCounts: MeepleCounts = {
   stations: 0,
   spacebars: 0,
   spaceapartments: 0,
-  treasurecollectors: 0,
   bartenders: 0,
 };
 
@@ -191,7 +186,6 @@ function categorizeMeeples(meeples: Meeple[]): CategorizedMeeples {
     asteroids: [],
     player: [],
     spaceapartments: [],
-    treasurecollectors: [],
     bartenders: [],
     all: meeples,
   };
@@ -211,8 +205,6 @@ function categorizeMeeples(meeples: Meeple[]): CategorizedMeeples {
       categorized.player.push(meeple);
     } else if (meeple instanceof SpaceApartments) {
       categorized.spaceapartments.push(meeple);
-    } else if (meeple instanceof TreasureCollector) {
-      categorized.treasurecollectors.push(meeple);
     } else if (meeple instanceof Bartender) {
       categorized.bartenders.push(meeple);
     }
@@ -233,7 +225,6 @@ function calculateMeepleCounts(categorized: CategorizedMeeples): MeepleCounts {
     stations: categorized.stations.length,
     spacebars: categorized.spacebars.length,
     spaceapartments: categorized.spaceapartments.length,
-    treasurecollectors: categorized.treasurecollectors.length,
     bartenders: categorized.bartenders.length,
   };
 }
@@ -358,19 +349,6 @@ function createSpaceApartments(game: Game): void {
   }
 }
 
-/**
- * Creates a single treasure collector entity.
- * Treasure collectors buy treasure from other entities.
- */
-function createTreasureCollector(game: Game): void {
-  const treasureCollector = new TreasureCollector(
-    getRandomPosition(),
-    1,
-    generateSpaceName()
-  );
-  treasureCollector.name = generateSpaceName();
-  game.currentScene.add(treasureCollector);
-}
 
 /**
  * Creates bartender entities - configured number of bartenders per space bar.
@@ -418,7 +396,6 @@ function initializeGameEntities(game: Game): void {
   createSpaceBars(game);
   createBartenders(game); // Create bartenders after space bars so they can be positioned near them
   createSpaceApartments(game);
-  createTreasureCollector(game);
 }
 
 // ============================================================================
@@ -501,7 +478,6 @@ export type TabType =
   | "asteroids"
   | "spacebars"
   | "spaceapartments"
-  | "treasurecollectors"
   | "bartenders"
   | "all"
   | "readme";

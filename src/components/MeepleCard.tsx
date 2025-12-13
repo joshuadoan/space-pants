@@ -7,7 +7,6 @@ import {
   IconMoodSmile,
   IconUser,
   IconUsers,
-  IconStar,
   IconArrowUp,
   IconArrowDown,
   IconArrowLeft,
@@ -247,17 +246,6 @@ export function MeepleCard({
                 </span>
               </div>
             ),
-            [MeepleType.TreasureCollector]: (
-              <div className="tooltip">
-                <div className="tooltip-content">
-                  <div className="text-sm font-semibold text-base-content">Treasure Collector</div>
-                </div>
-                <span className="badge badge-sm badge-warning flex items-center gap-1">
-                  <IconStar size={14} className="cursor-pointer" />
-                  Treasure Collector
-                </span>
-              </div>
-            ),
             [MeepleType.Bartender]: (
               <div className="tooltip">
                 <div className="tooltip-content">
@@ -451,7 +439,6 @@ export function MeepleCard({
                         [MeepleType.SpaceStation]: <IconSatellite size={14} className="cursor-pointer" />,
                         [MeepleType.SpaceBar]: <IconBeer size={14} className="cursor-pointer" />,
                         [MeepleType.SpaceApartments]: <IconBuilding size={14} className="cursor-pointer" />,
-                        [MeepleType.TreasureCollector]: <IconStar size={14} className="cursor-pointer" />,
                         [MeepleType.Bartender]: <IconBeer size={14} className="cursor-pointer" />,
                       }[visitor.type]
                     }{" "}

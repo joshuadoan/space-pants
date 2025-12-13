@@ -6,10 +6,9 @@ import {
   IconSatellite,
   IconBeer,
   IconBuilding,
-  IconStar,
 } from "@tabler/icons-react";
 
-type TabType = "player" | "traders" | "miners" | "stations" | "asteroids" | "spacebars" | "spaceapartments" | "treasurecollectors" | "bartenders" | "all" | "readme";
+type TabType = "player" | "traders" | "miners" | "stations" | "asteroids" | "spacebars" | "spaceapartments" | "bartenders" | "all" | "readme";
 
 type MainTabType = "player" | "ships" | "destinations" | "readme";
 
@@ -21,7 +20,6 @@ type MeepleCounts = {
   stations: number;
   spacebars: number;
   spaceapartments: number;
-  treasurecollectors: number;
   bartenders: number;
 };
 
@@ -80,7 +78,6 @@ const DESTINATION_SUBTABS: { value: TabType; label: string; icon: React.Componen
   { value: "asteroids", label: "Asteroids", icon: IconMeteor, badgeColor: "badge-accent" },
   { value: "spacebars", label: "Space Bars", icon: IconBeer, badgeColor: "badge-warning" },
   { value: "spaceapartments", label: "Space Apartments", icon: IconBuilding, badgeColor: "badge-info" },
-  { value: "treasurecollectors", label: "Treasure Collectors", icon: IconStar, badgeColor: "badge-warning" },
 ];
 
 export function Tabs({ activeTab, onTabChange, meepleCounts }: TabsProps) {
@@ -89,7 +86,7 @@ export function Tabs({ activeTab, onTabChange, meepleCounts }: TabsProps) {
 
   // Calculate aggregate counts for main tabs
   const shipsCount = meepleCounts.traders + meepleCounts.miners + meepleCounts.bartenders;
-  const destinationsCount = meepleCounts.stations + meepleCounts.asteroids + meepleCounts.spacebars + meepleCounts.spaceapartments + meepleCounts.treasurecollectors;
+  const destinationsCount = meepleCounts.stations + meepleCounts.asteroids + meepleCounts.spacebars + meepleCounts.spaceapartments;
 
   const handleMainTabChange = (mainTab: MainTabType) => {
     // Update parent component with the appropriate tab

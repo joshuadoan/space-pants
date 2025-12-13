@@ -31,7 +31,6 @@ export const ENTITY_COUNTS = {
   MINERS: 10,
   SPACE_BARS: 3,
   SPACE_APARTMENTS: 3,
-  TREASURE_COLLECTORS: 1,
   BARTENDERS_PER_BAR: 3,
 } as const;
 
@@ -114,9 +113,6 @@ export const SPACE_BAR_FIZZ_REGENERATION_AMOUNT = 1;
 /** Amount of ore mined per mining action */
 export const MINING_ORE_AMOUNT = 1;
 
-/** Chance of finding treasure when mining (0.0 to 1.0) */
-export const MINING_TREASURE_CHANCE = 0.08; // 8% chance to find treasure
-
 /** Amount of ore traded per trade action */
 export const TRADE_ORE_AMOUNT = 1;
 
@@ -128,9 +124,6 @@ export const WORK_EARNINGS = 3; // Bartenders earn more per work session
 
 /** Price per fizz at space bars */
 export const FIZZ_PRICE = 1;
-
-/** Price per treasure when selling to treasure collector */
-export const TREASURE_SELL_PRICE = 10; // Treasure is highly valuable
 
 /** Price per product when selling to space station */
 export const PRODUCT_SELL_PRICE = 2; // Products are worth more than base price
@@ -184,9 +177,6 @@ export const SHOPPING_DELAY_MS = 3000;
 
 /** Delay for selling action in milliseconds */
 export const SELLING_DELAY_MS = 3000;
-
-/** Delay for selling treasure action in milliseconds */
-export const SELL_TREASURE_DELAY_MS = 3000;
 
 /** Delay for space station converting ore to product in milliseconds */
 export const SPACE_STATION_CONVERSION_DELAY_MS = 3000;
@@ -249,13 +239,6 @@ export const MINER_STARTING_GOODS: Partial<Record<string, number>> = {
 /** Starting goods for traders */
 export const TRADER_STARTING_GOODS: Partial<Record<string, number>> = {
   [Resources.Money]: TRADER_STARTING_MONEY,
-};
-
-/** Starting goods for treasure collectors */
-export const TREASURE_COLLECTOR_STARTING_GOODS: Partial<Record<string, number>> = {
-  [Resources.Ore]: 0,
-  [Resources.Money]: 0,
-  [Resources.Treasure]: 0,
 };
 
 /** Starting goods for space bars */

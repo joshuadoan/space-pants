@@ -11,7 +11,6 @@ export enum Products {
 export enum Resources {
     Ore = "ore",
     Money = "money",
-    Treasure = "treasure",
 }
 
 export enum MeepleStats {
@@ -28,7 +27,6 @@ export type Goods = Record<Products | Resources | MeepleStats, number>;
 export enum MeepleType {
   Miner = "Miner",
   Trader = "Trader",
-  TreasureCollector = "TreasureCollector",
   Asteroid = "Asteroid",
   Player = "Player",
   SpaceStation = "SpaceStation",
@@ -128,6 +126,5 @@ export enum LogicRuleActionType {
   Work = "Work",
   GoShopping = "Go Shopping",
   GoSelling = "Go Selling",
-  SellTreasure = "Sell Treasure",
   ChillAtHome = "Chill At Home",
 }
