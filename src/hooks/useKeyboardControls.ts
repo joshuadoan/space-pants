@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 import { KeyEvent, Keys } from "excalibur";
 import type { Game } from "../entities/Game";
-import type { Meeple } from "../entities/Meeple";
+import type { Meeple } from "../entities/Meeple/Meeple";
 
 export type KeyboardInstructions = {
   movement: {

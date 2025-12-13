@@ -3,6 +3,7 @@ import type {
   RuleBehavior,
   ComparisonOperator,
   LogicRuleActionType,
+  MeepleType,
 } from "../../entities/types";
 import { Products } from "../../entities/types";
 
@@ -72,6 +73,16 @@ type UpdateRuleProductTypeAction = {
   payload: { ruleId: string; productType?: Products };
 };
 
+type UpdateRuleDestinationTypeAction = {
+  type: "update-rule-destination-type";
+  payload: { ruleId: string; destinationType?: MeepleType };
+};
+
+type UpdateRuleDestinationNameAction = {
+  type: "update-rule-destination-name";
+  payload: { ruleId: string; destinationName?: string };
+};
+
 type DeleteRuleAction = {
   type: "delete-rule";
   payload: string;
@@ -109,6 +120,8 @@ export type RulesFormAction =
   | UpdateRuleValueAction
   | UpdateRuleActionAction
   | UpdateRuleProductTypeAction
+  | UpdateRuleDestinationTypeAction
+  | UpdateRuleDestinationNameAction
   | DeleteRuleAction
   | MoveRuleAction
   | AddRuleAction
@@ -177,6 +190,24 @@ export function rulesFormReducer(
         localRules: state.localRules.map((rule) =>
           rule.id === action.payload.ruleId
             ? { ...rule, productType: action.payload.productType }
+            : rule
+        ),
+      };
+    case "update-rule-destination-type":
+      return {
+        ...state,
+        localRules: state.localRules.map((rule) =>
+          rule.id === action.payload.ruleId
+            ? { ...rule, destinationType: action.payload.destinationType }
+            : rule
+        ),
+      };
+    case "update-rule-destination-name":
+      return {
+        ...state,
+        localRules: state.localRules.map((rule) =>
+          rule.id === action.payload.ruleId
+            ? { ...rule, destinationName: action.payload.destinationName }
             : rule
         ),
       };

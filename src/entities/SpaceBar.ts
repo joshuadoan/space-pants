@@ -1,5 +1,6 @@
 import { Vector, Rectangle, GraphicsGroup, Color } from "excalibur";
-import { Meeple } from "./Meeple";
+import { Meeple } from "./Meeple/Meeple";
+import { getRandomVisitor } from "./Meeple/meepleFinders";
 import { Products, Resources, type GoodType } from "./types";
 import { MeepleStateType } from "./types";
 import type { Game } from "./Game";
@@ -74,7 +75,7 @@ export class SpaceBar extends Meeple {
     );
 
     if (this.visitors.size > 1) {
-      const randomVisitor = this.getRandomVisitor();
+      const randomVisitor = getRandomVisitor(this);
       if (randomVisitor) {
         this.state = {
           type: MeepleStateType.Transacting,

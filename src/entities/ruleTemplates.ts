@@ -9,7 +9,15 @@ const TRADER_RULES_ARRAY: LogicRule[] = [
     value: 0,
     action: LogicRuleActionType.RestAtApartments,
   },
-  // Priority 2: If trader has products of their type, sell them to stations
+  // Priority 2: If money is greater than or equal to 50, go to space bar to socialize
+  {
+    id: "go-to-space-bar",
+    good: Resources.Money,
+    operator: ComparisonOperator.GreaterThanOrEqual,
+    value: 50,
+    action: LogicRuleActionType.SocializeAtBar,
+  },
+  // Priority 3: If trader has products of their type, sell them to stations
   // productType not specified, so it defaults to meeple's productType
   {
     id: "sell-product",
@@ -18,13 +26,13 @@ const TRADER_RULES_ARRAY: LogicRule[] = [
     value: 0,
     action: LogicRuleActionType.SellProductToStation,
   },
-  // Priority 3: If trader has money, buy products from stations
+  // Priority 4: If trader has money, buy products from stations
   // productType not specified, so it defaults to meeple's productType
   {
     id: "buy-product",
     good: Resources.Money,
     operator: ComparisonOperator.GreaterThanOrEqual,
-    value: 2, // Minimum to buy one product (PRODUCT_SELL_PRICE)
+    value: 1, // Minimum to buy one product (PRODUCT_BUY_PRICE)
     action: LogicRuleActionType.BuyProductFromStation,
   },
 ];

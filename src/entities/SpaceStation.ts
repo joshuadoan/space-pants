@@ -1,7 +1,8 @@
 import { Color, Vector } from "excalibur";
 import { createRandomSpaceStation } from "./createRandomSpaceStation";
 import { Products, Resources } from "./types";
-import { Meeple } from "./Meeple";
+import { Meeple } from "./Meeple/Meeple";
+import { getRandomVisitor } from "./Meeple/meepleFinders";
 import type { Game } from "./Game";
 import { MeepleStateType } from "./types";
 import {
@@ -101,7 +102,7 @@ export class SpaceStation extends Meeple {
 
         // Reset state after conversion completes
         if (this.visitors.size > 1) {
-          const randomVisitor = this.getRandomVisitor();
+          const randomVisitor = getRandomVisitor(this);
           if (randomVisitor) {
             this.state = {
               type: MeepleStateType.Transacting,
@@ -141,7 +142,7 @@ export class SpaceStation extends Meeple {
         // No ore to convert, update lastProductionTime and set state
         this.lastProductionTime = currentTime;
         if (this.visitors.size > 1) {
-          const randomVisitor = this.getRandomVisitor();
+          const randomVisitor = getRandomVisitor(this);
           if (randomVisitor) {
             this.state = {
               type: MeepleStateType.Transacting,

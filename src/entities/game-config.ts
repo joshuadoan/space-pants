@@ -86,7 +86,7 @@ export const DEFAULT_HEALTH = 100;
 export const DEFAULT_ENERGY = 100;
 
 /** Starting money for traders */
-export const TRADER_STARTING_MONEY = 42; // Give traders enough capital to start trading
+export const TRADER_STARTING_MONEY = 1; // Traders can start with minimal capital and grow from there
 
 /** Starting money for space stations */
 export const SPACE_STATION_STARTING_MONEY = 42;
@@ -125,8 +125,11 @@ export const WORK_EARNINGS = 3; // Bartenders earn more per work session
 /** Price per fizz at space bars */
 export const FIZZ_PRICE = 1;
 
-/** Price per product when selling to space station */
-export const PRODUCT_SELL_PRICE = 2; // Products are worth more than base price
+/** Price per product when buying from producing station */
+export const PRODUCT_BUY_PRICE = 1; // Products cost 1 where they are created
+
+/** Price per product when selling to non-producing space station */
+export const PRODUCT_SELL_PRICE = 2; // Products sell for 2 where they are not created
 
 // ============================================================================
 // Production & Regeneration

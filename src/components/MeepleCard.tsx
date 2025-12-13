@@ -1,5 +1,5 @@
 import { useReducer } from "react";
-import type { Meeple } from "../entities/Meeple";
+import type { Meeple } from "../entities/Meeple/Meeple";
 import { MeepleType } from "../entities/types";
 import {
   IconBuilding,
@@ -13,7 +13,8 @@ import {
   IconArrowRight,
   IconHeart,
   IconBolt,
-  IconEdit
+  IconEdit,
+  IconHome
 } from "@tabler/icons-react";
 import { IconShip } from "@tabler/icons-react";
 import { IconPick } from "@tabler/icons-react";
@@ -288,6 +289,13 @@ export function MeepleCard({
           pos {Math.round(meeple.pos.x)}° {Math.round(meeple.pos.y)}°
         </span>
       </div>
+      {meeple.home && (
+        <div className="flex items-center gap-1.5 mb-2 text-xs text-base-content/70">
+          <IconHome size={14} className="text-accent" />
+          <span className="font-medium">Home:</span>
+          <span className="text-accent font-semibold">{meeple.home.name}</span>
+        </div>
+      )}
       <div className="flex items-center gap-2 mb-2 flex-wrap">
         {
           {

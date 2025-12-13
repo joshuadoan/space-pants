@@ -11,7 +11,7 @@ import { generateSpaceName } from "../entities/utils/generateSpaceName";
 import { SpaceApartments } from "../entities/SpaceApartments";
 import { Bartender } from "../entities/Bartender";
 import type { Actor } from "excalibur";
-import { Meeple } from "../entities/Meeple";
+import { Meeple } from "../entities/Meeple/Meeple";
 import {
   WORLD_WIDTH,
   WORLD_HEIGHT,
@@ -49,6 +49,11 @@ type SetGameAction = {
   payload: Game;
 };
 
+type SetZoomAction = {
+  type: "set-zoom";
+  payload: number;
+};
+
 /** Action to zoom the camera to a specific entity */
 type ZoomToEntityAction = {
   type: "zoom-to-entity";
@@ -56,7 +61,7 @@ type ZoomToEntityAction = {
 };
 
 /** Union type of all possible game actions */
-type GameAction = SetMeeplesAction | SetIsLoadingAction | SetGameAction | ZoomToEntityAction;
+type GameAction = SetMeeplesAction | SetIsLoadingAction | SetGameAction | ZoomToEntityAction | SetZoomAction;
 
 /** Categorized meeples by type */
 type CategorizedMeeples = {
@@ -91,6 +96,7 @@ type GameState = {
   activeMeeple: Meeple | null;
   categorizedMeeples: CategorizedMeeples;
   meepleCounts: MeepleCounts;
+  zoom: number;
 };
 
 // ============================================================================
@@ -127,6 +133,7 @@ const initialState: GameState = {
   activeMeeple: null,
   categorizedMeeples: emptyCategorizedMeeples,
   meepleCounts: emptyMeepleCounts,
+  zoom: CAMERA_ZOOM,
 };
 
 // ============================================================================
@@ -157,6 +164,12 @@ function gameReducer(state: GameState, action: GameAction): GameState {
         meeples: action.payload,
         categorizedMeeples: categorized,
         meepleCounts: counts,
+      };
+    }
+    case "set-zoom": {
+      return {
+        ...state,
+        zoom: action.payload,
       };
     }
     case "zoom-to-entity": {
@@ -262,6 +275,7 @@ function initializePlayer(game: Game): Player {
     DEFAULT_SHIP_SPEED,
     "Player"
   );
+  // Player gets a random apartment as their home (will be assigned after apartments are created)
   game.currentScene.add(player);
   game.currentScene.camera.strategy.lockToActor(player);
   return player;
@@ -283,6 +297,8 @@ function createSpaceStations(game: Game): void {
       generateSpaceName(),
       productType
     );
+    // Destinations get themselves as their home
+    spaceStation.home = spaceStation;
     game.currentScene.add(spaceStation);
   }
 }
@@ -297,6 +313,8 @@ function createAsteroids(game: Game): void {
       getRandomPosition(),
       getRandomAsteroidSize()
     );
+    // Destinations get themselves as their home
+    asteroid.home = asteroid;
     game.currentScene.add(asteroid);
   }
 }
@@ -312,6 +330,8 @@ function createMiners(game: Game): void {
     miner.type = MeepleType.Miner;
     miner.rules = MINER_RULES;
     miner.speed = DEFAULT_SHIP_SPEED;
+    // Ships get a random apartment as their home
+    miner.home = getRandomSpaceApartment(game);
 
     const minerDesign = createMinerShipOutOfShapes();
     miner.graphics.use(minerDesign);
@@ -338,6 +358,8 @@ function createTraders(game: Game): void {
     trader.rules = TRADER_RULES;
     trader.goods[Resources.Money] = TRADER_STARTING_MONEY;
     trader.speed = DEFAULT_SHIP_SPEED;
+    // Ships get a random apartment as their home
+    trader.home = getRandomSpaceApartment(game);
 
     const traderDesign = createTraderShipOutOfShapes();
     trader.graphics.use(traderDesign);
@@ -352,6 +374,8 @@ function createSpaceBars(game: Game): void {
   for (let i = 0; i < ENTITY_COUNTS.SPACE_BARS; i++) {
     const spaceBar = new SpaceBar(getRandomPosition(), generateSpaceName());
     spaceBar.name = generateSpaceName();
+    // Destinations get themselves as their home
+    spaceBar.home = spaceBar;
     game.currentScene.add(spaceBar);
   }
 }
@@ -366,8 +390,21 @@ function createSpaceApartments(game: Game): void {
       generateSpaceName()
     );
     spaceApartment.name = generateSpaceName();
+    // Destinations get themselves as their home
+    spaceApartment.home = spaceApartment;
     game.currentScene.add(spaceApartment);
   }
+}
+
+/**
+ * Gets a random space apartment from the scene.
+ */
+function getRandomSpaceApartment(game: Game): Meeple | null {
+  const apartments = game.currentScene.actors.filter(
+    (actor: Actor) => actor instanceof SpaceApartments
+  ) as SpaceApartments[];
+  if (apartments.length === 0) return null;
+  return apartments[Math.floor(Math.random() * apartments.length)];
 }
 
 
@@ -398,6 +435,8 @@ function createBartenders(game: Game): void {
         generateSpaceName()
       );
       bartender.name = generateSpaceName();
+      // Ships get a random apartment as their home
+      bartender.home = getRandomSpaceApartment(game);
       game.currentScene.add(bartender);
     }
   }
@@ -412,11 +451,19 @@ function initializeGameEntities(game: Game): void {
   createStarTilemap(game);
   createSpaceStations(game);
   createAsteroids(game);
+  createSpaceBars(game);
+  createSpaceApartments(game); // Create apartments before ships/players so they can be assigned as homes
   createMiners(game);
   createTraders(game);
-  createSpaceBars(game);
   createBartenders(game); // Create bartenders after space bars so they can be positioned near them
-  createSpaceApartments(game);
+  
+  // Assign player's home after apartments are created
+  const player = game.currentScene.actors.find(
+    (actor: Actor) => actor instanceof Player
+  ) as Player | undefined;
+  if (player) {
+    player.home = getRandomSpaceApartment(game);
+  }
 }
 
 // ============================================================================
@@ -513,6 +560,8 @@ type GameContextValue = {
   meepleCounts: MeepleCounts;
   getFilteredEntities: (tab: TabType) => Meeple[];
   zoomToEntity: (meeple: Meeple) => void;
+  zoom: number;
+  setZoom: (zoom: number) => void;
 };
 
 // ============================================================================
@@ -595,6 +644,13 @@ function useGameInternal(): GameContextValue {
     }
   }, [gameState.activeMeeple]);
 
+  // Update camera zoom when zoom state changes
+  useEffect(() => {
+    if (gameRef.current) {
+      gameRef.current.currentScene.camera.zoom = gameState.zoom;
+    }
+  }, [gameState.zoom]);
+
   /**
    * Gets filtered entities based on the active tab.
    * Uses memoized categorized meeples for optimal performance.
@@ -618,6 +674,13 @@ function useGameInternal(): GameContextValue {
      */
     zoomToEntity: (meeple: Meeple) => {
       dispatch({ type: "zoom-to-entity", payload: meeple });
+    },
+    /**
+     * Sets the camera zoom level.
+     * @param zoom - The zoom level (0-100, will be converted to 0.1-5.0)
+     */
+    setZoom: (zoom: number) => {
+      dispatch({ type: "set-zoom", payload: zoom });
     },
   };
 }

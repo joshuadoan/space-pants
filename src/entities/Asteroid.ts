@@ -1,5 +1,6 @@
 import { Color, Polygon, Vector } from "excalibur";
-import { Meeple } from "./Meeple";
+import { Meeple } from "./Meeple/Meeple";
+import { getRandomVisitor } from "./Meeple/meepleFinders";
 import { Resources, Products } from "./types";
 import type { Game } from "./Game";
 import { MeepleStateType } from "./types";
@@ -102,7 +103,7 @@ export class Asteroid extends Meeple {
     );
 
     if (this.visitors.size > 1) {
-      const randomVisitor = this.getRandomVisitor();
+      const randomVisitor = getRandomVisitor(this);
       if (randomVisitor) {
         this.state = {
           type: MeepleStateType.Transacting,

@@ -1,4 +1,4 @@
-import type { Meeple } from "./Meeple";
+import type { Meeple } from "./Meeple/Meeple";
 
 export enum Products {
     Gruffle = "gruffle",
@@ -118,6 +118,8 @@ export type LogicRule = {
   value: number;
   action: LogicRuleActionType;
   productType?: Products; // Optional product type, defaults to meeple's productType
+  destinationType?: MeepleType; // Optional destination type to target specific entity types
+  destinationName?: string; // Optional specific destination name (takes precedence over destinationType)
 };
 
 export enum LogicRuleActionType {

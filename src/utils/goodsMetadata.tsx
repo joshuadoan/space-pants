@@ -4,7 +4,6 @@ import {
   IconPick,
   IconPackage,
   IconBeer,
-  IconCoin,
   IconHeart,
   IconBolt,
 } from "@tabler/icons-react";

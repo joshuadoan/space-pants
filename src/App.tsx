@@ -44,6 +44,8 @@ function App() {
     activeMeeple,
     meepleCounts,
     getFilteredEntities,
+    zoom,
+    setZoom,
   } = useGame();
   const cardRefs = useRef<Map<number | string, HTMLDivElement>>(new Map());
 
@@ -105,11 +107,32 @@ function App() {
       {/* Sticky navbar at the top */}
       <div className="navbar bg-base-100 shadow-lg sticky top-0 z-50">
         <div className="flex-1 flex flex-col items-start">
-          <div className="flex items-center gap-2 mb-2 px-2">
-            <IconRocket size={28} className="text-primary" />
-            <h1 className="text-2xl font-bold text-base-content">
-              Space Pants
-            </h1>
+          <div className="flex items-center gap-2 mb-2 px-2 w-full">
+            <div className="flex items-center gap-2">
+              <IconRocket size={28} className="text-primary" />
+              <h1 className="text-2xl font-bold text-base-content">
+                Space Pants
+              </h1>
+            </div>
+            <div className="flex-1" />
+            <div className="flex items-center gap-2 px-4">
+              <label className="text-sm text-base-content">Zoom</label>
+              <input
+                type="range"
+                min={0}
+                max={100}
+                value={Math.round(((zoom - 0.3) / (5.0 - 0.3)) * 100)}
+                onChange={(e) => {
+                  const rangeValue = parseInt(e.target.value, 10);
+                  const zoomValue = 0.3 + (rangeValue / 100) * (5.0 - 0.3);
+                  setZoom(zoomValue);
+                }}
+                className="range range-primary w-32"
+              />
+              <span className="text-sm text-base-content min-w-[3rem]">
+                {zoom.toFixed(1)}x
+              </span>
+            </div>
           </div>
           <Tabs
             activeTab={state.activeTab}

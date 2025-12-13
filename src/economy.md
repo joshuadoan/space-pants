@@ -40,6 +40,8 @@ Five distinct product types that space stations produce:
 3. If ore ≥ 10 → Sell ore to station
 4. If ore < 10 → Mine ore from asteroid
 
+**Destination Selection**: Rules can optionally specify destination types (e.g., target a specific SpaceStation type) or specific entity names for precise control over entity behavior.
+
 **Starting Resources**: 0 ore, 0 money
 
 ### Traders
@@ -47,16 +49,21 @@ Five distinct product types that space stations produce:
 **Role**: Product distribution network
 
 **Economic Activities**:
-- Buy products from stations that produce them (2 money → 1 product, 3s delay)
+- Buy products from stations that produce them (1 money → 1 product, 3s delay)
 - Sell products to stations that don't produce them (1 product → 2 money, 3s delay)
+- Socialize at space bars when money ≥ 50 (spends all money, restores energy, 5s delay)
+- Rest at apartments when energy ≤ 0 (restores energy to 100, 3s delay)
 - Each trader specializes in one product type
 
 **Behavior Rules** (priority order):
-1. If energy ≤ 0 → Rest at apartments
-2. If product > 0 (of trader's type) → Sell product to station
-3. If money ≥ 2 → Buy product from station
+1. If energy ≤ 0 → Rest at apartments (always prioritized - traders go home when energy is low, even after socializing)
+2. If money ≥ 50 → Socialize at bar
+3. If product > 0 (of trader's type) → Sell product to station
+4. If money ≥ 1 → Buy product from station
 
-**Starting Resources**: 42 money
+**Destination Selection**: Rules can optionally specify destination types (e.g., target a specific SpaceStation type) or specific entity names for precise control over entity behavior.
+
+**Starting Resources**: 1 money
 
 ### Space Stations
 **Count**: 5  
@@ -69,7 +76,7 @@ Five distinct product types that space stations produce:
 - **Trading**: 
   - Buy ore from miners (1 ore → 2 money)
   - Buy products from traders (1 product → 2 money)
-  - Sell products to traders (1 product → 2 money)
+  - Sell products to traders (1 product → 1 money) - Products cost 1 where they are created
 
 **Regeneration**:
 - Ore regenerates when below 50 ore threshold
@@ -122,6 +129,8 @@ Five distinct product types that space stations produce:
 2. If money ≥ 50 → Buy product from station
 3. If energy > 0 → Work at bar
 
+**Destination Selection**: Rules can optionally specify destination types (e.g., target a specific SpaceBar) or specific entity names for precise control over entity behavior.
+
 **Starting Resources**: 0 ore, 0 money
 
 ### Space Apartments
@@ -146,7 +155,7 @@ Asteroids → Miners → Space Stations → Traders → Space Stations
 1. **Extraction**: Miners extract ore from asteroids
 2. **Trading**: Miners sell ore to stations (1 ore = 2 money)
 3. **Production**: Stations convert ore to products (1 ore = 1 product)
-4. **Distribution**: Traders buy products from producing stations and sell to non-producing stations
+4. **Distribution**: Traders buy products from producing stations (1 money = 1 product) and sell to non-producing stations (1 product = 2 money)
 5. **Consumption**: Stations accumulate products they don't produce
 
 ### Secondary Economy
@@ -165,8 +174,8 @@ Bartenders → Space Bars → Socializing Entities
 | Transaction | Rate | Notes |
 |------------|------|-------|
 | Ore → Money | 1 ore = 2 money | Miners sell to stations |
-| Money → Product | 2 money = 1 product | Traders buy from stations |
-| Product → Money | 1 product = 2 money | Traders sell to stations |
+| Money → Product | 1 money = 1 product | Traders buy from producing stations (products cost 1 where created) |
+| Product → Money | 1 product = 2 money | Traders sell to non-producing stations (products sell for 2 where not created) |
 | Fizz | 1 money = 1 fizz | Socializing at bars |
 | Work Earnings | 3 money per shift | Bartenders earn from bars |
 
@@ -209,7 +218,7 @@ Bartenders → Space Bars → Socializing Entities
   - Traders: Selling products (1 product → 2 money)
 
 - **Money Sinks**:
-  - Buying products (2 money → 1 product)
+  - Buying products (1 money → 1 product at producing stations)
   - Socializing at bars (spends all money ≥ 50)
 
 ### Ore Flow
@@ -246,6 +255,13 @@ Entities evaluate rules in priority order:
 3. **Work**: Resource gathering and trading
 4. **Idle**: Default state when no conditions met
 
+### Destination Selection
+Rules can specify destinations for more precise control:
+- **Destination Type**: Target a specific entity type (e.g., only SpaceStations)
+- **Destination Name**: Target a specific entity by name for exact routing
+- **Random Selection**: If no destination is specified, entities choose randomly from valid targets
+- **Smart Filtering**: Destination options are automatically filtered based on the action type
+
 ## Economic Emergence
 
 The economy creates emergent patterns through:
@@ -259,12 +275,14 @@ The economy creates emergent patterns through:
 
 Key economic parameters (from `game-config.ts`):
 - `TRADE_MONEY_AMOUNT`: 2 (ore value multiplier)
-- `PRODUCT_SELL_PRICE`: 2 (product value)
+- `PRODUCT_BUY_PRICE`: 1 (products cost 1 where they are created)
+- `PRODUCT_SELL_PRICE`: 2 (products sell for 2 where they are not created)
 - `WORK_EARNINGS`: 3 (bartender wages)
 - `FIZZ_PRICE`: 1 (socializing cost)
 - `ORE_PER_PRODUCT`: 1 (production efficiency)
 - `MINING_ORE_AMOUNT`: 1 (extraction rate)
 - `TRADE_ORE_AMOUNT`: 1 (trading batch size)
+- `TRADER_STARTING_MONEY`: 1 (traders start with minimal capital)
 
 ## Potential Economic Issues
 

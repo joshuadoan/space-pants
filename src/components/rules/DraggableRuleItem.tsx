@@ -1,4 +1,4 @@
-import { useRef } from "react";
+import { useRef, useMemo } from "react";
 import { useDrag, useDrop } from "react-dnd";
 import type { LogicRule } from "../../entities/types";
 import {
@@ -7,32 +7,74 @@ import {
   MeepleStats,
   ComparisonOperator,
   LogicRuleActionType,
+  MeepleType,
 } from "../../entities/types";
+import type { Meeple } from "../../entities/Meeple/Meeple";
 
 const DRAG_TYPE = "RULE";
 
 interface DraggableRuleItemProps {
   rule: LogicRule;
   index: number;
+  meeples: Meeple[];
   onMoveRule: (dragIndex: number, hoverIndex: number) => void;
   onOperatorChange: (ruleId: string, operator: ComparisonOperator) => void;
   onGoodChange: (ruleId: string, good: string) => void;
   onValueChange: (ruleId: string, value: number) => void;
   onActionChange: (ruleId: string, action: LogicRuleActionType) => void;
+  onDestinationTypeChange: (ruleId: string, destinationType?: string) => void;
+  onDestinationNameChange: (ruleId: string, destinationName?: string) => void;
   onDeleteRule: (ruleId: string) => void;
 }
 
 export function DraggableRuleItem({
   rule,
   index,
+  meeples,
   onMoveRule,
   onOperatorChange,
   onGoodChange,
   onValueChange,
   onActionChange,
+  onDestinationTypeChange,
+  onDestinationNameChange,
   onDeleteRule,
 }: DraggableRuleItemProps) {
   const ref = useRef<HTMLDivElement>(null);
+
+  // Filter available destinations based on action and destination type
+  const availableDestinations = useMemo(() => {
+    if (!rule.action) return [];
+
+    // Determine which meeple types are valid for this action
+    let validTypes: MeepleType[] = [];
+    switch (rule.action) {
+      case LogicRuleActionType.MineOreFromAsteroid:
+        validTypes = [MeepleType.Asteroid];
+        break;
+      case LogicRuleActionType.SellOreToStation:
+      case LogicRuleActionType.BuyProductFromStation:
+      case LogicRuleActionType.SellProductToStation:
+        validTypes = [MeepleType.SpaceStation];
+        break;
+      case LogicRuleActionType.SocializeAtBar:
+      case LogicRuleActionType.WorkAtBar:
+        validTypes = [MeepleType.SpaceBar];
+        break;
+      case LogicRuleActionType.RestAtApartments:
+        validTypes = [MeepleType.SpaceApartments];
+        break;
+      default:
+        return [];
+    }
+
+    // Filter meeples by valid types and optional destination type
+    return meeples.filter((meeple) => {
+      const matchesType = validTypes.includes(meeple.type);
+      const matchesDestinationType = !rule.destinationType || meeple.type === rule.destinationType;
+      return matchesType && matchesDestinationType;
+    });
+  }, [meeples, rule.action, rule.destinationType]);
 
   const [{ isDragging }, drag] = useDrag({
     type: DRAG_TYPE,
@@ -200,6 +242,79 @@ export function DraggableRuleItem({
             </select>
           </div>
         </div>
+        {/* Destination selectors - only show for actions that involve destinations */}
+        {rule.action && [
+          LogicRuleActionType.MineOreFromAsteroid,
+          LogicRuleActionType.SellOreToStation,
+          LogicRuleActionType.SocializeAtBar,
+          LogicRuleActionType.WorkAtBar,
+          LogicRuleActionType.BuyProductFromStation,
+          LogicRuleActionType.SellProductToStation,
+          LogicRuleActionType.RestAtApartments,
+        ].includes(rule.action) && (
+          <div className="flex flex-col sm:flex-row gap-3 mt-2">
+            <div className="flex-1">
+              <label className="label py-1">
+                <span className="label-text text-xs text-base-content/70">
+                  Destination Type (optional)
+                </span>
+              </label>
+              <select
+                value={rule.destinationType || ""}
+                onChange={(e) =>
+                  onDestinationTypeChange(
+                    rule.id,
+                    e.target.value || undefined
+                  )
+                }
+                className="select select-primary select-bordered w-full"
+              >
+                <option value="">Any (random)</option>
+                {Object.values(MeepleType)
+                  .filter((type) => 
+                    // Filter based on action type
+                    (rule.action === LogicRuleActionType.MineOreFromAsteroid && type === MeepleType.Asteroid) ||
+                    (rule.action === LogicRuleActionType.SellOreToStation && type === MeepleType.SpaceStation) ||
+                    (rule.action === LogicRuleActionType.SocializeAtBar && type === MeepleType.SpaceBar) ||
+                    (rule.action === LogicRuleActionType.WorkAtBar && type === MeepleType.SpaceBar) ||
+                    (rule.action === LogicRuleActionType.BuyProductFromStation && type === MeepleType.SpaceStation) ||
+                    (rule.action === LogicRuleActionType.SellProductToStation && type === MeepleType.SpaceStation) ||
+                    (rule.action === LogicRuleActionType.RestAtApartments && type === MeepleType.SpaceApartments)
+                  )
+                  .map((type) => (
+                    <option key={type} value={type}>
+                      {type}
+                    </option>
+                  ))}
+              </select>
+            </div>
+            <div className="flex-1">
+              <label className="label py-1">
+                <span className="label-text text-xs text-base-content/70">
+                  Destination Name (optional)
+                </span>
+              </label>
+              <select
+                value={rule.destinationName || ""}
+                onChange={(e) =>
+                  onDestinationNameChange(
+                    rule.id,
+                    e.target.value || undefined
+                  )
+                }
+                className="select select-primary select-bordered w-full"
+                disabled={availableDestinations.length === 0 || !rule.destinationType}
+              >
+                <option value="">Any (random)</option>
+                {availableDestinations.map((meeple) => (
+                  <option key={meeple.name} value={meeple.name}>
+                    {meeple.name} ({meeple.type})
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

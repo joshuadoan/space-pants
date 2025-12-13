@@ -180,13 +180,25 @@ Each rule consists of:
 - **Operator**: Comparison operator (=, <, >, <=, >=, !=)
 - **Value**: Threshold value to compare against
 - **Action**: What to do when condition is met
+- **Destination Type** (optional): Target a specific entity type (e.g., SpaceStation, Asteroid)
+- **Destination Name** (optional): Target a specific entity by name for precise routing
 
 ### Available Actions
 - **Mine Ore**: Travel to an asteroid and mine ore
 - **Trade Ore For Money**: Sell ore at a space station
 - **Socialize**: Visit a space bar and spend money
+- **Work At Bar**: Work at a space bar (bartenders only)
 - **Go Shopping**: Buy products from a space station
 - **Go Selling**: Sell products to a space station
+- **Rest At Apartments**: Rest and restore energy at space apartments
+
+### Destination Selection
+Rules can optionally specify destinations for more precise control:
+- **Destination Type**: Select a specific entity type (e.g., only target SpaceStations)
+- **Destination Name**: Select a specific entity by name from a dropdown list
+- **Random Selection**: If no destination is specified, entities choose randomly from valid targets
+- **Smart Filtering**: Destination options are automatically filtered based on the action type
+- **Disabled State**: Destination name selection is disabled when "Any (random)" is selected for destination type
 
 ### Rule Priority
 Rules are evaluated in order from top to bottom. The first rule whose condition is met will be executed. You can drag and drop rules to reorder them and change their priority.

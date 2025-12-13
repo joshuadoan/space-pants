@@ -18,6 +18,7 @@ import {
   createDefaultRule,
   createNewRule,
 } from "./rules/ruleUtils";
+import { useGame } from "../hooks/useGame";
 
 export function RulesForm({
   rules,
@@ -40,6 +41,7 @@ export function RulesForm({
     internalMode: mode,
   });
   const { showToast } = useToast();
+  const { meeples } = useGame();
 
   // Update internal mode when prop changes
   useEffect(() => {
@@ -165,6 +167,20 @@ export function RulesForm({
     });
   };
 
+  const handleDestinationTypeChange = (ruleId: string, destinationType?: string) => {
+    dispatch({
+      type: "update-rule-destination-type",
+      payload: { ruleId, destinationType: destinationType ? (destinationType as any) : undefined },
+    });
+  };
+
+  const handleDestinationNameChange = (ruleId: string, destinationName?: string) => {
+    dispatch({
+      type: "update-rule-destination-name",
+      payload: { ruleId, destinationName: destinationName?.trim() || undefined },
+    });
+  };
+
   const handleBehaviorChange = (behaviorId: string) => {
     if (behaviorId) {
       const behavior = allBehaviors.find((b) => b.id === behaviorId);
@@ -251,11 +267,14 @@ export function RulesForm({
               key={rule.id}
               rule={rule}
               index={index}
+              meeples={meeples}
               onMoveRule={handleMoveRule}
               onOperatorChange={handleOperatorChange}
               onGoodChange={handleGoodChange}
               onValueChange={handleValueChange}
               onActionChange={handleActionChange}
+              onDestinationTypeChange={handleDestinationTypeChange}
+              onDestinationNameChange={handleDestinationNameChange}
               onDeleteRule={handleDeleteRule}
             />
           ))}

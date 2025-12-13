@@ -1,5 +1,5 @@
 import { Vector, Rectangle, GraphicsGroup, Color } from "excalibur";
-import { Meeple } from "./Meeple";
+import { Meeple } from "./Meeple/Meeple";
 import { Products } from "./types";
 import {
   SPACE_APARTMENTS_MAX_CAPACITY,

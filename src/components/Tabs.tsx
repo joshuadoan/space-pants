@@ -6,6 +6,8 @@ import {
   IconSatellite,
   IconBeer,
   IconBuilding,
+  IconMapPin,
+  IconBook,
 } from "@tabler/icons-react";
 
 type TabType = "player" | "traders" | "miners" | "stations" | "asteroids" | "spacebars" | "spaceapartments" | "bartenders" | "all" | "readme";
@@ -62,9 +64,9 @@ function getIconColorClass(badgeColor: string): string {
 
 const MAIN_TABS: { value: MainTabType; label: string; icon?: React.ComponentType<{ size?: number; className?: string }>; badgeColor?: string }[] = [
   { value: "player", label: "Player", icon: IconUser, badgeColor: "badge-success" },
-  { value: "ships", label: "Ships" },
-  { value: "destinations", label: "Destinations" },
-  { value: "readme", label: "Readme" },
+  { value: "ships", label: "Ships", icon: IconShip, badgeColor: "badge-primary" },
+  { value: "destinations", label: "Destinations", icon: IconMapPin, badgeColor: "badge-info" },
+  { value: "readme", label: "Readme", icon: IconBook, badgeColor: "badge-accent" },
 ];
 
 const SHIP_SUBTABS: { value: TabType; label: string; icon: React.ComponentType<{ size?: number; className?: string }>; badgeColor: string }[] = [
