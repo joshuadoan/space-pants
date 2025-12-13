@@ -577,10 +577,13 @@ function useGameInternal(): GameContextValue {
   // This allows React to re-render when entities are added/removed
   useEffect(() => {
     const interval = setInterval(() => {
+      console.log("Updating meeple list");
       if (gameRef.current) {
+        console.log("Game ref current", gameRef.current);
         const meeples = gameRef.current.currentScene.actors.filter(
           (actor: Actor) => actor instanceof Meeple
         ) as Meeple[];
+        console.log("Meeples", meeples);
         dispatch({ type: "set-meeples", payload: meeples });
       }
     }, MEEPLE_LIST_UPDATE_INTERVAL_MS);
