@@ -12,14 +12,14 @@ export function RulesListNameInput({
       <div className="w-full">
         <label className="label py-1">
           <span className="label-text text-xs text-base-content/70">
-            Rules List Name <span className="text-error">*</span>
+            Behavior Name <span className="text-error">*</span>
           </span>
         </label>
         <input
           type="text"
           value={value}
           onChange={(e) => onChange(e.target.value)}
-          placeholder="Enter a name for this rules list..."
+          placeholder="Enter a name for this behavior..."
           className="input input-bordered input-primary w-full"
           required
         />

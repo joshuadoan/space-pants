@@ -104,8 +104,12 @@ function App() {
 
   return (
     <main className="w-screen h-screen flex flex-col">
+      {/* Mobile message banner */}
+      <div className="md:hidden bg-warning text-warning-content text-center py-2 px-4 text-sm font-semibold sticky top-0 z-50">
+        Desktop is better
+      </div>
       {/* Sticky navbar at the top */}
-      <div className="navbar bg-base-100 shadow-lg sticky top-0 z-50">
+      <div className="navbar bg-base-100 shadow-lg sticky md:top-0 top-10 z-40">
         <div className="flex-1 flex flex-col items-start">
           <div className="flex items-center gap-2 mb-2 px-2 w-full">
             <div className="flex items-center gap-2">
@@ -129,24 +133,26 @@ function App() {
                 }}
                 className="range range-primary w-32"
               />
-              <span className="text-sm text-base-content min-w-[3rem]">
+              <span className="text-sm text-base-content min-w-12">
                 {zoom.toFixed(1)}x
               </span>
             </div>
           </div>
-          <Tabs
-            activeTab={state.activeTab}
-            onTabChange={(tab) =>
-              dispatch({ type: "set-active-tab", payload: tab })
-            }
-            meepleCounts={meepleCounts}
-          />
+          <div className="hidden md:block">
+            <Tabs
+              activeTab={state.activeTab}
+              onTabChange={(tab) =>
+                dispatch({ type: "set-active-tab", payload: tab })
+              }
+              meepleCounts={meepleCounts}
+            />
+          </div>
         </div>
       </div>
 
       {/* Main content area */}
       <div className="flex flex-1 overflow-hidden">
-        <nav className="w-md flex flex-col overflow-y-auto border-r border-base-300">
+        <nav className="hidden md:flex w-md flex-col overflow-y-auto border-r border-base-300">
           {filteredEntities.map((entity, index) => (
             <div
               key={index}

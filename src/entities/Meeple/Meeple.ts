@@ -33,7 +33,7 @@ export class Meeple extends Actor {
   goods: Partial<Goods>;
   rules: LogicRule[];
   state: MeepleState;
-  type: MeepleType;
+  type!: MeepleType; // Assigned by subclasses in their constructors
   visitors: Set<Meeple>;
   activeRuleId: string | null = null;
   productType: Products;

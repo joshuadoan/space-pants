@@ -270,14 +270,18 @@ function getRandomAsteroidSize(): number {
  * The camera is locked to follow the player.
  */
 function initializePlayer(game: Game): Player {
+  const centerX = WORLD_WIDTH / 2;
+  const centerY = WORLD_HEIGHT / 2;
   const player = new Player(
-    new Vector(WORLD_WIDTH / 2, WORLD_HEIGHT / 2),
+    new Vector(centerX, centerY),
     DEFAULT_SHIP_SPEED,
     "Player"
   );
   // Player gets a random apartment as their home (will be assigned after apartments are created)
   game.currentScene.add(player);
   game.currentScene.camera.strategy.lockToActor(player);
+  // Explicitly center the camera on the player's starting position
+  game.currentScene.camera.pos = new Vector(centerX, centerY);
   return player;
 }
 

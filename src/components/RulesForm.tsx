@@ -75,7 +75,7 @@ export function RulesForm({
     if (state.internalMode === "create") {
       // In create mode, save to behaviors
       if (!state.rulesListName.trim()) {
-        showToast("Please enter a name for the rules list", "error");
+        showToast("Please enter a name for the behavior", "error");
         return;
       }
 

@@ -25,13 +25,13 @@ export const CAMERA_ZOOM = 2;
 
 /** Number of each entity type to spawn in the game world */
 export const ENTITY_COUNTS = {
-  TRADERS: 10,
-  SPACE_STATIONS: 5,
+  TRADERS: 5,
+  SPACE_STATIONS: Object.values(Products).length,
   ASTEROIDS: 5,
-  MINERS: 10,
-  SPACE_BARS: 3,
-  SPACE_APARTMENTS: 3,
-  BARTENDERS_PER_BAR: 3,
+  MINERS: 5,
+  SPACE_BARS: 2,
+  SPACE_APARTMENTS: 2,
+  BARTENDERS_PER_BAR: 1,
 } as const;
 
 // ============================================================================
