@@ -123,7 +123,7 @@ export type LogicRule = {
 
 export enum LogicRuleActionType {
   MineOre = "Mine Ore",
-  TradeOreForMoney = "Trade Ore For Money",
+  TradeOreForMoney = "Sell Ore",
   Socialize = "Socialize",
   Work = "Work",
   GoShopping = "Go Shopping",

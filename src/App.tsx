@@ -3,37 +3,16 @@ import { useFps } from "react-fps";
 import Markdown from "react-markdown";
 import { IconRocket } from "@tabler/icons-react";
 
-import { useGame } from "./hooks/useGame";
+import { useGame, type TabType } from "./hooks/useGame";
 
 import { Tabs } from "./components/Tabs";
 
-import { Asteroid } from "./entities/Asteroid";
-// import { Meeple } from "./entities/Meeple";
-import { Miner } from "./entities/Miner";
 import { Player } from "./entities/Player";
-import { SpaceBar } from "./entities/SpaceBar";
-import { SpaceStation } from "./entities/SpaceStation";
-import { Trader } from "./entities/Trader";
-import { TreasureCollector } from "./entities/TreasureCollector";
 
 import "./App.css";
 import { MeepleCard } from "./components/MeepleCard";
-import { SpaceApartments } from "./entities/SpaceApartments";
 import { useKeyboardControls } from "./hooks/useKeyboardControls";
-import { Bartender } from "./entities/Bartender";
 
-type TabType =
-  | "player"
-  | "traders"
-  | "miners"
-  | "stations"
-  | "asteroids"
-  | "spacebars"
-  | "spaceapartments"
-  | "treasurecollectors"
-  | "bartenders"
-  | "all"
-  | "readme";
 
 type SetActiveTabAction = {
   type: "set-active-tab";
@@ -58,7 +37,14 @@ const initialState: State = {
 };
 
 function App() {
-  const { game, meeples, zoomToEntity, activeMeeple } = useGame();
+  const {
+    game,
+    meeples,
+    zoomToEntity,
+    activeMeeple,
+    meepleCounts,
+    getFilteredEntities,
+  } = useGame();
   const cardRefs = useRef<Map<number | string, HTMLDivElement>>(new Map());
 
   const [state, dispatch] = useReducer((state: State, action: Action) => {
@@ -103,43 +89,10 @@ function App() {
 
   const { avgFps, maxFps, currentFps } = useFps(20);
 
-  const filteredEntities = useMemo(() => {
-    return {
-      traders: meeples.filter((meeple) => meeple instanceof Trader),
-      miners: meeples.filter((meeple) => meeple instanceof Miner),
-      spacebars: meeples.filter((meeple) => meeple instanceof SpaceBar),
-      stations: meeples.filter((meeple) => meeple instanceof SpaceStation),
-      asteroids: meeples.filter((meeple) => meeple instanceof Asteroid),
-      player: meeples.filter((meeple) => meeple instanceof Player),
-      all: [...meeples],
-      readme: [],
-      spaceapartments: meeples.filter(
-        (meeple) => meeple instanceof SpaceApartments
-      ),
-      treasurecollectors: meeples.filter(
-        (meeple) => meeple instanceof TreasureCollector
-      ),
-      bartenders: meeples.filter((meeple) => meeple instanceof Bartender),
-    }[state.activeTab];
-  }, [state.activeTab, meeples.length]);
-
-  const meepleCounts = useMemo(() => {
-    return {
-      player: meeples.filter((meeple) => meeple instanceof Player).length,
-      traders: meeples.filter((meeple) => meeple instanceof Trader).length,
-      miners: meeples.filter((meeple) => meeple instanceof Miner).length,
-      asteroids: meeples.filter((meeple) => meeple instanceof Asteroid).length,
-      stations: meeples.filter((meeple) => meeple instanceof SpaceStation).length,
-      spacebars: meeples.filter((meeple) => meeple instanceof SpaceBar).length,
-      spaceapartments: meeples.filter(
-        (meeple) => meeple instanceof SpaceApartments
-      ).length,
-      treasurecollectors: meeples.filter(
-        (meeple) => meeple instanceof TreasureCollector
-      ).length,
-      bartenders: meeples.filter((meeple) => meeple instanceof Bartender).length,
-    };
-  }, [meeples.length]);
+  const filteredEntities = useMemo(
+    () => getFilteredEntities(state.activeTab),
+    [getFilteredEntities, state.activeTab]
+  );
 
   // keyboard
   useKeyboardControls(

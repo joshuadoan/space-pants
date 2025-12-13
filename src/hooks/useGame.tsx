@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useReducer, useRef } from "react";
+import { createContext, useContext, useEffect, useCallback, useReducer, useRef } from "react";
 import type { ReactNode } from "react";
 import { Game } from "../entities/Game";
 import { Player } from "../entities/Player";
@@ -58,23 +58,79 @@ type ZoomToEntityAction = {
 /** Union type of all possible game actions */
 type GameAction = SetMeeplesAction | SetIsLoadingAction | SetGameAction | ZoomToEntityAction;
 
+/** Categorized meeples by type */
+type CategorizedMeeples = {
+  traders: Trader[];
+  miners: Miner[];
+  spacebars: SpaceBar[];
+  stations: SpaceStation[];
+  asteroids: Asteroid[];
+  player: Player[];
+  spaceapartments: SpaceApartments[];
+  treasurecollectors: TreasureCollector[];
+  bartenders: Bartender[];
+  all: Meeple[];
+};
+
+/** Counts of meeples by type */
+type MeepleCounts = {
+  player: number;
+  traders: number;
+  miners: number;
+  asteroids: number;
+  stations: number;
+  spacebars: number;
+  spaceapartments: number;
+  treasurecollectors: number;
+  bartenders: number;
+};
+
 /** State shape for the game hook */
 type GameState = {
   game: Game | null;
   isLoading: boolean;
   meeples: Meeple[];
   activeMeeple: Meeple | null;
+  categorizedMeeples: CategorizedMeeples;
+  meepleCounts: MeepleCounts;
 };
 
 // ============================================================================
 // Initial State
 // ============================================================================
 
+const emptyCategorizedMeeples: CategorizedMeeples = {
+  traders: [],
+  miners: [],
+  spacebars: [],
+  stations: [],
+  asteroids: [],
+  player: [],
+  spaceapartments: [],
+  treasurecollectors: [],
+  bartenders: [],
+  all: [],
+};
+
+const emptyMeepleCounts: MeepleCounts = {
+  player: 0,
+  traders: 0,
+  miners: 0,
+  asteroids: 0,
+  stations: 0,
+  spacebars: 0,
+  spaceapartments: 0,
+  treasurecollectors: 0,
+  bartenders: 0,
+};
+
 const initialState: GameState = {
   game: null,
   isLoading: true,
   meeples: [],
   activeMeeple: null,
+  categorizedMeeples: emptyCategorizedMeeples,
+  meepleCounts: emptyMeepleCounts,
 };
 
 // ============================================================================
@@ -97,11 +153,16 @@ function gameReducer(state: GameState, action: GameAction): GameState {
         ...state,
         game: action.payload,
       };
-    case "set-meeples":
+    case "set-meeples": {
+      const categorized = categorizeMeeples(action.payload);
+      const counts = calculateMeepleCounts(categorized);
       return {
         ...state,
         meeples: action.payload,
+        categorizedMeeples: categorized,
+        meepleCounts: counts,
       };
+    }
     case "zoom-to-entity": {
       return {
         ...state,
@@ -116,6 +177,66 @@ function gameReducer(state: GameState, action: GameAction): GameState {
 // ============================================================================
 // Helper Functions
 // ============================================================================
+
+/**
+ * Categorizes meeples by type in a single pass for optimal performance.
+ * This avoids multiple instanceof checks by doing them all at once.
+ */
+function categorizeMeeples(meeples: Meeple[]): CategorizedMeeples {
+  const categorized: CategorizedMeeples = {
+    traders: [],
+    miners: [],
+    spacebars: [],
+    stations: [],
+    asteroids: [],
+    player: [],
+    spaceapartments: [],
+    treasurecollectors: [],
+    bartenders: [],
+    all: meeples,
+  };
+
+  for (const meeple of meeples) {
+    if (meeple instanceof Trader) {
+      categorized.traders.push(meeple);
+    } else if (meeple instanceof Miner) {
+      categorized.miners.push(meeple);
+    } else if (meeple instanceof SpaceBar) {
+      categorized.spacebars.push(meeple);
+    } else if (meeple instanceof SpaceStation) {
+      categorized.stations.push(meeple);
+    } else if (meeple instanceof Asteroid) {
+      categorized.asteroids.push(meeple);
+    } else if (meeple instanceof Player) {
+      categorized.player.push(meeple);
+    } else if (meeple instanceof SpaceApartments) {
+      categorized.spaceapartments.push(meeple);
+    } else if (meeple instanceof TreasureCollector) {
+      categorized.treasurecollectors.push(meeple);
+    } else if (meeple instanceof Bartender) {
+      categorized.bartenders.push(meeple);
+    }
+  }
+
+  return categorized;
+}
+
+/**
+ * Calculates counts of meeples by type from categorized meeples.
+ */
+function calculateMeepleCounts(categorized: CategorizedMeeples): MeepleCounts {
+  return {
+    player: categorized.player.length,
+    traders: categorized.traders.length,
+    miners: categorized.miners.length,
+    asteroids: categorized.asteroids.length,
+    stations: categorized.stations.length,
+    spacebars: categorized.spacebars.length,
+    spaceapartments: categorized.spaceapartments.length,
+    treasurecollectors: categorized.treasurecollectors.length,
+    bartenders: categorized.bartenders.length,
+  };
+}
 
 /**
  * Generates a random position within the game world bounds.
@@ -371,12 +492,29 @@ function initializeGame(): Promise<Game> {
 // Context Type
 // ============================================================================
 
+/** Tab type for filtering entities */
+export type TabType =
+  | "player"
+  | "traders"
+  | "miners"
+  | "stations"
+  | "asteroids"
+  | "spacebars"
+  | "spaceapartments"
+  | "treasurecollectors"
+  | "bartenders"
+  | "all"
+  | "readme";
+
 /** Type for the game context value */
 type GameContextValue = {
   game: Game | null;
   isLoading: boolean;
   meeples: Meeple[];
   activeMeeple: Meeple | null;
+  categorizedMeeples: CategorizedMeeples;
+  meepleCounts: MeepleCounts;
+  getFilteredEntities: (tab: TabType) => Meeple[];
   zoomToEntity: (meeple: Meeple) => void;
 };
 
@@ -457,8 +595,23 @@ function useGameInternal(): GameContextValue {
     }
   }, [gameState.activeMeeple]);
 
+  /**
+   * Gets filtered entities based on the active tab.
+   * Uses memoized categorized meeples for optimal performance.
+   */
+  const getFilteredEntities = useCallback(
+    (tab: TabType): Meeple[] => {
+      if (tab === "readme") {
+        return [];
+      }
+      return gameState.categorizedMeeples[tab] || [];
+    },
+    [gameState.categorizedMeeples]
+  );
+
   return {
     ...gameState,
+    getFilteredEntities,
     /**
      * Zooms the camera to follow a specific meeple entity.
      * @param meeple - The meeple entity to zoom to
