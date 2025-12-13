@@ -92,7 +92,8 @@ export class Meeple extends Actor {
     this.state = {
       type: MeepleStateType.Idle,
     };
-    this.type = this.constructor.name as MeepleType;
+    // Type should be explicitly set in subclasses - don't rely on constructor.name
+    // as it gets minified in production builds
     this.visitors = new Set();
   }
 

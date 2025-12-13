@@ -1,7 +1,7 @@
 import { Vector, Rectangle, GraphicsGroup, Color } from "excalibur";
 import { Meeple } from "./Meeple/Meeple";
 import { getRandomVisitor } from "./Meeple/meepleFinders";
-import { Products, Resources, type GoodType } from "./types";
+import { Products, Resources, MeepleType, type GoodType } from "./types";
 import { MeepleStateType } from "./types";
 import type { Game } from "./Game";
 import {
@@ -33,6 +33,9 @@ export class SpaceBar extends Meeple {
     // Assign random product type if not provided
     const randomProductType = productType || Object.values(Products)[Math.floor(Math.random() * Object.values(Products).length)];
     super(position, 0, name, randomProductType, SPACE_BAR_SIZE.WIDTH, SPACE_BAR_SIZE.HEIGHT);
+    
+    // Set type explicitly (required for production builds where constructor.name is minified)
+    this.type = MeepleType.SpaceBar;
     
     // Initialize with fizz stock
     this.goods = {

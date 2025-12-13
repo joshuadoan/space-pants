@@ -1,6 +1,6 @@
 import { Vector, Rectangle, GraphicsGroup, Color } from "excalibur";
 import { Meeple } from "./Meeple/Meeple";
-import { Products } from "./types";
+import { Products, MeepleType } from "./types";
 import {
   SPACE_APARTMENTS_MAX_CAPACITY,
   SPACE_APARTMENTS_SIZE,
@@ -14,6 +14,9 @@ export class SpaceApartments extends Meeple {
     const randomProductType = productType || Object.values(Products)[Math.floor(Math.random() * Object.values(Products).length)];
     // Call super with position, speed (0 for stationary apartments), name, productType, and size
     super(position, 0, name, randomProductType, SPACE_APARTMENTS_SIZE.WIDTH, SPACE_APARTMENTS_SIZE.HEIGHT);
+
+    // Set type explicitly (required for production builds where constructor.name is minified)
+    this.type = MeepleType.SpaceApartments;
 
     // Create an apartment building design
     const apartmentDesign = this.createApartmentDesign();

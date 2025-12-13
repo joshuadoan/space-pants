@@ -516,8 +516,8 @@ function waitForCanvas(canvasId: string): Promise<HTMLCanvasElement> {
  * 1. Waits for the canvas element to be available in the DOM
  * 2. Creates a new Game instance with the configured world size
  * 3. Sets up the camera zoom
- * 4. Starts the Excalibur game engine
- * 5. Initializes all game entities (player, NPCs, stations, etc.) after the game has started
+ * 4. Initializes all game entities (player, NPCs, stations, etc.)
+ * 5. Starts the Excalibur game engine
  * 
  * @returns A promise that resolves with the initialized Game instance
  * @throws {Error} If canvas is not found or game initialization fails
@@ -528,11 +528,8 @@ function initializeGame(): Promise<Game> {
       // Canvas is now available, create and start the game
       const game = new Game(WORLD_WIDTH, WORLD_HEIGHT);
       game.currentScene.camera.zoom = CAMERA_ZOOM;
-      return game.start().then(() => {
-        // Add actors after the game has fully loaded and started
-        initializeGameEntities(game);
-        return game;
-      });
+      initializeGameEntities(game);
+      return game.start().then(() => game);
     });
 }
 

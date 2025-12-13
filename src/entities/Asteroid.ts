@@ -1,7 +1,7 @@
 import { Color, Polygon, Vector } from "excalibur";
 import { Meeple } from "./Meeple/Meeple";
 import { getRandomVisitor } from "./Meeple/meepleFinders";
-import { Resources, Products } from "./types";
+import { Resources, Products, MeepleType } from "./types";
 import type { Game } from "./Game";
 import { MeepleStateType } from "./types";
 import {
@@ -71,6 +71,9 @@ export class Asteroid extends Meeple {
 
     // Call super with position, speed (0 for stationary asteroids), name, productType, and size
     super(position, 0, asteroidName, randomProductType, actualSize * 2, actualSize * 2);
+
+    // Set type explicitly (required for production builds where constructor.name is minified)
+    this.type = MeepleType.Asteroid;
 
     // Initialize asteroid with starting ore
     this.goods[Resources.Ore] = ASTEROID_STARTING_ORE;

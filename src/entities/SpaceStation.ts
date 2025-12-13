@@ -1,6 +1,6 @@
 import { Color, Vector } from "excalibur";
 import { createRandomSpaceStation } from "./createRandomSpaceStation";
-import { Products, Resources } from "./types";
+import { Products, Resources, MeepleType } from "./types";
 import { Meeple } from "./Meeple/Meeple";
 import { getRandomVisitor } from "./Meeple/meepleFinders";
 import type { Game } from "./Game";
@@ -52,6 +52,9 @@ export class SpaceStation extends Meeple {
   constructor(position: Vector, name: string, productType: Products) {
     // Call super with position, speed (0 for stationary stations), name, productType, and size
     super(position, 0, name, productType, SPACE_STATION_SIZE.WIDTH, SPACE_STATION_SIZE.HEIGHT);
+
+    // Set type explicitly (required for production builds where constructor.name is minified)
+    this.type = MeepleType.SpaceStation;
 
     // Set starting money
     this.goods[Resources.Money] = SPACE_STATION_STARTING_MONEY;

@@ -1,6 +1,6 @@
 import type { Vector } from "excalibur";
 import { Meeple } from "./Meeple/Meeple";
-import { Resources, Products } from "./types";
+import { Resources, Products, MeepleType } from "./types";
 
 export class Player extends Meeple {
 
@@ -8,6 +8,7 @@ export class Player extends Meeple {
     // Assign random product type if not provided
     const randomProductType = productType || Object.values(Products)[Math.floor(Math.random() * Object.values(Products).length)];
     super(position, speed, name, randomProductType);
+    this.type = MeepleType.Player;
     // Player starts with 0 money
     this.goods[Resources.Money] = 0;
   }
