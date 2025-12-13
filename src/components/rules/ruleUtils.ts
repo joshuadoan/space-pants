@@ -21,7 +21,7 @@ export function createDefaultRule(): LogicRule {
     good: Resources.Ore,
     operator: ComparisonOperator.Equal,
     value: 0,
-    action: LogicRuleActionType.MineOre,
+    action: LogicRuleActionType.MineOreFromAsteroid,
   };
 }
 
@@ -34,7 +34,7 @@ export function createNewRule(): LogicRule {
     good: Resources.Money,
     operator: ComparisonOperator.Equal,
     value: 0,
-    action: LogicRuleActionType.Socialize,
+    action: LogicRuleActionType.SocializeAtBar,
   };
 }
 

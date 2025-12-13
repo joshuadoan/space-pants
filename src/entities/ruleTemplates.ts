@@ -1,7 +1,32 @@
 import { Resources, MeepleStats, Products, ComparisonOperator, LogicRuleActionType, type LogicRule, type RuleBehavior } from "./types";
 
 const TRADER_RULES_ARRAY: LogicRule[] = [
-  
+  // Priority 1: Energy check - always go home if energy is low
+  {
+    id: "go-home-if-energy-low",
+    good: MeepleStats.Energy,
+    operator: ComparisonOperator.LessThanOrEqual,
+    value: 0,
+    action: LogicRuleActionType.RestAtApartments,
+  },
+  // Priority 2: If trader has products of their type, sell them to stations
+  // productType not specified, so it defaults to meeple's productType
+  {
+    id: "sell-product",
+    good: Products.Gruffle, // Placeholder - will use meeple's productType at runtime
+    operator: ComparisonOperator.GreaterThan,
+    value: 0,
+    action: LogicRuleActionType.SellProductToStation,
+  },
+  // Priority 3: If trader has money, buy products from stations
+  // productType not specified, so it defaults to meeple's productType
+  {
+    id: "buy-product",
+    good: Resources.Money,
+    operator: ComparisonOperator.GreaterThanOrEqual,
+    value: 2, // Minimum to buy one product (PRODUCT_SELL_PRICE)
+    action: LogicRuleActionType.BuyProductFromStation,
+  },
 ];
 
 const MINER_RULES_ARRAY: LogicRule[] = [
@@ -11,7 +36,7 @@ const MINER_RULES_ARRAY: LogicRule[] = [
     good: MeepleStats.Energy,
     operator: ComparisonOperator.LessThanOrEqual,
     value: 0,
-    action: LogicRuleActionType.ChillAtHome,
+    action: LogicRuleActionType.RestAtApartments,
   },
   // if money is greater than or equal to 50 go to space bar
   {
@@ -19,7 +44,7 @@ const MINER_RULES_ARRAY: LogicRule[] = [
     good: Resources.Money,
     operator: ComparisonOperator.GreaterThanOrEqual,
     value: 50,
-    action: LogicRuleActionType.Socialize,
+    action: LogicRuleActionType.SocializeAtBar,
   },
   // if ore is greater than or equal to 10, trade it for money
   {
@@ -27,7 +52,7 @@ const MINER_RULES_ARRAY: LogicRule[] = [
     good: Resources.Ore,
     operator: ComparisonOperator.GreaterThanOrEqual,
     value: 10,
-    action: LogicRuleActionType.TradeOreForMoney,
+    action: LogicRuleActionType.SellOreToStation,
   },
   // if ore is less than 10, continue mining
   {
@@ -35,7 +60,7 @@ const MINER_RULES_ARRAY: LogicRule[] = [
     good: Resources.Ore,
     operator: ComparisonOperator.LessThan,
     value: 10,
-    action: LogicRuleActionType.MineOre,
+    action: LogicRuleActionType.MineOreFromAsteroid,
   },
 ];
 
@@ -46,7 +71,7 @@ const BARTENDER_RULES_ARRAY: LogicRule[] = [
     good: MeepleStats.Energy,
     operator: ComparisonOperator.LessThanOrEqual,
     value: 0,
-    action: LogicRuleActionType.ChillAtHome,
+    action: LogicRuleActionType.RestAtApartments,
   },
   // Priority 2: If money is 50+, go shopping for products
   {
@@ -54,7 +79,7 @@ const BARTENDER_RULES_ARRAY: LogicRule[] = [
     good: Resources.Money,
     operator: ComparisonOperator.GreaterThanOrEqual,
     value: 50,
-    action: LogicRuleActionType.GoShopping,
+    action: LogicRuleActionType.BuyProductFromStation,
   },
   // Priority 3: If energy is above 0, go to space bar to work (make money)
   {
@@ -62,7 +87,7 @@ const BARTENDER_RULES_ARRAY: LogicRule[] = [
     good: MeepleStats.Energy,
     operator: ComparisonOperator.GreaterThan,
     value: 0,
-    action: LogicRuleActionType.Work,
+    action: LogicRuleActionType.WorkAtBar,
   },
 ];
 

@@ -117,16 +117,17 @@ export type LogicRule = {
   operator: ComparisonOperator;
   value: number;
   action: LogicRuleActionType;
+  productType?: Products; // Optional product type, defaults to meeple's productType
 };
 
 export enum LogicRuleActionType {
-  MineOre = "Mine Ore",
-  TradeOreForMoney = "Sell Ore",
-  Socialize = "Socialize",
-  Work = "Work",
-  GoShopping = "Go Shopping",
-  GoSelling = "Go Selling",
-  ChillAtHome = "Chill At Home",
+  MineOreFromAsteroid = "Mine Ore From Asteroid",
+  SellOreToStation = "Sell Ore To Station",
+  SocializeAtBar = "Socialize At Bar",
+  WorkAtBar = "Work At Bar",
+  BuyProductFromStation = "Buy Product From Station",
+  SellProductToStation = "Sell Product To Station",
+  RestAtApartments = "Rest At Apartments",
 }
 
 export type RuleBehavior = {

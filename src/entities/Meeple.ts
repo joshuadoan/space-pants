@@ -341,9 +341,17 @@ export class Meeple extends Actor {
 
     let ruleMatched = false;
     for (const rule of this.rules) {
-      if (evaluateRule(rule, this.goods[rule.good] ?? 0)) {
+      // For product-type goods, use rule's productType or fall back to meeple's productType
+      const isProductGood = Object.values(Products).includes(rule.good as Products);
+      const goodToCheck = isProductGood && rule.productType 
+        ? rule.productType 
+        : isProductGood && !rule.productType
+        ? this.productType
+        : rule.good;
+      
+      if (evaluateRule(rule, this.goods[goodToCheck] ?? 0)) {
         this.activeRuleId = rule.id;
-        this.executeRuleAction(rule.action);
+        this.executeRuleAction(rule.action, rule.productType);
         ruleMatched = true;
         break; // Only execute one rule per update cycle
       }
@@ -354,27 +362,27 @@ export class Meeple extends Actor {
     }
   }
 
-  private executeRuleAction(action: LogicRuleActionType): void {
+  private executeRuleAction(action: LogicRuleActionType, productType?: Products): void {
     switch (action) {
-      case LogicRuleActionType.MineOre:
+      case LogicRuleActionType.MineOreFromAsteroid:
         this.executeMineOre();
         break;
-      case LogicRuleActionType.TradeOreForMoney:
+      case LogicRuleActionType.SellOreToStation:
         this.executeTradeOreForMoney();
         break;
-      case LogicRuleActionType.Socialize:
+      case LogicRuleActionType.SocializeAtBar:
         this.executeSocialize();
         break;
-      case LogicRuleActionType.Work:
+      case LogicRuleActionType.WorkAtBar:
         this.executeWork();
         break;
-      case LogicRuleActionType.GoShopping:
-        this.executeGoShopping();
+      case LogicRuleActionType.BuyProductFromStation:
+        this.executeGoShopping(productType);
         break;
-      case LogicRuleActionType.GoSelling:
-        this.executeGoSelling();
+      case LogicRuleActionType.SellProductToStation:
+        this.executeGoSelling(productType);
         break;
-      case LogicRuleActionType.ChillAtHome:
+      case LogicRuleActionType.RestAtApartments:
         this.executeChillingAtHome();
         break;
     }
@@ -477,13 +485,13 @@ export class Meeple extends Actor {
     this.vel.y = 0;
   }
 
-  private executeGoShopping(): void {
-    // Find a random product type to buy
+  private executeGoShopping(product?: Products): void {
+    // Use provided product (from rule), trader's productType, or find a random product type to buy
     const productTypes = Object.values(Products);
-    const randomProductType = productTypes[Math.floor(Math.random() * productTypes.length)];
+    const productType = product ?? this.productType ?? productTypes[Math.floor(Math.random() * productTypes.length)];
     
     // Find a station that produces this product
-    const station = this.getRandomStationThatProduces(randomProductType);
+    const station = this.getRandomStationThatProduces(productType);
     if (!station) return;
 
     this.visitTarget(station, MeepleStateType.Trading, () => {
@@ -498,18 +506,13 @@ export class Meeple extends Actor {
     }, SHOPPING_DELAY_MS);
   }
 
-  private executeGoSelling(): void {
-    // Find products the trader has
-    const products = Object.keys(this.goods).filter(
-      (good): good is Products =>
-        Object.values(Products).includes(good as Products) &&
-        (this.goods as Record<string, number>)[good] > 0
-    );
-
-    if (products.length === 0) return;
-
-    // Pick a random product to sell
-    const productToSell = products[Math.floor(Math.random() * products.length)];
+  private executeGoSelling(productType?: Products): void {
+    // Use provided productType (from rule) or fall back to meeple's productType
+    const productToSell = productType ?? this.productType;
+    
+    // Check if trader has any of this product to sell
+    const quantity = this.goods[productToSell] ?? 0;
+    if (quantity === 0) return;
     
     // Find a station that does NOT produce this product (so they want to buy it)
     const station = this.getRandomStationThatDoesNotProduce(productToSell);

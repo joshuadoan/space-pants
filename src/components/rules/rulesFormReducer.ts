@@ -4,6 +4,7 @@ import type {
   ComparisonOperator,
   LogicRuleActionType,
 } from "../../entities/types";
+import { Products } from "../../entities/types";
 
 // State type
 export interface RulesFormState {
@@ -66,6 +67,11 @@ type UpdateRuleActionAction = {
   payload: { ruleId: string; action: LogicRuleActionType };
 };
 
+type UpdateRuleProductTypeAction = {
+  type: "update-rule-product-type";
+  payload: { ruleId: string; productType?: Products };
+};
+
 type DeleteRuleAction = {
   type: "delete-rule";
   payload: string;
@@ -102,6 +108,7 @@ export type RulesFormAction =
   | UpdateRuleGoodAction
   | UpdateRuleValueAction
   | UpdateRuleActionAction
+  | UpdateRuleProductTypeAction
   | DeleteRuleAction
   | MoveRuleAction
   | AddRuleAction
@@ -161,6 +168,15 @@ export function rulesFormReducer(
         localRules: state.localRules.map((rule) =>
           rule.id === action.payload.ruleId
             ? { ...rule, action: action.payload.action }
+            : rule
+        ),
+      };
+    case "update-rule-product-type":
+      return {
+        ...state,
+        localRules: state.localRules.map((rule) =>
+          rule.id === action.payload.ruleId
+            ? { ...rule, productType: action.payload.productType }
             : rule
         ),
       };
