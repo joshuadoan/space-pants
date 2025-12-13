@@ -22,7 +22,8 @@ import { IconMeteor } from "@tabler/icons-react";
 import { IconSatellite } from "@tabler/icons-react";
 import { IconBeer } from "@tabler/icons-react";
 import { IconRefresh } from "@tabler/icons-react";
-import { MeepleStateType, MeepleStats, Products } from "../entities/types";
+import { MeepleStateType, MeepleStats } from "../entities/types";
+import type { LogicRule } from "../entities/types";
 import { getGoodLabel } from "../utils/goodsMetadata";
 import { GoodsDisplay } from "./GoodsDisplay";
 import { RulesForm } from "./RulesForm";
@@ -62,7 +63,7 @@ function MeepleRulesSection({
 }) {
   const [editState, dispatch] = useReducer(editStateReducer, initialEditState);
 
-  const handleSave = (rules: typeof meeple.rules) => {
+  const handleSave = (rules: LogicRule[]) => {
     meeple.rules = rules;
     dispatch({ type: "save-edit" });
     // Scroll after a brief delay to ensure state update is complete

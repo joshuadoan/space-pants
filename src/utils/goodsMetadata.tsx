@@ -1,10 +1,12 @@
-import { Products, Resources, type GoodType } from "../entities/types";
+import { Products, Resources, MeepleStats, type GoodType } from "../entities/types";
 import {
   IconCurrencyDollar,
   IconPick,
   IconPackage,
   IconBeer,
   IconCoin,
+  IconHeart,
+  IconBolt,
 } from "@tabler/icons-react";
 import type { ReactElement, ComponentType } from "react";
 
@@ -54,6 +56,16 @@ const GOODS_METADATA_MAP: Record<GoodType, GoodMetadata> = {
     value: Products.Fizz,
     label: "Fizz",
     IconComponent: IconBeer,
+  },
+  [MeepleStats.Health]: {
+    value: MeepleStats.Health,
+    label: "Health",
+    IconComponent: IconHeart,
+  },
+  [MeepleStats.Energy]: {
+    value: MeepleStats.Energy,
+    label: "Energy",
+    IconComponent: IconBolt,
   },
 };
 

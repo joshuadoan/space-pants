@@ -9,7 +9,7 @@ import {
   type LogicRule,
   type MeepleState,
 } from "./types";
-import { getGoodColor, getGoodWithMostAmount } from "../utils/goodsUtils";
+import { getGoodColor } from "../utils/goodsUtils";
 import { evaluateRule } from "../utils/ruleUtils";
 import {
   DEFAULT_HEALTH,
@@ -414,10 +414,11 @@ export class Meeple extends Actor {
       .meet(target, this.speed)
       .callMethod(() => target.visitors.add(this))
       .callMethod(() => {
+        // Type assertion is safe because visitTarget is only called with state types that require a target
         this.state = {
           type: activeStateType,
           target,
-        };
+        } as MeepleState;
       })
       .callMethod(actionCallback)
       .delay(delayMs)

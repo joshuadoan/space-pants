@@ -59,7 +59,7 @@ const initialState: State = {
 
 function App() {
   const { game, meeples, zoomToEntity, activeMeeple } = useGame();
-  const cardRefs = useRef<Map<string, HTMLDivElement>>(new Map());
+  const cardRefs = useRef<Map<number | string, HTMLDivElement>>(new Map());
 
   const [state, dispatch] = useReducer((state: State, action: Action) => {
     switch (action.type) {
