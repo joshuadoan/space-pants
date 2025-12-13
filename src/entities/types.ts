@@ -128,3 +128,9 @@ export enum LogicRuleActionType {
   GoSelling = "Go Selling",
   ChillAtHome = "Chill At Home",
 }
+
+export type RuleBehavior = {
+  id: string;
+  name: string;
+  rules: LogicRule[];
+};

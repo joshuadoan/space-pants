@@ -1,78 +1,10 @@
-import { Resources, MeepleStats, Products, ComparisonOperator, LogicRuleActionType, type LogicRule } from "./types";
+import { Resources, MeepleStats, Products, ComparisonOperator, LogicRuleActionType, type LogicRule, type RuleBehavior } from "./types";
 
-export const TRADER_RULES: LogicRule[] = [
-  // Priority 1: Energy check - always go home if energy is low
-  {
-    id: "go-home-if-energy-low",
-    good: MeepleStats.Energy,
-    operator: ComparisonOperator.LessThanOrEqual,
-    value: 0,
-    action: LogicRuleActionType.ChillAtHome,
-  },
-  // Priority 2: If money is 50+, socialize (they're doing well)
-  {
-    id: "go-to-space-bar",
-    good: Resources.Money,
-    operator: ComparisonOperator.GreaterThanOrEqual,
-    value: 50,
-    action: LogicRuleActionType.Socialize,
-  },
-  // Priority 3: If they have products, sell them first (covers gap in 6-14 money range)
-  // Check multiple product types to catch any products they might have
-  {
-    id: "sell-if-has-gruffle",
-    good: Products.Gruffle,
-    operator: ComparisonOperator.GreaterThan,
-    value: 0,
-    action: LogicRuleActionType.GoSelling,
-  },
-  {
-    id: "sell-if-has-druffle",
-    good: Products.Druffle,
-    operator: ComparisonOperator.GreaterThan,
-    value: 0,
-    action: LogicRuleActionType.GoSelling,
-  },
-  {
-    id: "sell-if-has-klintzpaw",
-    good: Products.Klintzpaw,
-    operator: ComparisonOperator.GreaterThan,
-    value: 0,
-    action: LogicRuleActionType.GoSelling,
-  },
-  {
-    id: "sell-if-has-grogin",
-    good: Products.Grogin,
-    operator: ComparisonOperator.GreaterThan,
-    value: 0,
-    action: LogicRuleActionType.GoSelling,
-  },
-  {
-    id: "sell-if-has-fizz",
-    good: Products.Fizz,
-    operator: ComparisonOperator.GreaterThan,
-    value: 0,
-    action: LogicRuleActionType.GoSelling,
-  },
-  // Priority 4: If money is 6-49, go shopping for products
-  {
-    id: "go-shopping",
-    good: Resources.Money,
-    operator: ComparisonOperator.GreaterThanOrEqual,
-    value: 6,
-    action: LogicRuleActionType.GoShopping,
-  },
-  // Priority 5: If money is low (<= 5), try to sell (fallback)
-  {
-    id: "go-selling-low-money",
-    good: Resources.Money,
-    operator: ComparisonOperator.LessThanOrEqual,
-    value: 5,
-    action: LogicRuleActionType.GoSelling,
-  },
+const TRADER_RULES_ARRAY: LogicRule[] = [
+  
 ];
 
-export const MINER_RULES: LogicRule[] = [
+const MINER_RULES_ARRAY: LogicRule[] = [
   // Priority 1: Energy check - always go home if energy is low
   {
     id: "go-home-if-energy-low",
@@ -107,7 +39,7 @@ export const MINER_RULES: LogicRule[] = [
   },
 ];
 
-export const BARTENDER_RULES: LogicRule[] = [
+const BARTENDER_RULES_ARRAY: LogicRule[] = [
   // Priority 1: If energy is 0 or less, go home to recover
   {
     id: "go-home-if-energy-low",
@@ -133,4 +65,34 @@ export const BARTENDER_RULES: LogicRule[] = [
     action: LogicRuleActionType.Work,
   },
 ];
+
+export const TRADER_BEHAVIOR: RuleBehavior = {
+  id: "trader",
+  name: "Trader",
+  rules: TRADER_RULES_ARRAY,
+};
+
+export const MINER_BEHAVIOR: RuleBehavior = {
+  id: "miner",
+  name: "Miner",
+  rules: MINER_RULES_ARRAY,
+};
+
+export const BARTENDER_BEHAVIOR: RuleBehavior = {
+  id: "bartender",
+  name: "Bartender",
+  rules: BARTENDER_RULES_ARRAY,
+};
+
+// Export all built-in behaviors as an array
+export const BUILT_IN_BEHAVIORS: RuleBehavior[] = [
+  TRADER_BEHAVIOR,
+  MINER_BEHAVIOR,
+  BARTENDER_BEHAVIOR,
+];
+
+// Legacy exports for backward compatibility (if needed elsewhere)
+export const TRADER_RULES = TRADER_RULES_ARRAY;
+export const MINER_RULES = MINER_RULES_ARRAY;
+export const BARTENDER_RULES = BARTENDER_RULES_ARRAY;
 

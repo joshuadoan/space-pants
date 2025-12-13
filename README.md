@@ -191,12 +191,12 @@ Each rule consists of:
 ### Rule Priority
 Rules are evaluated in order from top to bottom. The first rule whose condition is met will be executed. You can drag and drop rules to reorder them and change their priority.
 
-### Rule Templates
-The game includes pre-built rule templates:
-- **Miner Template**: Default mining and trading behavior
-- **Trader Template**: Default buying and selling behavior
+### Rule Behaviors
+The game includes pre-built rule behaviors:
+- **Miner Behavior**: Default mining and trading behavior
+- **Trader Behavior**: Default buying and selling behavior
 
-You can apply these templates or create custom rules from scratch.
+You can apply these behaviors or create custom rules from scratch.
 
 ### Example Rules
 A miner's default rules:
@@ -233,7 +233,7 @@ space-pants/
 │   │   ├── SpaceApartments.ts # Space apartment entity
 │   │   ├── Asteroid.ts       # Asteroid resource node
 │   │   ├── Star.ts           # Background star entities
-│   │   ├── ruleTemplates.ts  # Default rule templates
+│   │   ├── ruleTemplates.ts  # Default rule behaviors
 │   │   ├── types.ts          # Entity type definitions
 │   │   └── utils/            # Entity utilities
 │   │       ├── createSpaceShipOutOfShapes.ts
@@ -288,7 +288,7 @@ Edit `src/hooks/useGame.ts` to modify:
 
 ### Entity Behavior
 - Modify entity classes in `src/entities/` to change default rules and starting conditions
-- Edit rule templates in `src/entities/ruleTemplates.ts`
+- Edit rule behaviors in `src/entities/ruleTemplates.ts`
 - Customize entity appearance in entity constructors
 
 ### Styling
