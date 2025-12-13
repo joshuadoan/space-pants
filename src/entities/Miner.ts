@@ -2,7 +2,7 @@ import type { Vector } from "excalibur";
 import { Meeple } from "./Meeple";
 import { Resources } from "./types";
 import { MINER_RULES } from "./ruleTemplates";
-import { DEFAULT_SHIP_SPEED } from "../consts";
+import { DEFAULT_SHIP_SPEED } from "./game-config";
 import { createMinerShipOutOfShapes } from "./utils/createSpaceShipOutOfShapes";
 
 export class Miner extends Meeple {

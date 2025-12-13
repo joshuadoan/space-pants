@@ -12,41 +12,18 @@ import { generateSpaceName } from "../entities/utils/generateSpaceName";
 import { SpaceApartments } from "../entities/SpaceApartments";
 import { TreasureCollector } from "../entities/TreasureCollector";
 import { Bartender } from "../entities/Bartender";
-import { DEFAULT_SHIP_SPEED } from "../consts";
 import type { Actor } from "excalibur";
 import { Meeple } from "../entities/Meeple";
-
-// ============================================================================
-// Constants
-// ============================================================================
-
-/** Width of the game world in pixels */
-const WORLD_WIDTH = 2500;
-
-/** Height of the game world in pixels */
-const WORLD_HEIGHT = 2500;
-
-/** Initial camera zoom level */
-const CAMERA_ZOOM = 2;
-
-/** Interval in milliseconds for updating the meeple list in React state */
-const MEEPLE_UPDATE_INTERVAL_MS = 1000;
-
-/** Number of each entity type to spawn in the game world */
-const ENTITY_COUNTS = {
-  TRADERS: 10,
-  SPACE_STATIONS: 5,
-  ASTEROIDS: 5,
-  MINERS: 10,
-  SPACE_BARS: 3,
-  SPACE_APARTMENTS: 3,
-} as const;
-
-/** Size range for randomly generated asteroids */
-const ASTEROID_SIZE_RANGE = {
-  MIN: 15,
-  MAX: 30,
-} as const;
+import {
+  WORLD_WIDTH,
+  WORLD_HEIGHT,
+  CAMERA_ZOOM,
+  MEEPLE_LIST_UPDATE_INTERVAL_MS,
+  ENTITY_COUNTS,
+  ASTEROID_SIZE_RANGE,
+  DEFAULT_SHIP_SPEED,
+  CANVAS_WAIT_CONFIG,
+} from "../entities/game-config";
 
 // ============================================================================
 // Types
@@ -267,7 +244,7 @@ function createTreasureCollector(game: Game): void {
 }
 
 /**
- * Creates bartender entities - 3 bartenders per space bar.
+ * Creates bartender entities - configured number of bartenders per space bar.
  * Bartenders work at space bars to earn money.
  */
 function createBartenders(game: Game): void {
@@ -276,9 +253,9 @@ function createBartenders(game: Game): void {
     (actor: Actor) => actor instanceof SpaceBar
   ) as SpaceBar[];
 
-  // Create 3 bartenders for each space bar
+  // Create configured number of bartenders for each space bar
   for (const spaceBar of spaceBars) {
-    for (let i = 0; i < 3; i++) {
+    for (let i = 0; i < ENTITY_COUNTS.BARTENDERS_PER_BAR; i++) {
       // Position bartenders near the space bar (within 50 pixels)
       const offsetX = (Math.random() - 0.5) * 100;
       const offsetY = (Math.random() - 0.5) * 100;
@@ -319,18 +296,6 @@ function initializeGameEntities(game: Game): void {
 // Canvas Utilities
 // ============================================================================
 
-/**
- * Configuration for waiting for the canvas element to appear in the DOM.
- * This is necessary because React may not have rendered the canvas
- * when the game initialization code runs, especially in production builds.
- */
-const CANVAS_WAIT_CONFIG = {
-  /** Maximum number of retry attempts */
-  MAX_RETRIES: 100,
-  /** Delay between retries in milliseconds */
-  RETRY_DELAY_MS: 10,
-  /** Total maximum wait time: 100 * 10ms = 1000ms (1 second) */
-} as const;
 
 /**
  * Waits for the canvas element to be available in the DOM.
@@ -448,7 +413,7 @@ export const useGame = () => {
         ) as Meeple[];
         dispatch({ type: "set-meeples", payload: meeples });
       }
-    }, MEEPLE_UPDATE_INTERVAL_MS);
+    }, MEEPLE_LIST_UPDATE_INTERVAL_MS);
 
     return () => clearInterval(interval);
   }, []);

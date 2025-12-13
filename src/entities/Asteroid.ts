@@ -3,6 +3,16 @@ import { Meeple } from "./Meeple";
 import { Resources } from "./types";
 import type { Game } from "./Game";
 import { MeepleStateType } from "./types";
+import {
+  ASTEROID_STARTING_ORE,
+  ASTEROID_MIN_ORE_THRESHOLD,
+  ASTEROID_REGENERATION_RATE_MS,
+} from "./game-config";
+import {
+  updateRegeneration,
+  type RegenerationConfig,
+  type RegenerationState,
+} from "./utils/regenerationUtils";
 
 // Color palette for asteroids (various shades of gray and brown)
 const ASTEROID_COLORS = [
@@ -38,9 +48,14 @@ function createAsteroidPoints(size: number, points: number = 8): Vector[] {
 }
 
 export class Asteroid extends Meeple {
-  private lastRegenerationTime: number = 0;
-  private readonly REGENERATION_RATE = 1000; // 1 second in milliseconds
-  private readonly MIN_ORE_THRESHOLD = 100;
+  private regenerationState: RegenerationState = { lastRegenerationTime: 0 };
+  private readonly regenerationConfig: RegenerationConfig = {
+    goodType: Resources.Ore,
+    minThreshold: ASTEROID_MIN_ORE_THRESHOLD,
+    maxThreshold: ASTEROID_MIN_ORE_THRESHOLD,
+    amountPerCycle: 1,
+    rateMs: ASTEROID_REGENERATION_RATE_MS,
+  };
 
   constructor(position: Vector, size: number = 20, name?: string) {
     // Randomize size slightly
@@ -53,8 +68,8 @@ export class Asteroid extends Meeple {
     // Call super with position, speed (0 for stationary asteroids), name, and size
     super(position, 0, asteroidName, actualSize * 2, actualSize * 2);
 
-    // Initialize asteroid with 1000 ore
-    this.goods[Resources.Ore] = 1000;
+    // Initialize asteroid with starting ore
+    this.goods[Resources.Ore] = ASTEROID_STARTING_ORE;
 
     // Create irregular asteroid shape
     const asteroidPoints = createAsteroidPoints(
@@ -76,29 +91,12 @@ export class Asteroid extends Meeple {
     // Call parent's onPreUpdate first
     super.onPreUpdate(engine);
 
-    const currentOre = this.goods[Resources.Ore] || 0;
-
-    // If ore is below threshold, regenerate 1 ore per second
-    if (currentOre < this.MIN_ORE_THRESHOLD) {
-      const currentTime = Date.now();
-
-      // Initialize lastRegenerationTime if not set
-      if (this.lastRegenerationTime === 0) {
-        this.lastRegenerationTime = currentTime;
-      }
-
-      // Check if 1 second has passed since last regeneration
-      const timeSinceLastRegeneration = currentTime - this.lastRegenerationTime;
-      if (timeSinceLastRegeneration >= this.REGENERATION_RATE) {
-        // Add 1 ore, but cap at MIN_ORE_THRESHOLD
-        const newOre = Math.min(currentOre + 1, this.MIN_ORE_THRESHOLD);
-        this.goods[Resources.Ore] = newOre;
-        this.lastRegenerationTime = currentTime;
-      }
-    } else {
-      // Reset regeneration timer when ore is at or above threshold
-      this.lastRegenerationTime = 0;
-    }
+    // Update regeneration using the abstracted utility
+    this.regenerationState = updateRegeneration(
+      this.goods,
+      this.regenerationConfig,
+      this.regenerationState
+    );
 
     if (this.visitors.size > 1) {
       const randomVisitor = this.getRandomVisitor();

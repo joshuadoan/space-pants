@@ -4,6 +4,19 @@ import { Products, Resources } from "./types";
 import { Meeple } from "./Meeple";
 import type { Game } from "./Game";
 import { MeepleStateType } from "./types";
+import {
+  SPACE_STATION_SIZE,
+  ORE_PER_PRODUCT,
+  SPACE_STATION_PRODUCTION_INTERVAL_SECONDS,
+  SPACE_STATION_MIN_ORE_THRESHOLD,
+  SPACE_STATION_REGENERATION_RATE_MS,
+  SPACE_STATION_ORE_REGENERATION_AMOUNT,
+} from "./game-config";
+import {
+  updateRegeneration,
+  type RegenerationConfig,
+  type RegenerationState,
+} from "./utils/regenerationUtils";
 
 // Color palette for space stations
 export const STATION_COLORS = [
@@ -23,15 +36,18 @@ export const STATION_COLORS = [
 
 export class SpaceStation extends Meeple {
   private lastProductionTime: number = 0;
+  private regenerationState: RegenerationState = { lastRegenerationTime: 0 };
+  private readonly regenerationConfig: RegenerationConfig = {
+    goodType: Resources.Ore,
+    minThreshold: SPACE_STATION_MIN_ORE_THRESHOLD,
+    maxThreshold: SPACE_STATION_MIN_ORE_THRESHOLD,
+    amountPerCycle: SPACE_STATION_ORE_REGENERATION_AMOUNT,
+    rateMs: SPACE_STATION_REGENERATION_RATE_MS,
+  };
 
   constructor(position: Vector, name: string) {
     // Call super with position, speed (0 for stationary stations), name, and size
-    super(position, 0, name, 60, 60);
-
-    // Initialize all products to 0
-    Object.values(Products).forEach((product) => {
-      this.goods[product] = 0;
-    });
+    super(position, 0, name, SPACE_STATION_SIZE.WIDTH, SPACE_STATION_SIZE.HEIGHT);
 
     // Create unique space station design
     const stationDesign = createRandomSpaceStation();
@@ -40,6 +56,13 @@ export class SpaceStation extends Meeple {
 
   onPreUpdate(engine: Game): void {
     super.onPreUpdate(engine);
+
+    // Update ore regeneration using the abstracted utility
+    this.regenerationState = updateRegeneration(
+      this.goods,
+      this.regenerationConfig,
+      this.regenerationState
+    );
 
     // Initialize lastProductionTime on first update
     if (this.lastProductionTime === 0) {
@@ -51,9 +74,9 @@ export class SpaceStation extends Meeple {
     const elapsedSeconds = (currentTime - this.lastProductionTime) / 1000;
 
     // Generate products every second based on ore
-    if (elapsedSeconds >= 1) {
+    if (elapsedSeconds >= SPACE_STATION_PRODUCTION_INTERVAL_SECONDS) {
       const oreAmount = this.goods[Resources.Ore] || 0;
-      const productionRate = Math.floor(oreAmount / 10); // One product per 10 ore
+      const productionRate = Math.floor(oreAmount / ORE_PER_PRODUCT);
 
       if (productionRate > 0) {
         // Generate random products (not ore or money)
@@ -64,8 +87,8 @@ export class SpaceStation extends Meeple {
           this.goods[randomProduct] = (this.goods[randomProduct] || 0) + 1;
         }
 
-        // Deduct ore used for production (10 ore per product)
-        const oreToDeduct = productionRate * 10;
+        // Deduct ore used for production
+        const oreToDeduct = productionRate * ORE_PER_PRODUCT;
         this.goods[Resources.Ore] = Math.max(
           0,
           (this.goods[Resources.Ore] || 0) - oreToDeduct

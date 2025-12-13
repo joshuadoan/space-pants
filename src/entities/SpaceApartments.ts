@@ -1,14 +1,16 @@
 import { Vector, Rectangle, GraphicsGroup, Color } from "excalibur";
 import { Meeple } from "./Meeple";
-
-const MAX_CAPACITY = 5; // Maximum number of visitors at once
+import {
+  SPACE_APARTMENTS_MAX_CAPACITY,
+  SPACE_APARTMENTS_SIZE,
+} from "./game-config";
 
 export class SpaceApartments extends Meeple {
-  public maxCapacity: number = MAX_CAPACITY;
+  public maxCapacity: number = SPACE_APARTMENTS_MAX_CAPACITY;
 
   constructor(position: Vector, name: string) {
     // Call super with position, speed (0 for stationary apartments), name, and size
-    super(position, 0, name, 50, 40);
+    super(position, 0, name, SPACE_APARTMENTS_SIZE.WIDTH, SPACE_APARTMENTS_SIZE.HEIGHT);
 
     // Create an apartment building design
     const apartmentDesign = this.createApartmentDesign();

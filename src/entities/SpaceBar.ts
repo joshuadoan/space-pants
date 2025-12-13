@@ -1,21 +1,39 @@
 import { Vector, Rectangle, GraphicsGroup, Color } from "excalibur";
 import { Meeple } from "./Meeple";
 import { Products, Resources, type GoodType } from "./types";
-
 import { MeepleStateType } from "./types";
 import type { Game } from "./Game";
-const FIZZ_PRICE = 50; // Price per fizz
-const INITIAL_FIZZ_STOCK = 100; // Starting stock of fizz
+import {
+  FIZZ_PRICE,
+  SPACE_BAR_STARTING_FIZZ,
+  SPACE_BAR_SIZE,
+  SPACE_BAR_MIN_FIZZ_THRESHOLD,
+  SPACE_BAR_FIZZ_REGENERATION_RATE_MS,
+  SPACE_BAR_FIZZ_REGENERATION_AMOUNT,
+} from "./game-config";
+import {
+  updateRegeneration,
+  type RegenerationConfig,
+  type RegenerationState,
+} from "./utils/regenerationUtils";
 
 export class SpaceBar extends Meeple {
   public prices: Map<GoodType, number> = new Map();
+  private regenerationState: RegenerationState = { lastRegenerationTime: 0 };
+  private readonly regenerationConfig: RegenerationConfig = {
+    goodType: Products.Fizz,
+    minThreshold: SPACE_BAR_MIN_FIZZ_THRESHOLD,
+    maxThreshold: SPACE_BAR_MIN_FIZZ_THRESHOLD,
+    amountPerCycle: SPACE_BAR_FIZZ_REGENERATION_AMOUNT,
+    rateMs: SPACE_BAR_FIZZ_REGENERATION_RATE_MS,
+  };
 
   constructor(position: Vector, name: string) {
-    super(position, 0, name, 30, 20);
+    super(position, 0, name, SPACE_BAR_SIZE.WIDTH, SPACE_BAR_SIZE.HEIGHT);
     
     // Initialize with fizz stock
     this.goods = {
-      [Products.Fizz]: INITIAL_FIZZ_STOCK,
+      [Products.Fizz]: SPACE_BAR_STARTING_FIZZ,
       [Resources.Money]: 0,
     };
 
@@ -45,6 +63,13 @@ export class SpaceBar extends Meeple {
 
   onPreUpdate(engine: Game): void {
     super.onPreUpdate(engine);
+
+    // Update fizz regeneration - restock when low
+    this.regenerationState = updateRegeneration(
+      this.goods,
+      this.regenerationConfig,
+      this.regenerationState
+    );
 
     if (this.visitors.size > 1) {
       const randomVisitor = this.getRandomVisitor();

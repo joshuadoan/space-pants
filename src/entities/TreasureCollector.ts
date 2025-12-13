@@ -1,7 +1,7 @@
 import type { Vector } from "excalibur";
 import { Meeple } from "./Meeple";
 import { Resources } from "./types";
-import { DEFAULT_SHIP_SPEED } from "../consts";
+import { DEFAULT_SHIP_SPEED } from "./game-config";
 import { createTreasureCollectorShipOutOfShapes } from "./utils/createSpaceShipOutOfShapes";
 
 export class TreasureCollector extends Meeple {

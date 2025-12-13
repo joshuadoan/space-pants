@@ -1,7 +1,7 @@
 import type { Vector } from "excalibur";
 import { Meeple } from "./Meeple";
 import { Resources } from "./types";
-import { DEFAULT_SHIP_SPEED } from "../consts";
+import { DEFAULT_SHIP_SPEED } from "./game-config";
 import { createBartenderShipOutOfShapes } from "./utils/createSpaceShipOutOfShapes";
 import { BARTENDER_RULES } from "./ruleTemplates";
 

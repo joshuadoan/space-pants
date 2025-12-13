@@ -11,6 +11,31 @@ import {
 } from "./types";
 import { getGoodColor, getGoodWithMostAmount } from "../utils/goodsUtils";
 import { evaluateRule } from "../utils/ruleUtils";
+import {
+  DEFAULT_HEALTH,
+  DEFAULT_ENERGY,
+  MEEPLE_SIZE,
+  MINING_ORE_AMOUNT,
+  MINING_TREASURE_CHANCE,
+  TRADE_ORE_AMOUNT,
+  TRADE_MONEY_AMOUNT,
+  WORK_EARNINGS,
+  TREASURE_SELL_PRICE,
+  MINING_DELAY_MS,
+  TRADING_DELAY_MS,
+  SOCIALIZING_DELAY_MS,
+  WORKING_DELAY_MS,
+  CHILLING_DELAY_MS,
+  SHOPPING_DELAY_MS,
+  SELLING_DELAY_MS,
+  SELL_TREASURE_DELAY_MS,
+  DEFAULT_TRANSACTION_TIME_MS,
+  MEEPLE_UPDATE_INTERVAL_MS,
+  FOLLOWER_BASE_DISTANCE,
+  FOLLOWER_DISTANCE_INCREMENT,
+  FOLLOWER_SIZE,
+  PRODUCT_SELL_PRICE,
+} from "./game-config";
 
 export class Meeple extends Actor {
   speed: number;
@@ -28,8 +53,8 @@ export class Meeple extends Actor {
     position: Vector,
     speed: number,
     name: string,
-    width: number = 20,
-    height: number = 20
+    width: number = MEEPLE_SIZE.WIDTH,
+    height: number = MEEPLE_SIZE.HEIGHT
   ) {
     super({
       pos: position,
@@ -43,8 +68,8 @@ export class Meeple extends Actor {
       [Resources.Ore]: 0,
       [Resources.Money]: 0,
       [Resources.Treasure]: 0,
-      [MeepleStats.Health]: 100,
-      [MeepleStats.Energy]: 100,
+      [MeepleStats.Health]: DEFAULT_HEALTH,
+      [MeepleStats.Energy]: DEFAULT_ENERGY,
     };
     // Initialize all products to 0
     Object.values(Products).forEach((product) => {
@@ -105,20 +130,19 @@ export class Meeple extends Actor {
       (g): g is GoodType => g !== Resources.Money
     );
     const goodIndex = goodTypes.indexOf(good);
-    const baseDistance = 30;
-    const distance = baseDistance + (goodIndex * 5); // Slightly different distances
+    const distance = FOLLOWER_BASE_DISTANCE + (goodIndex * FOLLOWER_DISTANCE_INCREMENT);
 
     // Create a tiny square follower
     const follower = new Actor({
       pos: this.pos.clone(),
-      width: 4,
-      height: 4,
+      width: FOLLOWER_SIZE,
+      height: FOLLOWER_SIZE,
     });
 
     // Create a small square graphic with color based on good type
     const square = new Rectangle({
-      width: 4,
-      height: 4,
+      width: FOLLOWER_SIZE,
+      height: FOLLOWER_SIZE,
       color: getGoodColor(good),
     });
     follower.graphics.add(square);
@@ -165,7 +189,7 @@ export class Meeple extends Actor {
     if (!this.actions.getQueue().isComplete()) return;
 
     const currentTime = Date.now();
-    if (currentTime - this.lastUpdateTime < 1000) return;
+    if (currentTime - this.lastUpdateTime < MEEPLE_UPDATE_INTERVAL_MS) return;
     this.lastUpdateTime = currentTime;
 
     for (const rule of this.rules) {
@@ -210,9 +234,14 @@ export class Meeple extends Actor {
     if (!asteroid) return;
 
     this.visitTarget(asteroid, MeepleStateType.Mining, () => {
-      this.transact("add", Resources.Ore, 10);
-      asteroid.transact("remove", Resources.Ore, 10);
-    }, 3000);
+      this.transact("add", Resources.Ore, MINING_ORE_AMOUNT);
+      asteroid.transact("remove", Resources.Ore, MINING_ORE_AMOUNT);
+      
+      // Rare chance to find treasure while mining
+      if (Math.random() < MINING_TREASURE_CHANCE) {
+        this.transact("add", Resources.Treasure, 1);
+      }
+    }, MINING_DELAY_MS);
   }
 
   private executeTradeOreForMoney(): void {
@@ -220,11 +249,11 @@ export class Meeple extends Actor {
     if (!station) return;
 
     this.visitTarget(station, MeepleStateType.Trading, () => {
-      this.transact("remove", Resources.Ore, 10);
-      this.transact("add", Resources.Money, 10);
-      station.transact("add", Resources.Ore, 10);
-      station.transact("remove", Resources.Money, 10);
-    }, 5000);
+      this.transact("remove", Resources.Ore, TRADE_ORE_AMOUNT);
+      this.transact("add", Resources.Money, TRADE_MONEY_AMOUNT);
+      station.transact("add", Resources.Ore, TRADE_ORE_AMOUNT);
+      station.transact("remove", Resources.Money, TRADE_MONEY_AMOUNT);
+    }, TRADING_DELAY_MS);
   }
 
   private executeSocialize(): void {
@@ -235,8 +264,8 @@ export class Meeple extends Actor {
     this.visitTarget(spaceBar, MeepleStateType.Socializing, () => {
       this.transact("remove", Resources.Money, moneyAmount);
       spaceBar.transact("add", Resources.Money, moneyAmount);
-      this.goods[MeepleStats.Energy] = 0;
-    }, 5000);
+      this.goods[MeepleStats.Energy] = DEFAULT_ENERGY; // Restore energy instead of setting to 0
+    }, SOCIALIZING_DELAY_MS);
   }
 
   private executeWork(): void {
@@ -244,12 +273,11 @@ export class Meeple extends Actor {
     if (!spaceBar) return;
 
     // Bartenders earn money from the space bar and lose energy from working
-    const earnings = 20; // Amount of money earned per work session
     this.visitTarget(spaceBar, MeepleStateType.Working, () => {
-      this.transact("add", Resources.Money, earnings);
-      spaceBar.transact("remove", Resources.Money, earnings);
+      this.transact("add", Resources.Money, WORK_EARNINGS);
+      spaceBar.transact("remove", Resources.Money, WORK_EARNINGS);
       this.goods[MeepleStats.Energy] = 0; // Working exhausts them
-    }, 5000);
+    }, WORKING_DELAY_MS);
   }
 
   private executeChillingAtHome(): void {
@@ -257,8 +285,8 @@ export class Meeple extends Actor {
     if (!spaceApartments) return;
 
     this.visitTarget(spaceApartments, MeepleStateType.Chilling, () => {
-      this.goods[MeepleStats.Energy] = 100;
-    }, 3000);
+      this.goods[MeepleStats.Energy] = DEFAULT_ENERGY;
+    }, CHILLING_DELAY_MS);
   }
 
   moveDIrection(direction: "left" | "right" | "up" | "down"): void {
@@ -294,10 +322,10 @@ export class Meeple extends Actor {
       if (good && station.goods[good] && station.goods[good] >= 1) {
         this.transact("add", good, 1);
         station.transact("remove", good, 1);
-        this.transact("remove", Resources.Money, 1);
-        station.transact("add", Resources.Money, 1);
+        this.transact("remove", Resources.Money, PRODUCT_SELL_PRICE);
+        station.transact("add", Resources.Money, PRODUCT_SELL_PRICE);
       }
-    }, 3000);
+    }, SHOPPING_DELAY_MS);
   }
 
   private executeGoSelling(): void {
@@ -314,11 +342,11 @@ export class Meeple extends Actor {
         if (quantity > 0) {
           this.transact("remove", good, quantity);
           station.transact("add", good, quantity);
-          this.transact("add", Resources.Money, quantity);
-          station.transact("remove", Resources.Money, quantity);
+          this.transact("add", Resources.Money, quantity * PRODUCT_SELL_PRICE);
+          station.transact("remove", Resources.Money, quantity * PRODUCT_SELL_PRICE);
         }
       }
-    }, 3000);
+    }, SELLING_DELAY_MS);
   }
 
   private executeSellTreasure(): void {
@@ -330,10 +358,10 @@ export class Meeple extends Actor {
 
     this.visitTarget(treasureCollector, MeepleStateType.Trading, () => {
       this.transact("remove", Resources.Treasure, 1);
-      this.transact("add", Resources.Money, 100);
+      this.transact("add", Resources.Money, TREASURE_SELL_PRICE);
       treasureCollector.transact("add", Resources.Treasure, 1);
-      treasureCollector.transact("remove", Resources.Money, 100);
-    }, 3000);
+      treasureCollector.transact("remove", Resources.Money, TREASURE_SELL_PRICE);
+    }, SELL_TREASURE_DELAY_MS);
   }
 
   private visitTarget(
@@ -434,7 +462,7 @@ export class Meeple extends Actor {
     type: "add" | "remove",
     good: GoodType,
     quantity: number,
-    transactionTime: number = 1000
+    transactionTime: number = DEFAULT_TRANSACTION_TIME_MS
   ): Promise<void> {
     return new Promise((resolve, reject) => {
       setTimeout(() => {
