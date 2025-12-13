@@ -1,8 +1,8 @@
 import type { Goods, GoodType } from "../entities/types";
-import { Resources } from "../entities/types";
+import { Resources, MeepleStats } from "../entities/types";
 import { getGoodMetadata, getGoodIcon, getGoodLabel } from "../utils/goodsMetadata";
 import { IconMailOff } from "@tabler/icons-react";
-import { cloneElement } from "react";
+import { cloneElement, isValidElement } from "react";
 
 type GoodsDisplayProps = {
   goods: Partial<Goods>;
@@ -24,7 +24,11 @@ function getBadgeColor(good: GoodType): string {
 
 export function GoodsDisplay({ goods }: GoodsDisplayProps) {
   const goodsEntries = Object.entries(goods).filter(
-    ([_, quantity]) => quantity !== undefined && quantity > 0
+    ([key, quantity]) => 
+      quantity !== undefined && 
+      quantity > 0 && 
+      key !== MeepleStats.Health && 
+      key !== MeepleStats.Energy
   );
 
   if (goodsEntries.length === 0) {
@@ -44,10 +48,14 @@ export function GoodsDisplay({ goods }: GoodsDisplayProps) {
         const icon = getGoodIcon(good, 18);
         const label = metadata?.label || getGoodLabel(good);
         const badgeColor = getBadgeColor(good);
-        const iconWithPointer = cloneElement(icon, {
-          className: `${icon.props.className || ""} cursor-pointer`.trim(),
-        });
-        
+
+        // Add cursor-pointer className to the icon
+        const iconWithPointer = isValidElement(icon)
+          ? cloneElement(icon as React.ReactElement<{ className?: string }>, {
+              className: `${(icon.props as { className?: string }).className ?? ""} cursor-pointer`.trim(),
+            })
+          : icon;
+
         return (
           <div key={key} className="tooltip">
             <div className="tooltip-content">

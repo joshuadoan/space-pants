@@ -1,10 +1,34 @@
+import {
+  IconUser,
+  IconShip,
+  IconPick,
+  IconMeteor,
+  IconSatellite,
+  IconBeer,
+  IconBuilding,
+  IconStar,
+} from "@tabler/icons-react";
+
 type TabType = "player" | "traders" | "miners" | "stations" | "asteroids" | "spacebars" | "spaceapartments" | "treasurecollectors" | "bartenders" | "all" | "readme";
 
 type MainTabType = "player" | "ships" | "destinations" | "readme";
 
+type MeepleCounts = {
+  player: number;
+  traders: number;
+  miners: number;
+  asteroids: number;
+  stations: number;
+  spacebars: number;
+  spaceapartments: number;
+  treasurecollectors: number;
+  bartenders: number;
+};
+
 type TabsProps = {
   activeTab: TabType;
   onTabChange: (tab: TabType) => void;
+  meepleCounts: MeepleCounts;
 };
 
 // Map TabType to main tab and sub tab
@@ -25,30 +49,47 @@ function getSubTabFromTabType(tab: TabType): TabType | null {
   return tab;
 }
 
-const MAIN_TABS: { value: MainTabType; label: string }[] = [
-  { value: "player", label: "Player" },
+// Map badge color to text color class
+function getIconColorClass(badgeColor: string): string {
+  const colorMap: Record<string, string> = {
+    "badge-success": "text-success",
+    "badge-primary": "text-primary",
+    "badge-secondary": "text-secondary",
+    "badge-accent": "text-accent",
+    "badge-info": "text-info",
+    "badge-warning": "text-warning",
+  };
+  return colorMap[badgeColor] || "";
+}
+
+const MAIN_TABS: { value: MainTabType; label: string; icon?: React.ComponentType<{ size?: number; className?: string }>; badgeColor?: string }[] = [
+  { value: "player", label: "Player", icon: IconUser, badgeColor: "badge-success" },
   { value: "ships", label: "Ships" },
   { value: "destinations", label: "Destinations" },
   { value: "readme", label: "Readme" },
 ];
 
-const SHIP_SUBTABS: { value: TabType; label: string }[] = [
-  { value: "traders", label: "Traders" },
-  { value: "miners", label: "Miners" },
-  { value: "bartenders", label: "Bartenders" },
+const SHIP_SUBTABS: { value: TabType; label: string; icon: React.ComponentType<{ size?: number; className?: string }>; badgeColor: string }[] = [
+  { value: "traders", label: "Traders", icon: IconShip, badgeColor: "badge-primary" },
+  { value: "miners", label: "Miners", icon: IconPick, badgeColor: "badge-secondary" },
+  { value: "bartenders", label: "Bartenders", icon: IconUser, badgeColor: "badge-secondary" },
 ];
 
-const DESTINATION_SUBTABS: { value: TabType; label: string }[] = [
-  { value: "stations", label: "Stations" },
-  { value: "asteroids", label: "Asteroids" },
-  { value: "spacebars", label: "Space Bars" },
-  { value: "spaceapartments", label: "Space Apartments" },
-  { value: "treasurecollectors", label: "Treasure Collectors" },
+const DESTINATION_SUBTABS: { value: TabType; label: string; icon: React.ComponentType<{ size?: number; className?: string }>; badgeColor: string }[] = [
+  { value: "stations", label: "Stations", icon: IconSatellite, badgeColor: "badge-info" },
+  { value: "asteroids", label: "Asteroids", icon: IconMeteor, badgeColor: "badge-accent" },
+  { value: "spacebars", label: "Space Bars", icon: IconBeer, badgeColor: "badge-warning" },
+  { value: "spaceapartments", label: "Space Apartments", icon: IconBuilding, badgeColor: "badge-info" },
+  { value: "treasurecollectors", label: "Treasure Collectors", icon: IconStar, badgeColor: "badge-warning" },
 ];
 
-export function Tabs({ activeTab, onTabChange }: TabsProps) {
+export function Tabs({ activeTab, onTabChange, meepleCounts }: TabsProps) {
   const currentMainTab = getMainTabFromTabType(activeTab);
   const currentSubTab = getSubTabFromTabType(activeTab);
+
+  // Calculate aggregate counts for main tabs
+  const shipsCount = meepleCounts.traders + meepleCounts.miners + meepleCounts.bartenders;
+  const destinationsCount = meepleCounts.stations + meepleCounts.asteroids + meepleCounts.spacebars + meepleCounts.spaceapartments + meepleCounts.treasurecollectors;
 
   const handleMainTabChange = (mainTab: MainTabType) => {
     // Update parent component with the appropriate tab
@@ -71,47 +112,72 @@ export function Tabs({ activeTab, onTabChange }: TabsProps) {
     <div className="flex flex-col gap-2">
       {/* Main tabs */}
       <div role="tablist" className="tabs tabs-boxed">
-        {MAIN_TABS.map((tab) => (
-          <a
-            key={tab.value}
-            role="tab"
-            className={`tab ${currentMainTab === tab.value ? "tab-active" : ""}`}
-            onClick={() => handleMainTabChange(tab.value)}
-          >
-            {tab.label}
-          </a>
-        ))}
+        {MAIN_TABS.map((tab) => {
+          const Icon = tab.icon;
+          let count: number | undefined;
+          if (tab.value === "player") {
+            count = meepleCounts.player;
+          } else if (tab.value === "ships") {
+            count = shipsCount;
+          } else if (tab.value === "destinations") {
+            count = destinationsCount;
+          }
+          return (
+            <a
+              key={tab.value}
+              role="tab"
+              className={`tab ${currentMainTab === tab.value ? "tab-active" : ""} flex items-center gap-1.5`}
+              onClick={() => handleMainTabChange(tab.value)}
+            >
+              {Icon && <Icon size={14} aria-hidden="true" className={tab.badgeColor ? getIconColorClass(tab.badgeColor) : ""} />}
+              <span>{tab.label}</span>
+              {count !== undefined && <span className={tab.badgeColor ? getIconColorClass(tab.badgeColor) : ""}>{count}</span>}
+            </a>
+          );
+        })}
       </div>
 
       {/* Subtabs for Ships */}
       {currentMainTab === "ships" && (
         <div role="tablist" className="tabs tabs-boxed">
-          {SHIP_SUBTABS.map((tab) => (
-            <a
-              key={tab.value}
-              role="tab"
-              className={`tab ${currentSubTab === tab.value ? "tab-active" : ""}`}
-              onClick={() => handleSubTabChange(tab.value)}
-            >
-              {tab.label}
-            </a>
-          ))}
+          {SHIP_SUBTABS.map((tab) => {
+            const Icon = tab.icon;
+            const count = meepleCounts[tab.value as keyof MeepleCounts];
+            return (
+              <a
+                key={tab.value}
+                role="tab"
+                className={`tab ${currentSubTab === tab.value ? "tab-active" : ""} flex items-center gap-1.5`}
+                onClick={() => handleSubTabChange(tab.value)}
+              >
+                <Icon size={14} aria-hidden="true" className={getIconColorClass(tab.badgeColor)} />
+                <span>{tab.label}</span>
+                <span className={getIconColorClass(tab.badgeColor)}>{count}</span>
+              </a>
+            );
+          })}
         </div>
       )}
 
       {/* Subtabs for Destinations */}
       {currentMainTab === "destinations" && (
         <div role="tablist" className="tabs tabs-boxed">
-          {DESTINATION_SUBTABS.map((tab) => (
-            <a
-              key={tab.value}
-              role="tab"
-              className={`tab ${currentSubTab === tab.value ? "tab-active" : ""}`}
-              onClick={() => handleSubTabChange(tab.value)}
-            >
-              {tab.label}
-            </a>
-          ))}
+          {DESTINATION_SUBTABS.map((tab) => {
+            const Icon = tab.icon;
+            const count = meepleCounts[tab.value as keyof MeepleCounts];
+            return (
+              <a
+                key={tab.value}
+                role="tab"
+                className={`tab ${currentSubTab === tab.value ? "tab-active" : ""} flex items-center gap-1.5`}
+                onClick={() => handleSubTabChange(tab.value)}
+              >
+                <Icon size={14} aria-hidden="true" className={getIconColorClass(tab.badgeColor)} />
+                <span>{tab.label}</span>
+                <span className={getIconColorClass(tab.badgeColor)}>{count}</span>
+              </a>
+            );
+          })}
         </div>
       )}
     </div>

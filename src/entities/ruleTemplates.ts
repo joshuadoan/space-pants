@@ -96,21 +96,21 @@ export const MINER_RULES: LogicRule[] = [
     value: 50,
     action: LogicRuleActionType.Socialize,
   },
-  // if ore is less than or equal to 0, mine ore
-  {
-    id: "mine-ore",
-    good: Resources.Ore,
-    operator: ComparisonOperator.LessThanOrEqual,
-    value: 0,
-    action: LogicRuleActionType.MineOre,
-  },
-  // if ore is greater than or equal to 10, stop mining
+  // if ore is greater than or equal to 10, trade it for money
   {
     id: "trade-ore-for-money",
     good: Resources.Ore,
     operator: ComparisonOperator.GreaterThanOrEqual,
     value: 10,
     action: LogicRuleActionType.TradeOreForMoney,
+  },
+  // if ore is less than 10, continue mining
+  {
+    id: "mine-ore",
+    good: Resources.Ore,
+    operator: ComparisonOperator.LessThan,
+    value: 10,
+    action: LogicRuleActionType.MineOre,
   },
 ];
 

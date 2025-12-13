@@ -1,17 +1,7 @@
 import { useEffect, useMemo, useReducer } from "react";
 import { useFps } from "react-fps";
 import Markdown from "react-markdown";
-import {
-  IconRocket,
-  IconUser,
-  IconShip,
-  IconPick,
-  IconMeteor,
-  IconSatellite,
-  IconBeer,
-  IconBuilding,
-  IconStar,
-} from "@tabler/icons-react";
+import { IconRocket } from "@tabler/icons-react";
 
 import { useGame } from "./hooks/useGame";
 
@@ -161,102 +151,18 @@ function App() {
       {/* Sticky navbar at the top */}
       <div className="navbar bg-base-100 shadow-lg sticky top-0 z-50">
         <div className="flex-1 flex flex-col items-start">
-          <div className="flex items-center gap-2 mb-2 px-2 w-full justify-between">
-            <div className="flex items-center gap-2">
-              <IconRocket size={28} className="text-primary" />
-              <h1 className="text-2xl font-bold text-base-content">
-                Space Pants
-              </h1>
-            </div>
-            <div className="flex items-center gap-1.5 flex-wrap" role="list" aria-label="Meeple type counts">
-              <span
-                className="badge badge-sm badge-success badge-outline flex items-center gap-1"
-                title={`${meepleCounts.player} Player${meepleCounts.player !== 1 ? "s" : ""}`}
-                aria-label={`${meepleCounts.player} Player${meepleCounts.player !== 1 ? "s" : ""}`}
-                role="listitem"
-              >
-                <IconUser size={14} aria-hidden="true" />
-                {meepleCounts.player}
-              </span>
-              <span
-                className="badge badge-sm badge-primary badge-outline flex items-center gap-1"
-                title={`${meepleCounts.traders} Trader${meepleCounts.traders !== 1 ? "s" : ""}`}
-                aria-label={`${meepleCounts.traders} Trader${meepleCounts.traders !== 1 ? "s" : ""}`}
-                role="listitem"
-              >
-                <IconShip size={14} aria-hidden="true" />
-                {meepleCounts.traders}
-              </span>
-              <span
-                className="badge badge-sm badge-secondary badge-outline flex items-center gap-1"
-                title={`${meepleCounts.miners} Miner${meepleCounts.miners !== 1 ? "s" : ""}`}
-                aria-label={`${meepleCounts.miners} Miner${meepleCounts.miners !== 1 ? "s" : ""}`}
-                role="listitem"
-              >
-                <IconPick size={14} aria-hidden="true" />
-                {meepleCounts.miners}
-              </span>
-              <span
-                className="badge badge-sm badge-accent badge-outline flex items-center gap-1"
-                title={`${meepleCounts.asteroids} Asteroid${meepleCounts.asteroids !== 1 ? "s" : ""}`}
-                aria-label={`${meepleCounts.asteroids} Asteroid${meepleCounts.asteroids !== 1 ? "s" : ""}`}
-                role="listitem"
-              >
-                <IconMeteor size={14} aria-hidden="true" />
-                {meepleCounts.asteroids}
-              </span>
-              <span
-                className="badge badge-sm badge-info badge-outline flex items-center gap-1"
-                title={`${meepleCounts.stations} Space Station${meepleCounts.stations !== 1 ? "s" : ""}`}
-                aria-label={`${meepleCounts.stations} Space Station${meepleCounts.stations !== 1 ? "s" : ""}`}
-                role="listitem"
-              >
-                <IconSatellite size={14} aria-hidden="true" />
-                {meepleCounts.stations}
-              </span>
-              <span
-                className="badge badge-sm badge-warning badge-outline flex items-center gap-1"
-                title={`${meepleCounts.spacebars} Space Bar${meepleCounts.spacebars !== 1 ? "s" : ""}`}
-                aria-label={`${meepleCounts.spacebars} Space Bar${meepleCounts.spacebars !== 1 ? "s" : ""}`}
-                role="listitem"
-              >
-                <IconBeer size={14} aria-hidden="true" />
-                {meepleCounts.spacebars}
-              </span>
-              <span
-                className="badge badge-sm badge-info badge-outline flex items-center gap-1"
-                title={`${meepleCounts.spaceapartments} Space Apartment${meepleCounts.spaceapartments !== 1 ? "s" : ""}`}
-                aria-label={`${meepleCounts.spaceapartments} Space Apartment${meepleCounts.spaceapartments !== 1 ? "s" : ""}`}
-                role="listitem"
-              >
-                <IconBuilding size={14} aria-hidden="true" />
-                {meepleCounts.spaceapartments}
-              </span>
-              <span
-                className="badge badge-sm badge-warning flex items-center gap-1"
-                title={`${meepleCounts.treasurecollectors} Treasure Collector${meepleCounts.treasurecollectors !== 1 ? "s" : ""}`}
-                aria-label={`${meepleCounts.treasurecollectors} Treasure Collector${meepleCounts.treasurecollectors !== 1 ? "s" : ""}`}
-                role="listitem"
-              >
-                <IconStar size={14} aria-hidden="true" />
-                {meepleCounts.treasurecollectors}
-              </span>
-              <span
-                className="badge badge-sm badge-secondary badge-outline flex items-center gap-1"
-                title={`${meepleCounts.bartenders} Bartender${meepleCounts.bartenders !== 1 ? "s" : ""}`}
-                aria-label={`${meepleCounts.bartenders} Bartender${meepleCounts.bartenders !== 1 ? "s" : ""}`}
-                role="listitem"
-              >
-                <IconUser size={14} aria-hidden="true" />
-                {meepleCounts.bartenders}
-              </span>
-            </div>
+          <div className="flex items-center gap-2 mb-2 px-2">
+            <IconRocket size={28} className="text-primary" />
+            <h1 className="text-2xl font-bold text-base-content">
+              Space Pants
+            </h1>
           </div>
           <Tabs
             activeTab={state.activeTab}
             onTabChange={(tab) =>
               dispatch({ type: "set-active-tab", payload: tab })
             }
+            meepleCounts={meepleCounts}
           />
         </div>
       </div>

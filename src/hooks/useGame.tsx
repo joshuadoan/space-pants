@@ -1,4 +1,5 @@
-import { useEffect, useReducer, useRef } from "react";
+import { createContext, useContext, useEffect, useReducer, useRef } from "react";
+import type { ReactNode } from "react";
 import { Game } from "../entities/Game";
 import { Player } from "../entities/Player";
 import { Vector } from "excalibur";
@@ -367,11 +368,35 @@ function initializeGame(): Promise<Game> {
 }
 
 // ============================================================================
-// React Hook
+// Context Type
+// ============================================================================
+
+/** Type for the game context value */
+type GameContextValue = {
+  game: Game | null;
+  isLoading: boolean;
+  meeples: Meeple[];
+  activeMeeple: Meeple | null;
+  zoomToEntity: (meeple: Meeple) => void;
+};
+
+// ============================================================================
+// Context Creation
 // ============================================================================
 
 /**
- * Custom React hook that manages the game state and lifecycle.
+ * React Context for accessing game state and functions.
+ * Use `useGame` hook to access this context.
+ */
+const GameContext = createContext<GameContextValue | undefined>(undefined);
+
+// ============================================================================
+// Internal Hook (used by Provider)
+// ============================================================================
+
+/**
+ * Internal hook that manages the game state and lifecycle.
+ * This is used by the GameProvider component.
  * 
  * This hook:
  * - Initializes the Excalibur game engine on mount
@@ -381,7 +406,7 @@ function initializeGame(): Promise<Game> {
  * 
  * @returns Game state and utility functions
  */
-export const useGame = () => {
+function useGameInternal(): GameContextValue {
   const [gameState, dispatch] = useReducer(gameReducer, initialState);
   const gameRef = useRef<Game | null>(null);
 
@@ -442,4 +467,52 @@ export const useGame = () => {
       dispatch({ type: "zoom-to-entity", payload: meeple });
     },
   };
-};
+}
+
+// ============================================================================
+// Provider Component
+// ============================================================================
+
+/**
+ * Provider component that makes game state available to all child components.
+ * Wrap your app with this component to enable game context access.
+ * 
+ * @param children - React children components
+ */
+export function GameProvider({ children }: { children: ReactNode }) {
+  const value = useGameInternal();
+  return <GameContext.Provider value={value}>{children}</GameContext.Provider>;
+}
+
+// ============================================================================
+// Public Hook
+// ============================================================================
+
+/**
+ * Custom React hook to access the game context.
+ * 
+ * This hook provides access to:
+ * - `game`: The Excalibur Game instance (null while loading)
+ * - `isLoading`: Whether the game is still initializing
+ * - `meeples`: Array of all meeple entities in the game
+ * - `activeMeeple`: The currently selected/followed meeple
+ * - `zoomToEntity`: Function to zoom the camera to a specific meeple
+ * 
+ * @returns Game state and utility functions
+ * @throws {Error} If used outside of GameProvider
+ * 
+ * @example
+ * ```tsx
+ * function MyComponent() {
+ *   const { game, meeples, zoomToEntity } = useGame();
+ *   // Use game state...
+ * }
+ * ```
+ */
+export function useGame(): GameContextValue {
+  const context = useContext(GameContext);
+  if (context === undefined) {
+    throw new Error("useGame must be used within a GameProvider");
+  }
+  return context;
+}

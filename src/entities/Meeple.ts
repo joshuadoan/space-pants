@@ -101,9 +101,11 @@ export class Meeple extends Actor {
   }
 
   private updateFollowers(): void {
-    // Get all goods except Money
+    // Get all goods except Money and Stats (Health, Energy)
     const goodsWithFollowers = Object.keys(this.goods).filter(
-      (good): good is GoodType => good !== Resources.Money
+      (good): good is GoodType => 
+        good !== Resources.Money && 
+        !Object.values(MeepleStats).includes(good as MeepleStats)
     );
 
     // Remove followers for goods that are now 0 or don't exist
@@ -127,7 +129,9 @@ export class Meeple extends Actor {
   private createFollower(good: GoodType): void {
     // Calculate distance based on good type to spread followers around
     const goodTypes = Object.keys(this.goods).filter(
-      (g): g is GoodType => g !== Resources.Money
+      (g): g is GoodType => 
+        g !== Resources.Money && 
+        !Object.values(MeepleStats).includes(g as MeepleStats)
     );
     const goodIndex = goodTypes.indexOf(good);
     const distance = FOLLOWER_BASE_DISTANCE + (goodIndex * FOLLOWER_DISTANCE_INCREMENT);
