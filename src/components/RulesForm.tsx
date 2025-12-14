@@ -278,15 +278,18 @@ export function RulesForm({
               onDeleteRule={handleDeleteRule}
             />
           ))}
-          <div className="flex justify-start mt-2">
-            <button
-              type="button"
-              onClick={handleAddRule}
-              className="btn btn-secondary w-full sm:w-auto"
-            >
-              Add New Rule
-            </button>
-          </div>
+          {(state.internalMode === "create" || 
+            (state.internalMode === "edit" && state.selectedBehavior)) && (
+            <div className="flex justify-start mt-2">
+              <button
+                type="button"
+                onClick={handleAddRule}
+                className="btn btn-secondary w-full sm:w-auto"
+              >
+                Add New Rule
+              </button>
+            </div>
+          )}
           <RuleFormActions
             saveStatus={state.saveStatus}
             internalMode={state.internalMode}
