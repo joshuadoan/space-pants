@@ -1,7 +1,25 @@
-import { Resources, MeepleStats, Products, ComparisonOperator, LogicRuleActionType, type LogicRule, type RuleBehavior, createRuleId, createBehaviorId } from "./types";
+import {
+  ComparisonOperator,
+  LogicRuleActionType,
+  MeepleStats,
+  Products,
+  Resources,
+  createBehaviorId,
+  createRuleId,
+  type LogicRule,
+  type RuleBehavior,
+} from "./types";
 
 const TRADER_RULES_ARRAY = [
-  // Priority 1: Energy check - always go home if energy is low
+  // Priority 1: If health is 0 or below, set broken state (ship stops moving and can't do anything)
+  {
+    id: createRuleId("set-broken-if-health-zero"),
+    good: MeepleStats.Health,
+    operator: ComparisonOperator.LessThanOrEqual,
+    value: 0,
+    action: LogicRuleActionType.SetBroken,
+  },
+  // Priority 2: Energy check - always go home if energy is low
   {
     id: createRuleId("go-home-if-energy-low"),
     good: MeepleStats.Energy,
@@ -38,7 +56,15 @@ const TRADER_RULES_ARRAY = [
 ] satisfies LogicRule[];
 
 const MINER_RULES_ARRAY = [
-  // Priority 1: Energy check - always go home if energy is low
+  // Priority 1: If health is 0 or below, set broken state (ship stops moving and can't do anything)
+  {
+    id: createRuleId("set-broken-if-health-zero"),
+    good: MeepleStats.Health,
+    operator: ComparisonOperator.LessThanOrEqual,
+    value: 0,
+    action: LogicRuleActionType.SetBroken,
+  },
+  // Priority 2: Energy check - always go home if energy is low
   {
     id: createRuleId("go-home-if-energy-low"),
     good: MeepleStats.Energy,
@@ -73,7 +99,15 @@ const MINER_RULES_ARRAY = [
 ] satisfies LogicRule[];
 
 const BARTENDER_RULES_ARRAY = [
-  // Priority 1: If energy is 0 or less, go home to recover
+  // Priority 1: If health is 0 or below, set broken state (ship stops moving and can't do anything)
+  {
+    id: createRuleId("set-broken-if-health-zero"),
+    good: MeepleStats.Health,
+    operator: ComparisonOperator.LessThanOrEqual,
+    value: 0,
+    action: LogicRuleActionType.SetBroken,
+  },
+  // Priority 2: If energy is 0 or less, go home to recover
   {
     id: createRuleId("go-home-if-energy-low"),
     good: MeepleStats.Energy,
@@ -100,7 +134,15 @@ const BARTENDER_RULES_ARRAY = [
 ] satisfies LogicRule[];
 
 const PIRATE_RULES_ARRAY = [
-  // Priority 1: If energy is 0 or less, go to pirate den to recover
+  // Priority 1: If health is 0 or below, set broken state (ship stops moving and can't do anything)
+  {
+    id: createRuleId("set-broken-if-health-zero"),
+    good: MeepleStats.Health,
+    operator: ComparisonOperator.LessThanOrEqual,
+    value: 0,
+    action: LogicRuleActionType.SetBroken,
+  },
+  // Priority 2: If energy is 0 or less, go to pirate den to recover
   {
     id: createRuleId("go-to-pirate-den-if-energy-low"),
     good: MeepleStats.Energy,

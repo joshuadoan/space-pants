@@ -1,8 +1,9 @@
-import type { Meeple } from "./Meeple";
-import { MeepleStateType, MeepleStats } from "../types";
-import { PIRATE_PATROL_ENERGY_COST, PATROLLING_DELAY_MS } from "../game-config";
-import type { Game } from "../Game";
 import { Vector } from "excalibur";
+
+import type { Game } from "../Game";
+import { PATROLLING_DELAY_MS, PIRATE_PATROL_ENERGY_COST } from "../game-config";
+import { MeepleStateType, MeepleStats } from "../types";
+import type { Meeple } from "./Meeple";
 
 /**
  * Makes a pirate patrol to a random point in the world, consuming energy.

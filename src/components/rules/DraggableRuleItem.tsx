@@ -1,15 +1,17 @@
-import { useRef, useMemo } from "react";
+import { useMemo, useRef } from "react";
 import { useDrag, useDrop } from "react-dnd";
-import type { LogicRule, RuleId } from "../../entities/types";
+
+import type { Meeple } from "../../entities/Meeple/Meeple";
 import {
-  Resources,
-  Products,
-  MeepleStats,
   ComparisonOperator,
   LogicRuleActionType,
+  MeepleStats,
   MeepleType,
+  Products,
+  Resources,
+  type LogicRule,
+  type RuleId,
 } from "../../entities/types";
-import type { Meeple } from "../../entities/Meeple/Meeple";
 
 const DRAG_TYPE = "RULE";
 

@@ -1,13 +1,13 @@
-import type {
-  LogicRule,
-  RuleBehavior,
-  ComparisonOperator,
-  LogicRuleActionType,
-  MeepleType,
-  RuleId,
-  BehaviorId,
+import {
+  Products,
+  type BehaviorId,
+  type ComparisonOperator,
+  type LogicRule,
+  type LogicRuleActionType,
+  type MeepleType,
+  type RuleBehavior,
+  type RuleId,
 } from "../../entities/types";
-import { Products } from "../../entities/types";
 
 // State type
 export interface RulesFormState {

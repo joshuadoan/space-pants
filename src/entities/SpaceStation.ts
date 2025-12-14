@@ -1,19 +1,19 @@
-import { Vector, Color } from "excalibur";
-import { Products, Resources, MeepleType } from "./types";
+import { Color, Vector } from "excalibur";
+
+import type { Game } from "./Game";
+import {
+  ORE_PER_PRODUCT,
+  SPACE_STATION_CONVERSION_DELAY_MS,
+  SPACE_STATION_MIN_ORE_THRESHOLD,
+  SPACE_STATION_ORE_REGENERATION_AMOUNT,
+  SPACE_STATION_PRODUCTION_INTERVAL_SECONDS,
+  SPACE_STATION_REGENERATION_RATE_MS,
+  SPACE_STATION_SIZE,
+  SPACE_STATION_STARTING_MONEY,
+} from "./game-config";
 import { Meeple } from "./Meeple/Meeple";
 import { getRandomVisitor } from "./Meeple/meepleFinders";
-import type { Game } from "./Game";
-import { MeepleStateType } from "./types";
-import {
-  SPACE_STATION_SIZE,
-  ORE_PER_PRODUCT,
-  SPACE_STATION_PRODUCTION_INTERVAL_SECONDS,
-  SPACE_STATION_MIN_ORE_THRESHOLD,
-  SPACE_STATION_REGENERATION_RATE_MS,
-  SPACE_STATION_ORE_REGENERATION_AMOUNT,
-  SPACE_STATION_STARTING_MONEY,
-  SPACE_STATION_CONVERSION_DELAY_MS,
-} from "./game-config";
+import { MeepleStateType, MeepleType, Products, Resources } from "./types";
 import {
   updateRegeneration,
   type RegenerationConfig,

@@ -1,38 +1,36 @@
 import { Actor, Scene, Vector } from "excalibur";
-import {
-  MeepleStats,
-  Resources,
-  Products,
-  type Goods,
-  type GoodType,
-  type RuleId,
-} from "../types";
+
 import type { Game } from "../Game";
+import {
+  DEFAULT_ENERGY,
+  DEFAULT_HEALTH,
+  DEFAULT_TRANSACTION_TIME_MS,
+  MEEPLE_SIZE,
+  MEEPLE_UPDATE_INTERVAL_MS,
+  PIRATE_CHASE_DURATION_MS,
+  PIRATE_LASER_FIRE_INTERVAL_MS,
+  PIRATE_STEAL_DISTANCE,
+} from "../game-config";
 import {
   MeepleStateType,
   MeepleType,
+  Products,
+  Resources,
+  MeepleStats,
+  type Goods,
+  type GoodType,
   type LogicRule,
   type MeepleState,
+  type RuleId,
 } from "../types";
 import { evaluateRule } from "../../utils/ruleUtils";
-import {
-  DEFAULT_HEALTH,
-  DEFAULT_ENERGY,
-  MEEPLE_SIZE,
-  DEFAULT_TRANSACTION_TIME_MS,
-  MEEPLE_UPDATE_INTERVAL_MS,
-} from "../game-config";
+
+import { executePatrol } from "./executePatrol";
+import { executeRuleAction } from "./executeRuleAction";
+import { updateFollowers } from "./followers";
+import { Laser } from "./Laser";
 import { meepleReducer } from "./meepleReducer";
 import type { MeepleAction } from "./meepleTypes";
-import { updateFollowers } from "./followers";
-import { executeRuleAction } from "./executeRuleAction";
-import {
-  PIRATE_CHASE_DURATION_MS,
-  PIRATE_STEAL_DISTANCE,
-  PIRATE_LASER_FIRE_INTERVAL_MS,
-} from "../game-config";
-import { Laser } from "./Laser";
-import { executePatrol } from "./executePatrol";
 
 export class Meeple extends Actor {
   speed: number;
@@ -126,6 +124,29 @@ export class Meeple extends Actor {
   }
 
   onPreUpdate(_engine: Game): void {
+    // Check if health is 0 or below and set broken state
+    const currentHealth = this.goods[MeepleStats.Health] ?? DEFAULT_HEALTH;
+    if (currentHealth <= 0 && this.state.type !== MeepleStateType.Broken) {
+      this.stopMovement();
+      // Stop any ongoing chase
+      if (this.chaseTarget) {
+        this.chaseTarget = null;
+        this.hasStolen = false;
+      }
+      this.dispatch({ type: "set-broken" });
+    }
+
+    // If broken, stop all movement and prevent any actions
+    if (this.state.type === MeepleStateType.Broken) {
+      this.stopMovement();
+      // Ensure chase is stopped
+      if (this.chaseTarget) {
+        this.chaseTarget = null;
+        this.hasStolen = false;
+      }
+      return; // Don't process any further updates when broken
+    }
+
     // Handle boundary checking for velocity-based movement
     const scene = this.scene as Scene;
     if (scene && scene.engine) {

@@ -1,4 +1,5 @@
 import { KeyEvent, Keys } from "excalibur";
+
 import type { Game } from "../entities/Game";
 import type { Meeple } from "../entities/Meeple/Meeple";
 

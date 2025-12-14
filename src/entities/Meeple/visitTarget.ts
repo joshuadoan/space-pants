@@ -1,5 +1,5 @@
-import type { Meeple } from "./Meeple";
 import { MeepleStateType } from "../types";
+import type { Meeple } from "./Meeple";
 
 /**
  * Makes a meeple visit a target, execute an action, and return to idle state.

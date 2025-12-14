@@ -1,5 +1,11 @@
-import type { LogicRule, RuleId } from "../../entities/types";
-import { Resources, ComparisonOperator, LogicRuleActionType, createRuleId } from "../../entities/types";
+import {
+  ComparisonOperator,
+  LogicRuleActionType,
+  Resources,
+  createRuleId,
+  type LogicRule,
+  type RuleId,
+} from "../../entities/types";
 
 /**
  * Generate a random ID for a rule

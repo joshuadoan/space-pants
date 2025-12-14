@@ -1,10 +1,11 @@
 import { Vector } from "excalibur";
-import { Meeple } from "./Meeple/Meeple";
-import { Products, MeepleType } from "./types";
+
 import {
   SPACE_APARTMENTS_MAX_CAPACITY,
   SPACE_APARTMENTS_SIZE,
 } from "./game-config";
+import { Meeple } from "./Meeple/Meeple";
+import { MeepleType, Products } from "./types";
 
 export class SpaceApartments extends Meeple {
   public maxCapacity: number = SPACE_APARTMENTS_MAX_CAPACITY;

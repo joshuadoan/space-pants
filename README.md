@@ -124,7 +124,7 @@ A real-time space economy simulation game built with React, TypeScript, and Exca
 
 1. **Clone the repository:**
 ```bash
-git clone https://github.com/your-username/space-pants.git
+git clone <repository-url>
 cd space-pants
 ```
 
@@ -345,16 +345,15 @@ The game uses React's automatic memoization to maintain smooth performance:
 
 ## 🤝 Contributing
 
-Contributions are welcome! This is an open source project and we appreciate any help you can provide.
+This is a private repository. Contributions and collaboration are welcome from authorized contributors.
 
 ### How to Contribute
 
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Make your changes
-4. Commit your changes (`git commit -m 'Add some amazing feature'`)
-5. Push to the branch (`git push origin feature/amazing-feature`)
-6. Open a Pull Request
+1. Create a feature branch (`git checkout -b feature/amazing-feature`)
+2. Make your changes
+3. Commit your changes (`git commit -m 'Add some amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
 
 ### Areas for Contribution
 
@@ -370,7 +369,7 @@ Contributions are welcome! This is an open source project and we appreciate any 
 
 ## 📝 License
 
-This project is open source. Please check the LICENSE file for details on how you can use, modify, and distribute this code.
+This is a private project. All rights reserved.
 
 ## 🙏 Acknowledgments
 

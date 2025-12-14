@@ -1,31 +1,32 @@
-import { createContext, useContext, useEffect, useCallback, useReducer, useRef } from "react";
+import { createContext, useCallback, useContext, useEffect, useReducer, useRef } from "react";
 import type { ReactNode } from "react";
-import { Game } from "../entities/Game";
-import { Vector } from "excalibur";
-import { createStarTilemap } from "../utils/createStarTilemap";
-import { SpaceStation } from "../entities/SpaceStation";
-import { Asteroid } from "../entities/Asteroid";
-import { SpaceBar } from "../entities/SpaceBar";
-import { generateSpaceName } from "../entities/utils/generateSpaceName";
-import { SpaceApartments } from "../entities/SpaceApartments";
-import { Bartender } from "../entities/Bartender";
-import { PirateDen } from "../entities/PirateDen";
 import type { Actor } from "excalibur";
-import { Meeple } from "../entities/Meeple/Meeple";
+import { Vector } from "excalibur";
+
+import { Asteroid } from "../entities/Asteroid";
+import { Bartender } from "../entities/Bartender";
+import { Game } from "../entities/Game";
 import {
-  WORLD_WIDTH,
-  WORLD_HEIGHT,
-  CAMERA_ZOOM,
-  MEEPLE_LIST_UPDATE_INTERVAL_MS,
-  ENTITY_COUNTS,
   ASTEROID_SIZE_RANGE,
-  DEFAULT_SHIP_SPEED,
+  CAMERA_ZOOM,
   CANVAS_WAIT_CONFIG,
+  DEFAULT_SHIP_SPEED,
+  ENTITY_COUNTS,
+  MEEPLE_LIST_UPDATE_INTERVAL_MS,
   TRADER_STARTING_MONEY,
+  WORLD_HEIGHT,
+  WORLD_WIDTH,
 } from "../entities/game-config";
+import { Meeple } from "../entities/Meeple/Meeple";
+import { PirateDen } from "../entities/PirateDen";
+import { MINER_RULES, PIRATE_RULES, TRADER_RULES } from "../entities/ruleTemplates";
+import { SpaceApartments } from "../entities/SpaceApartments";
+import { SpaceBar } from "../entities/SpaceBar";
+import { SpaceStation } from "../entities/SpaceStation";
 import { MeepleType, Products, Resources } from "../entities/types";
-import { MINER_RULES, TRADER_RULES, PIRATE_RULES } from "../entities/ruleTemplates";
 import { createEntityGraphic, EntityGraphicStyle } from "../entities/utils/createSpaceShipOutOfShapes";
+import { generateSpaceName } from "../entities/utils/generateSpaceName";
+import { createStarTilemap } from "../utils/createStarTilemap";
 
 // ============================================================================
 // Types

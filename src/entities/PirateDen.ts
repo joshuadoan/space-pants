@@ -1,7 +1,8 @@
 import { Vector } from "excalibur";
-import { Meeple } from "./Meeple/Meeple";
-import { Products, MeepleType } from "./types";
+
 import { PIRATE_DEN_SIZE } from "./game-config";
+import { Meeple } from "./Meeple/Meeple";
+import { MeepleType, Products } from "./types";
 
 export class PirateDen extends Meeple {
   constructor(position: Vector, name: string, productType?: Products) {

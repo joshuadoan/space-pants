@@ -1,8 +1,8 @@
-import type { Meeple } from "./Meeple";
-import { MeepleStateType, Products, Resources, MeepleType } from "../types";
 import { PRODUCT_SELL_PRICE, SELLING_DELAY_MS } from "../game-config";
+import { MeepleStateType, MeepleType, Products, Resources } from "../types";
 import { findStation, getRandomStationThatDoesNotProduce } from "./meepleFinders";
 import { visitTarget } from "./visitTarget";
+import type { Meeple } from "./Meeple";
 
 export function executeGoSelling(
   meeple: Meeple,

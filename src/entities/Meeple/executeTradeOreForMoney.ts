@@ -1,8 +1,8 @@
-import type { Meeple } from "./Meeple";
-import { MeepleStateType, Resources, MeepleType } from "../types";
-import { TRADE_ORE_AMOUNT, TRADE_MONEY_AMOUNT, TRADING_DELAY_MS } from "../game-config";
+import { TRADE_MONEY_AMOUNT, TRADE_ORE_AMOUNT, TRADING_DELAY_MS } from "../game-config";
+import { MeepleStateType, MeepleType, Resources } from "../types";
 import { findStation, getRandomStation } from "./meepleFinders";
 import { visitTarget } from "./visitTarget";
+import type { Meeple } from "./Meeple";
 
 export function executeTradeOreForMoney(
   meeple: Meeple,

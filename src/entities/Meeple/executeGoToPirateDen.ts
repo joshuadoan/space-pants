@@ -1,8 +1,8 @@
-import type { Meeple } from "./Meeple";
-import { MeepleStateType, MeepleStats, MeepleType } from "../types";
 import { DEFAULT_ENERGY, PIRATE_DEN_REST_DELAY_MS } from "../game-config";
+import { MeepleStateType, MeepleStats, MeepleType } from "../types";
 import { findDestination, getRandomPirateDen } from "./meepleFinders";
 import { visitTarget } from "./visitTarget";
+import type { Meeple } from "./Meeple";
 
 /**
  * Makes a pirate go to a pirate den to rest and recover energy.

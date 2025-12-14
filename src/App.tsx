@@ -1,17 +1,26 @@
 import { useMemo, useReducer, useRef } from "react";
 import { useFps } from "react-fps";
-import { IconRocket, IconPlus, IconBulb, IconGripVertical, IconDeviceFloppy, IconTrash, IconUser, IconClick, IconDice } from "@tabler/icons-react";
+import {
+  IconBulb,
+  IconClick,
+  IconDice,
+  IconDeviceFloppy,
+  IconGripVertical,
+  IconPlus,
+  IconRocket,
+  IconTrash,
+  IconUser,
+} from "@tabler/icons-react";
 import { Vector } from "excalibur";
 
-import { useGame, type TabType } from "./hooks/useGame";
-import { EntityGraphicStyle } from "./entities/utils/createSpaceShipOutOfShapes";
-import { MeepleType } from "./entities/types";
-import { WORLD_WIDTH, WORLD_HEIGHT } from "./entities/game-config";
-
+import { MeepleCard } from "./components/MeepleCard";
 import { Tabs } from "./components/Tabs";
+import { WORLD_HEIGHT, WORLD_WIDTH } from "./entities/game-config";
+import { MeepleType } from "./entities/types";
+import { EntityGraphicStyle } from "./entities/utils/createSpaceShipOutOfShapes";
+import { useGame, type TabType } from "./hooks/useGame";
 
 import "./App.css";
-import { MeepleCard } from "./components/MeepleCard";
 
 
 type SetActiveTabAction = {

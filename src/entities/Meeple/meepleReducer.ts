@@ -1,5 +1,6 @@
-import type { MeepleAction, MeepleReducerState } from "./meepleTypes";
 import { MeepleStateType } from "../types";
+
+import type { MeepleAction, MeepleReducerState } from "./meepleTypes";
 
 /**
  * Reducer function for managing Meeple state and goods
@@ -36,6 +37,13 @@ export function meepleReducer(
           type: action.payload.stateType,
           target: action.payload.target,
         } as MeepleReducerState["state"],
+      };
+    case "set-broken":
+      return {
+        ...state,
+        state: {
+          type: MeepleStateType.Broken,
+        },
       };
     case "add-good":
       return {

@@ -1,4 +1,4 @@
-import { type Goods, type GoodType, type MeepleState, MeepleStateType } from "../types";
+import { MeepleStateType, type Goods, type GoodType, type MeepleState } from "../types";
 
 // Forward declaration for Meeple to avoid circular dependency
 // Using a type-only import pattern - the actual Meeple class will be imported where needed
@@ -25,6 +25,10 @@ export type SetActiveStateAction = {
   payload: { stateType: MeepleStateType; target: Meeple };
 };
 
+export type SetBrokenAction = {
+  type: "set-broken";
+};
+
 export type AddGoodAction = {
   type: "add-good";
   payload: { good: GoodType; quantity: number };
@@ -45,6 +49,7 @@ export type MeepleAction =
   | SetIdleAction
   | SetTravelingAction
   | SetActiveStateAction
+  | SetBrokenAction
   | AddGoodAction
   | RemoveGoodAction
   | SetGoodAction;

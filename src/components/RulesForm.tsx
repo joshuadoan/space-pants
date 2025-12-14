@@ -1,36 +1,46 @@
-import { useRef, useReducer, useEffect, useMemo, useState } from "react";
-import type { LogicRule, BehaviorId, RuleId } from "../entities/types";
-import { BUILT_IN_BEHAVIORS } from "../entities/ruleTemplates";
-import { useToast } from "./Toast";
+import { useEffect, useMemo, useReducer, useRef, useState } from "react";
 import { DndProvider } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
-import { ComparisonOperator, LogicRuleActionType, createBehaviorId, MeepleType } from "../entities/types";
-import { DraggableRuleItem } from "./rules/DraggableRuleItem";
+
+import { useGame } from "../hooks/useGame";
+import {
+  ComparisonOperator,
+  LogicRuleActionType,
+  MeepleType,
+  createBehaviorId,
+  type BehaviorId,
+  type LogicRule,
+  type RuleId,
+} from "../entities/types";
+import { BUILT_IN_BEHAVIORS } from "../entities/ruleTemplates";
 import { BehaviorSelector } from "./rules/BehaviorSelector";
-import { RulesListNameInput } from "./rules/RulesListNameInput";
+import { DraggableRuleItem } from "./rules/DraggableRuleItem";
 import { RuleFormActions } from "./rules/RuleFormActions";
-import { rulesFormReducer } from "./rules/rulesFormReducer";
+import { RulesListNameInput } from "./rules/RulesListNameInput";
 import {
   loadCustomBehaviors,
   saveCustomBehaviors,
 } from "./rules/behaviorStorage";
+import { rulesFormReducer } from "./rules/rulesFormReducer";
 import {
   createDefaultRule,
   createNewRule,
   rulesArraysEqual,
 } from "./rules/ruleUtils";
-import { useGame } from "../hooks/useGame";
+import { useToast } from "./Toast";
 
 export function RulesForm({
   rules,
   onUpdateRules,
   onCancel,
   mode = "edit",
+  meepleType,
 }: {
   rules: LogicRule[];
   onUpdateRules: (rules: LogicRule[]) => void;
   onCancel?: () => void;
   mode?: "edit" | "create";
+  meepleType?: MeepleType;
 }) {
   const formRef = useRef<HTMLFormElement>(null);
   const deleteModalRef = useRef<HTMLDialogElement>(null);
@@ -137,6 +147,12 @@ export function RulesForm({
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+
+    // Only allow updating rules for custom types (create mode creates behaviors, not meeple rules)
+    if (state.internalMode === "edit" && meepleType !== undefined && meepleType !== MeepleType.Custom) {
+      showToast("Only custom types can update behaviors/rules", "error");
+      return;
+    }
 
     // Validate rules before saving
     if (hasInvalidRules) {

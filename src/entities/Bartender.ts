@@ -1,8 +1,9 @@
 import type { Vector } from "excalibur";
-import { Meeple } from "./Meeple/Meeple";
-import { Resources, Products, MeepleType } from "./types";
+
 import { DEFAULT_SHIP_SPEED } from "./game-config";
+import { Meeple } from "./Meeple/Meeple";
 import { BARTENDER_RULES } from "./ruleTemplates";
+import { MeepleType, Products, Resources } from "./types";
 
 export class Bartender extends Meeple {
   constructor(position: Vector, speed: number, name: string, productType?: Products) {

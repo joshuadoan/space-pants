@@ -1,6 +1,7 @@
 import { Actor } from "excalibur";
+
+import { MeepleType, Products, Resources } from "../types";
 import { Meeple } from "./Meeple";
-import { MeepleType, Resources, Products } from "../types";
 
 /**
  * Gets a random visitor from the meeple's visitors set.

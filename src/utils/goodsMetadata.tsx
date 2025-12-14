@@ -1,13 +1,14 @@
-import { Products, Resources, MeepleStats, type GoodType } from "../entities/types";
+import type { ComponentType, ReactElement } from "react";
 import {
-  IconCurrencyDollar,
-  IconPick,
-  IconPackage,
   IconBeer,
-  IconHeart,
   IconBolt,
+  IconCurrencyDollar,
+  IconHeart,
+  IconPackage,
+  IconPick,
 } from "@tabler/icons-react";
-import type { ReactElement, ComponentType } from "react";
+
+import { MeepleStats, Products, Resources, type GoodType } from "../entities/types";
 
 export type GoodMetadata = {
   value: GoodType;

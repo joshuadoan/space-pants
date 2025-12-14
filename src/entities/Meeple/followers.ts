@@ -1,12 +1,13 @@
 import { Actor, Rectangle } from "excalibur";
-import type { Meeple } from "./Meeple";
-import { MeepleStats, Resources, type GoodType } from "../types";
-import { getGoodColor } from "../../utils/goodsUtils";
+
 import {
   FOLLOWER_BASE_DISTANCE,
   FOLLOWER_DISTANCE_INCREMENT,
   FOLLOWER_SIZE,
 } from "../game-config";
+import { MeepleStats, Resources, type GoodType } from "../types";
+import { getGoodColor } from "../../utils/goodsUtils";
+import type { Meeple } from "./Meeple";
 
 /**
  * Updates followers based on goods (excluding money and stats).

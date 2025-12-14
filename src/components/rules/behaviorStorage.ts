@@ -1,5 +1,4 @@
-import type { RuleBehavior } from "../../entities/types";
-import { createBehaviorId, createRuleId } from "../../entities/types";
+import { createBehaviorId, createRuleId, type RuleBehavior } from "../../entities/types";
 
 const STORAGE_KEY = "space-pants-custom-rule-behaviors";
 

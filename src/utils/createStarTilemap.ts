@@ -1,4 +1,5 @@
-import { TileMap, Circle, Color, Vector } from "excalibur";
+import { Circle, Color, TileMap, Vector } from "excalibur";
+
 import type { Game } from "../entities/Game";
 
 /**

@@ -1,17 +1,16 @@
-import { Meeple } from "./Meeple";
-import { LogicRuleActionType, type LogicRule } from "../types";
-import { executeMineOre } from "./executeMineOre";
-import { executeTradeOreForMoney } from "./executeTradeOreForMoney";
-import { executeSocialize } from "./executeSocialize";
-import { executeWork } from "./executeWork";
-import { executeGoShopping } from "./executeGoShopping";
-import { executeGoSelling } from "./executeGoSelling";
-import { executeChillingAtHome } from "./executeChillingAtHome";
-import { executePatrol } from "./executePatrol";
-import { executeGoToPirateDen } from "./executeGoToPirateDen";
-import { executeChaseTarget } from "./executeChaseTarget";
-import { MeepleType } from "../types";
 import { PIRATE_CHASE_DETECTION_DISTANCE } from "../game-config";
+import { LogicRuleActionType, MeepleType, type LogicRule } from "../types";
+import { executeChaseTarget } from "./executeChaseTarget";
+import { executeChillingAtHome } from "./executeChillingAtHome";
+import { executeGoSelling } from "./executeGoSelling";
+import { executeGoShopping } from "./executeGoShopping";
+import { executeGoToPirateDen } from "./executeGoToPirateDen";
+import { executeMineOre } from "./executeMineOre";
+import { executePatrol } from "./executePatrol";
+import { executeSocialize } from "./executeSocialize";
+import { executeTradeOreForMoney } from "./executeTradeOreForMoney";
+import { executeWork } from "./executeWork";
+import { Meeple } from "./Meeple";
 
 /**
  * Executes a rule action for a meeple.
@@ -70,6 +69,16 @@ export function executeRuleAction(meeple: Meeple, rule: LogicRule): boolean {
         }
       }
       // No nearby trader found - rule was not executed, should try next rule
+      return false;
+    case LogicRuleActionType.SetBroken:
+      // Set the meeple to broken state and stop movement
+      meeple.stopMovement();
+      meeple.dispatch({ type: "set-broken" });
+      return true;
+    default:
+      // TypeScript exhaustiveness check - if we get here, we've missed a case
+      const _exhaustive: never = rule.action;
+      void _exhaustive; // Mark as intentionally unused
       return false;
   }
 }

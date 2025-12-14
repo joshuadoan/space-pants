@@ -1,5 +1,6 @@
 import { Color } from "excalibur";
-import { Resources, Products, type GoodType, type Goods } from "../entities/types";
+
+import { Products, Resources, type Goods, type GoodType } from "../entities/types";
 
 // Color mapping for each good type
 export function getGoodColor(good: GoodType): Color {

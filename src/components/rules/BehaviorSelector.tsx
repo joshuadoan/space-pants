@@ -1,5 +1,5 @@
-import type { RuleBehavior, BehaviorId } from "../../entities/types";
 import { BUILT_IN_BEHAVIORS } from "../../entities/ruleTemplates";
+import type { BehaviorId, RuleBehavior } from "../../entities/types";
 
 interface BehaviorSelectorProps {
   selectedBehavior: BehaviorId | "";

@@ -1,5 +1,5 @@
-import type { Meeple } from "./Meeple";
 import { MeepleStateType, MeepleType } from "../types";
+import type { Meeple } from "./Meeple";
 
 /**
  * Initiates a chase sequence where a pirate chases a target trader.

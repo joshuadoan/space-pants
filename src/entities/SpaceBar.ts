@@ -1,17 +1,17 @@
 import { Vector } from "excalibur";
-import { Meeple } from "./Meeple/Meeple";
-import { getRandomVisitor } from "./Meeple/meepleFinders";
-import { Products, Resources, MeepleType, type GoodType } from "./types";
-import { MeepleStateType } from "./types";
+
 import type { Game } from "./Game";
 import {
   FIZZ_PRICE,
-  SPACE_BAR_STARTING_FIZZ,
-  SPACE_BAR_SIZE,
-  SPACE_BAR_MIN_FIZZ_THRESHOLD,
-  SPACE_BAR_FIZZ_REGENERATION_RATE_MS,
   SPACE_BAR_FIZZ_REGENERATION_AMOUNT,
+  SPACE_BAR_FIZZ_REGENERATION_RATE_MS,
+  SPACE_BAR_MIN_FIZZ_THRESHOLD,
+  SPACE_BAR_SIZE,
+  SPACE_BAR_STARTING_FIZZ,
 } from "./game-config";
+import { Meeple } from "./Meeple/Meeple";
+import { getRandomVisitor } from "./Meeple/meepleFinders";
+import { MeepleStateType, MeepleType, Products, Resources, type GoodType } from "./types";
 import {
   updateRegeneration,
   type RegenerationConfig,

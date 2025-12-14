@@ -1,14 +1,14 @@
 import { Color, Polygon, Vector } from "excalibur";
-import { Meeple } from "./Meeple/Meeple";
-import { getRandomVisitor } from "./Meeple/meepleFinders";
-import { Resources, Products, MeepleType } from "./types";
+
 import type { Game } from "./Game";
-import { MeepleStateType } from "./types";
 import {
-  ASTEROID_STARTING_ORE,
   ASTEROID_MIN_ORE_THRESHOLD,
   ASTEROID_REGENERATION_RATE_MS,
+  ASTEROID_STARTING_ORE,
 } from "./game-config";
+import { Meeple } from "./Meeple/Meeple";
+import { getRandomVisitor } from "./Meeple/meepleFinders";
+import { MeepleStateType, MeepleType, Products, Resources } from "./types";
 import {
   updateRegeneration,
   type RegenerationConfig,

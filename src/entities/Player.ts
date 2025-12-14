@@ -1,6 +1,7 @@
 import type { Vector } from "excalibur";
+
 import { Meeple } from "./Meeple/Meeple";
-import { Resources, Products, MeepleType } from "./types";
+import { MeepleType, Products, Resources } from "./types";
 
 export class Player extends Meeple {
 

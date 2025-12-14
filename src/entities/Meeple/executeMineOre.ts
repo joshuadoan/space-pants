@@ -1,8 +1,8 @@
-import type { Meeple } from "./Meeple";
-import { MeepleStateType, Resources, MeepleType } from "../types";
-import { MINING_ORE_AMOUNT, MINING_DELAY_MS } from "../game-config";
+import { MINING_DELAY_MS, MINING_ORE_AMOUNT } from "../game-config";
+import { MeepleStateType, MeepleType, Resources } from "../types";
 import { findAsteroid, getRandomAsteroid } from "./meepleFinders";
 import { visitTarget } from "./visitTarget";
+import type { Meeple } from "./Meeple";
 
 export function executeMineOre(
   meeple: Meeple,

@@ -1,25 +1,28 @@
-import { useReducer } from "react";
-import type { Meeple } from "../entities/Meeple/Meeple";
-import { MeepleType } from "../entities/types";
+import { useEffect, useReducer } from "react";
 import {
-  IconBuilding,
-  IconCurrencyDollar,
-  IconMoodSmile,
-  IconUsers,
-  IconHeart,
+  IconBeer,
   IconBolt,
-  IconHome
+  IconBuilding,
+  IconBulb,
+  IconCurrencyDollar,
+  IconEdit,
+  IconHeart,
+  IconHome,
+  IconMeteor,
+  IconMoodSmile,
+  IconPackage,
+  IconPick,
+  IconPlus,
+  IconRefresh,
+  IconRocket,
+  IconShip,
+  IconSatellite,
+  IconTarget,
+  IconUsers,
 } from "@tabler/icons-react";
-import { IconShip } from "@tabler/icons-react";
-import { IconPick } from "@tabler/icons-react";
-import { IconMeteor } from "@tabler/icons-react";
-import { IconSatellite } from "@tabler/icons-react";
-import { IconBeer } from "@tabler/icons-react";
-import { IconRocket } from "@tabler/icons-react";
-import { IconRefresh } from "@tabler/icons-react";
-import { IconPackage, IconBulb, IconPlus, IconEdit, IconTarget } from "@tabler/icons-react";
-import { MeepleStateType, MeepleStats } from "../entities/types";
-import type { LogicRule } from "../entities/types";
+
+import type { Meeple } from "../entities/Meeple/Meeple";
+import { MeepleStateType, MeepleStats, MeepleType, type LogicRule } from "../entities/types";
 import { getGoodLabel } from "../utils/goodsMetadata";
 import { GoodsDisplay } from "./GoodsDisplay";
 import { RulesForm } from "./RulesForm";
@@ -55,8 +58,19 @@ function MeepleTabsSection({
   onScrollToCard?: () => void;
 }) {
   const [tabState, dispatchTab] = useReducer(tabStateReducer, initialTabState);
+  const isCustomType = meeple.type === MeepleType.Custom;
+
+  // Redirect to rules tab if trying to access create/edit tabs for non-custom types
+  useEffect(() => {
+    if (!isCustomType && (tabState.activeTab === "create" || tabState.activeTab === "edit")) {
+      dispatchTab({ type: "set-tab", payload: "rules" });
+    }
+  }, [isCustomType, tabState.activeTab]);
 
   const handleSave = (rules: LogicRule[]) => {
+    if (!isCustomType) {
+      return; // Safety check: don't allow saving for non-custom types
+    }
     meeple.rules = rules;
     // Switch back to behaviors tab after saving
     dispatchTab({ type: "set-tab", payload: "rules" });
@@ -102,30 +116,34 @@ function MeepleTabsSection({
           <IconBulb size={18} />
           Behaviors
         </a>
-        <a
-          role="tab"
-          className={`tab flex items-center gap-2 font-semibold transition-all duration-200 ${
-            tabState.activeTab === "create" 
-              ? "tab-active bg-info text-info-content shadow-lg scale-105" 
-              : "hover:bg-base-300/50"
-          }`}
-          onClick={() => dispatchTab({ type: "set-tab", payload: "create" })}
-        >
-          <IconPlus size={18} />
-          Create
-        </a>
-        <a
-          role="tab"
-          className={`tab flex items-center gap-2 font-semibold transition-all duration-200 ${
-            tabState.activeTab === "edit" 
-              ? "tab-active bg-warning text-warning-content shadow-lg scale-105" 
-              : "hover:bg-base-300/50"
-          }`}
-          onClick={() => dispatchTab({ type: "set-tab", payload: "edit" })}
-        >
-          <IconEdit size={18} />
-          Edit
-        </a>
+        {isCustomType && (
+          <a
+            role="tab"
+            className={`tab flex items-center gap-2 font-semibold transition-all duration-200 ${
+              tabState.activeTab === "create" 
+                ? "tab-active bg-info text-info-content shadow-lg scale-105" 
+                : "hover:bg-base-300/50"
+            }`}
+            onClick={() => dispatchTab({ type: "set-tab", payload: "create" })}
+          >
+            <IconPlus size={18} />
+            Create
+          </a>
+        )}
+        {isCustomType && (
+          <a
+            role="tab"
+            className={`tab flex items-center gap-2 font-semibold transition-all duration-200 ${
+              tabState.activeTab === "edit" 
+                ? "tab-active bg-warning text-warning-content shadow-lg scale-105" 
+                : "hover:bg-base-300/50"
+            }`}
+            onClick={() => dispatchTab({ type: "set-tab", payload: "edit" })}
+          >
+            <IconEdit size={18} />
+            Edit
+          </a>
+        )}
       </div>
       <div className="mt-3 px-1">
         {tabState.activeTab === "goods" && (
@@ -141,22 +159,24 @@ function MeepleTabsSection({
             />
           </div>
         )}
-        {tabState.activeTab === "create" && (
+        {isCustomType && tabState.activeTab === "create" && (
           <div className="w-full">
             <RulesForm
               rules={[]}
               onUpdateRules={() => {}}
               mode="create"
+              meepleType={meeple.type}
             />
           </div>
         )}
-        {tabState.activeTab === "edit" && (
+        {isCustomType && tabState.activeTab === "edit" && (
           <div className="w-full">
             <RulesForm
               rules={meeple.rules}
               onUpdateRules={handleSave}
               onCancel={handleCancel}
               mode="edit"
+              meepleType={meeple.type}
             />
           </div>
         )}
@@ -481,6 +501,17 @@ export function MeepleCard({
                   Chasing{" "}
                   {meeple.state.type === MeepleStateType.Chasing &&
                     meeple.state.target.name}
+                </span>
+              </div>
+            ),
+            [MeepleStateType.Broken]: (
+              <div className="tooltip">
+                <div className="tooltip-content">
+                  <div className="text-sm font-semibold text-base-content">Broken</div>
+                </div>
+                <span className="badge badge-sm badge-error badge-outline flex items-center gap-1">
+                  <IconBolt size={14} className="cursor-pointer" />
+                  Broken
                 </span>
               </div>
             ),

@@ -1,8 +1,8 @@
-import type { Goods, GoodType } from "../entities/types";
-import { Resources, MeepleStats } from "../entities/types";
-import { getGoodMetadata, getGoodIcon, getGoodLabel } from "../utils/goodsMetadata";
-import { IconMailOff } from "@tabler/icons-react";
 import { cloneElement, isValidElement } from "react";
+import { IconMailOff } from "@tabler/icons-react";
+
+import { MeepleStats, Resources, type Goods, type GoodType } from "../entities/types";
+import { getGoodIcon, getGoodLabel, getGoodMetadata } from "../utils/goodsMetadata";
 
 type GoodsDisplayProps = {
   goods: Partial<Goods>;

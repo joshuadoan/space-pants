@@ -1,8 +1,8 @@
-import type { Meeple } from "./Meeple";
+import { CHILLING_DELAY_MS, DEFAULT_ENERGY } from "../game-config";
 import { MeepleStateType, MeepleStats, MeepleType } from "../types";
-import { DEFAULT_ENERGY, CHILLING_DELAY_MS } from "../game-config";
 import { findDestination, getRandomSpaceApartments } from "./meepleFinders";
 import { visitTarget } from "./visitTarget";
+import type { Meeple } from "./Meeple";
 
 export function executeChillingAtHome(
   meeple: Meeple,

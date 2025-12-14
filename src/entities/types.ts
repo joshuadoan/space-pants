@@ -94,6 +94,7 @@ export enum MeepleStateType {
   Converting = "converting",
   Patrolling = "patrolling",
   Chasing = "chasing",
+  Broken = "broken",
 }
 
 export type MeepleStateIdle = {
@@ -149,6 +150,10 @@ export type MeepleStateChasing = {
   target: Meeple;
 };
 
+export type MeepleStateBroken = {
+  type: MeepleStateType.Broken;
+};
+
 export type MeepleState =
   | MeepleStateIdle
   | MeepleStateMining
@@ -160,7 +165,8 @@ export type MeepleState =
   | MeepleStateWorking
   | MeepleStateConverting
   | MeepleStatePatrolling
-  | MeepleStateChasing;
+  | MeepleStateChasing
+  | MeepleStateBroken;
 
 export enum ComparisonOperator {
   Equal = "=",
@@ -193,6 +199,7 @@ export enum LogicRuleActionType {
   Patrol = "Patrol",
   GoToPirateDen = "Go To Pirate Den",
   ChaseTarget = "Chase Target",
+  SetBroken = "Set Broken",
 }
 
 export type RuleBehavior = {

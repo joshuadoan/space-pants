@@ -1,8 +1,8 @@
-import type { Meeple } from "./Meeple";
-import { MeepleStateType, Products, Resources, MeepleType } from "../types";
 import { PRODUCT_BUY_PRICE, SHOPPING_DELAY_MS } from "../game-config";
+import { MeepleStateType, MeepleType, Products, Resources } from "../types";
 import { findStation, getRandomStationThatProduces } from "./meepleFinders";
 import { visitTarget } from "./visitTarget";
+import type { Meeple } from "./Meeple";
 
 export function executeGoShopping(
   meeple: Meeple,

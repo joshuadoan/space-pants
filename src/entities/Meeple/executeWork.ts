@@ -1,8 +1,8 @@
-import type { Meeple } from "./Meeple";
-import { MeepleStateType, Resources, MeepleStats, MeepleType } from "../types";
 import { WORK_EARNINGS, WORKING_DELAY_MS } from "../game-config";
+import { MeepleStateType, MeepleStats, MeepleType, Resources } from "../types";
 import { findDestination, getRandomSpaceBar } from "./meepleFinders";
 import { visitTarget } from "./visitTarget";
+import type { Meeple } from "./Meeple";
 
 export function executeWork(
   meeple: Meeple,
