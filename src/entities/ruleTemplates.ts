@@ -164,8 +164,8 @@ export const BUILT_IN_BEHAVIORS: RuleBehavior[] = [
 /**
  * Merges default rules with custom rules, ensuring default rules are always at the top.
  * Filters out any custom rules that duplicate default rules (by action type).
- * Special handling for pirates: if custom rules include GoToPirateDen, replace
- * RestAtApartments in defaults with GoToPirateDen.
+ * Special handling for pirates: if custom rules include GoToPirateDen or if this is
+ * PIRATE_RULES, replace RestAtApartments in defaults with GoToPirateDen.
  * 
  * @param customRules - Custom rules to merge with defaults
  * @returns Combined rules array with defaults first, then custom rules
@@ -176,9 +176,14 @@ export function mergeRulesWithDefaults(customRules: LogicRule[]): LogicRule[] {
     rule => rule.action === LogicRuleActionType.GoToPirateDen
   );
   
+  // Check if this is PIRATE_RULES by checking for pirate-specific actions
+  const isPirateRules = customRules.some(
+    rule => rule.action === LogicRuleActionType.Patrol || rule.action === LogicRuleActionType.ChaseTarget
+  );
+  
   // Create defaults, replacing RestAtApartments with GoToPirateDen for pirates
   const defaults = DEFAULT_RULES.map(rule => {
-    if (hasPirateDenRule && rule.action === LogicRuleActionType.RestAtApartments) {
+    if ((hasPirateDenRule || isPirateRules) && rule.action === LogicRuleActionType.RestAtApartments) {
       return {
         ...rule,
         action: LogicRuleActionType.GoToPirateDen,

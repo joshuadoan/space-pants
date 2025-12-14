@@ -47,7 +47,7 @@ export function executeRuleAction(meeple: Meeple, rule: LogicRule): boolean {
       executeGoToPirateDen(meeple, rule.destinationName, rule.destinationType);
       return true;
     case LogicRuleActionType.ChaseTarget:
-      // Find a nearby trader to chase (only if not already chasing)
+      // Find a nearby target (trader, miner, or player) to chase (only if not already chasing)
       if (meeple.chaseTarget) {
         // Already chasing, don't start a new chase - rule was not executed
         return false;
@@ -57,18 +57,24 @@ export function executeRuleAction(meeple: Meeple, rule: LogicRule): boolean {
         const allActors = scene.actors.filter(
           (actor) => actor instanceof Meeple
         ) as Meeple[];
-        // Find the nearest trader within detection distance
-        const nearbyTrader = allActors.find((m) => {
-          if (m.type !== MeepleType.Trader || m === meeple) return false;
+        // Find the nearest target (trader, miner, or player) within detection distance
+        const nearbyTarget = allActors.find((m) => {
+          if (m === meeple) return false;
+          // Pirates can chase traders, miners, and players
+          if (m.type !== MeepleType.Trader && 
+              m.type !== MeepleType.Miner && 
+              m.type !== MeepleType.Player) {
+            return false;
+          }
           const distance = meeple.pos.distance(m.pos);
           return distance <= PIRATE_CHASE_DETECTION_DISTANCE;
         });
-        if (nearbyTrader) {
-          executeChaseTarget(meeple, nearbyTrader);
+        if (nearbyTarget) {
+          executeChaseTarget(meeple, nearbyTarget);
           return true; // Chase was started
         }
       }
-      // No nearby trader found - rule was not executed, should try next rule
+      // No nearby target found - rule was not executed, should try next rule
       return false;
     case LogicRuleActionType.SetBroken:
       // Set the meeple to broken state and stop movement

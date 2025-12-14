@@ -213,14 +213,14 @@ export class Meeple extends Actor {
 
       // If close enough and haven't stolen yet, steal money
       if (distance <= PIRATE_STEAL_DISTANCE && !this.hasStolen) {
-        const traderMoney = this.chaseTarget.goods[Resources.Money] ?? 0;
-        if (traderMoney > 0) {
+        const targetMoney = this.chaseTarget.goods[Resources.Money] ?? 0;
+        if (targetMoney > 0) {
           // Pirate gains 1 money
           this.dispatch({
             type: "add-good",
             payload: { good: Resources.Money, quantity: 1 },
           });
-          // Trader loses 1 money
+          // Target loses 1 money
           this.chaseTarget.dispatch({
             type: "remove-good",
             payload: { good: Resources.Money, quantity: 1 },

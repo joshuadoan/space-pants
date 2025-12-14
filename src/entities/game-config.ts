@@ -32,7 +32,7 @@ export const ENTITY_COUNTS = {
   SPACE_BARS: 10,
   SPACE_APARTMENTS: 10,
   BARTENDERS_PER_BAR: 2,
-  PIRATES: 5,
+  PIRATES: 14,
   PIRATE_DENS: 1,
 } as const;
 
