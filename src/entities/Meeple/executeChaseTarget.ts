@@ -11,6 +11,7 @@ export function executeChaseTarget(meeple: Meeple, target: Meeple): void {
   // Set the chase target and start time
   meeple.chaseTarget = target;
   meeple.chaseStartTime = Date.now();
+  meeple.lastLaserFireTime = 0; // Initialize laser fire time
   meeple.hasStolen = false;
 
   // Set state to chasing

@@ -4,7 +4,7 @@ import { BUILT_IN_BEHAVIORS } from "../entities/ruleTemplates";
 import { useToast } from "./Toast";
 import { DndProvider } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
-import { ComparisonOperator, LogicRuleActionType, createBehaviorId, createRuleId, MeepleType } from "../entities/types";
+import { ComparisonOperator, LogicRuleActionType, createBehaviorId, MeepleType } from "../entities/types";
 import { DraggableRuleItem } from "./rules/DraggableRuleItem";
 import { BehaviorSelector } from "./rules/BehaviorSelector";
 import { RulesListNameInput } from "./rules/RulesListNameInput";
@@ -403,7 +403,7 @@ export function RulesForm({
             hasInvalidRules={hasInvalidRules}
             onDeleteBehavior={
               state.selectedBehavior
-                ? () => handleDeleteCustomBehavior(state.selectedBehavior)
+                ? () => handleDeleteCustomBehavior(state.selectedBehavior as BehaviorId)
                 : undefined
             }
             onCancel={onCancel}

@@ -29,7 +29,9 @@ import { executeRuleAction } from "./executeRuleAction";
 import {
   PIRATE_CHASE_DURATION_MS,
   PIRATE_STEAL_DISTANCE,
+  PIRATE_LASER_FIRE_INTERVAL_MS,
 } from "../game-config";
+import { Laser } from "./Laser";
 import { executePatrol } from "./executePatrol";
 
 export class Meeple extends Actor {
@@ -47,6 +49,7 @@ export class Meeple extends Actor {
   chaseTarget: Meeple | null = null; // Target being chased (for pirates)
   chaseStartTime: number = 0; // When the chase started
   hasStolen: boolean = false; // Whether money has been stolen in current chase
+  lastLaserFireTime: number = 0; // When the last laser was fired
 
   private lastUpdateTime: number = 0;
 
@@ -220,6 +223,19 @@ export class Meeple extends Actor {
         const normalized = direction.normalize();
         this.vel.x = normalized.x * this.speed;
         this.vel.y = normalized.y * this.speed;
+
+        // Fire lasers periodically during chase
+        const timeSinceLastLaser = Date.now() - this.lastLaserFireTime;
+        if (timeSinceLastLaser >= PIRATE_LASER_FIRE_INTERVAL_MS) {
+          // Create a laser fired from the pirate toward the target
+          const laser = new Laser(
+            this.pos.clone(),
+            direction,
+            200 // Laser speed
+          );
+          this.scene?.add(laser);
+          this.lastLaserFireTime = Date.now();
+        }
       } else {
         this.stopMovement();
       }

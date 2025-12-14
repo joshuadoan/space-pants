@@ -25,10 +25,10 @@ export const CAMERA_ZOOM = 2;
 
 /** Number of each entity type to spawn in the game world */
 export const ENTITY_COUNTS = {
-  TRADERS: 50,
+  TRADERS: 10,
   SPACE_STATIONS: Object.values(Products).length,
   ASTEROIDS: 5,
-  MINERS: 5,
+  MINERS: 10,
   SPACE_BARS: 2,
   SPACE_APARTMENTS: 2,
   BARTENDERS_PER_BAR: 1,
@@ -202,13 +202,16 @@ export const PATROLLING_DELAY_MS = 2000;
 export const PIRATE_DEN_REST_DELAY_MS = 5000;
 
 /** Distance at which a pirate detects and starts chasing a trader */
-export const PIRATE_CHASE_DETECTION_DISTANCE = 600;
+export const PIRATE_CHASE_DETECTION_DISTANCE = 400;
 
 /** Duration for which a pirate chases a trader in milliseconds */
-export const PIRATE_CHASE_DURATION_MS = 5000;
+export const PIRATE_CHASE_DURATION_MS = 15000;
 
 /** Distance at which a pirate can steal money from a trader */
 export const PIRATE_STEAL_DISTANCE = 50;
+
+/** Interval between laser shots during chase in milliseconds */
+export const PIRATE_LASER_FIRE_INTERVAL_MS = 500;
 
 /** Default transaction time in milliseconds */
 export const DEFAULT_TRANSACTION_TIME_MS = 1000;
