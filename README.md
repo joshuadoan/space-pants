@@ -39,19 +39,25 @@ A real-time space economy simulation game built with React, TypeScript, and Exca
 - Mine ore from asteroids
 - Trade ore for money at space stations
 - Visit space bars when they have enough money (≥50)
-- Default behavior cycle: Mine → Trade → Socialize
-- Default rules:
+- Rest at apartments when energy is depleted
+- Default behavior cycle: Mine → Trade → Socialize → Rest
+- Default rules (after required health/energy checks):
   - If Money ≥ 50 → Socialize
-  - If Ore ≤ 0 → Mine Ore
   - If Ore ≥ 10 → Trade Ore For Money
+  - If Ore < 10 → Mine Ore From Asteroid
+- Starting resources: 0 ore, 0 money
 
 ### Traders
 - Buy products from space stations when they have money
 - Sell products to space stations when they run out of money
-- Start with 10 money
-- Default rules:
-  - If Money > 0 → Go Shopping
-  - If Money ≤ 0 → Go Selling
+- Visit space bars when they have enough money (≥50)
+- Rest at apartments when energy is depleted
+- Each trader specializes in one product type
+- Default rules (after required health/energy checks):
+  - If Money ≥ 50 → Socialize
+  - If product > 0 (of trader's type) → Sell Product To Station
+  - If Money ≥ 1 → Buy Product From Station
+- Starting resources: 1 money
 
 ### Space Stations
 - Stationary trading hubs (60x60 units)
@@ -68,11 +74,38 @@ A real-time space economy simulation game built with React, TypeScript, and Exca
 - Visitors are tracked and displayed
 - Stock Fizz drinks for sale
 - Named with randomly generated space names
+- Bartenders work here to earn money
 
 ### Space Apartments
 - Residential buildings where entities can rest
 - Maximum capacity of 5 visitors at once
 - Visual design with lit windows and doors
+- Named with randomly generated space names
+- Provide free energy restoration
+
+### Bartenders
+- Work at space bars to earn money (3 money per work session)
+- Buy products from stations when they have enough money (≥50)
+- Rest at apartments when energy is depleted
+- Default rules (after required health/energy checks):
+  - If Money ≥ 50 → Buy Product From Station
+  - If Energy > 0 → Work At Bar
+- Starting resources: 0 ore, 0 money
+
+### Pirates
+- Patrol the space and chase traders
+- Steal money from traders when close enough
+- Fire lasers during chases
+- Rest at pirate dens when energy is depleted
+- Default rules (after required health/energy checks):
+  - If Energy > 0 → Chase Target (nearby traders)
+  - If Energy > 0 → Patrol
+- Starting resources: 0 ore, 0 money
+
+### Pirate Dens
+- Rest and recovery facilities for pirates
+- Stationary structures (40x40 units)
+- Pirates return here to restore energy
 - Named with randomly generated space names
 
 ### Asteroids
@@ -80,6 +113,7 @@ A real-time space economy simulation game built with React, TypeScript, and Exca
 - Randomly distributed across the world
 - Varying sizes (15-30 units)
 - Stationary resource nodes
+- Regenerate ore when depleted
 
 ### Stars
 - Background decorative elements
@@ -167,7 +201,7 @@ pnpm lint
 3. **Explore**: Click on any entity name in the sidebar to zoom the camera to it
 4. **Customize**: Expand an entity card to view and edit its rules editor
 5. **Reorder Rules**: Drag and drop rules to change their priority order
-6. **Monitor**: Use the tabs to filter entities by type (Traders, Miners, Stations, Space Bars, Space Apartments, Asteroids, Player, All)
+6. **Monitor**: Use the tabs to filter entities by type (Traders, Miners, Stations, Space Bars, Space Apartments, Asteroids, Pirates, Pirate Dens, Player, All)
 7. **Read Docs**: Click the "Readme" tab to view this documentation in the app
 
 ## 🧩 Entity Rules System
@@ -185,13 +219,17 @@ Each rule consists of:
 - **Destination Name** (optional): Target a specific entity by name for precise routing
 
 ### Available Actions
-- **Mine Ore**: Travel to an asteroid and mine ore
-- **Trade Ore For Money**: Sell ore at a space station
-- **Socialize**: Visit a space bar and spend money
+- **Mine Ore From Asteroid**: Travel to an asteroid and mine ore
+- **Sell Ore To Station**: Sell ore at a space station
+- **Socialize At Bar**: Visit a space bar and spend money
 - **Work At Bar**: Work at a space bar (bartenders only)
-- **Go Shopping**: Buy products from a space station
-- **Go Selling**: Sell products to a space station
+- **Buy Product From Station**: Buy products from a space station
+- **Sell Product To Station**: Sell products to a space station
 - **Rest At Apartments**: Rest and restore energy at space apartments
+- **Patrol**: Patrol to random points (pirates only)
+- **Go To Pirate Den**: Rest at a pirate den (pirates only)
+- **Chase Target**: Chase nearby traders (pirates only)
+- **Set Broken**: Set entity to broken state when health ≤ 0 (automatic)
 
 ### Destination Selection
 Rules can optionally specify destinations for more precise control:
@@ -201,26 +239,35 @@ Rules can optionally specify destinations for more precise control:
 - **Smart Filtering**: Destination options are automatically filtered based on the action type
 - **Disabled State**: Destination name selection is disabled when "Any (random)" is selected for destination type
 
+### Default Rules
+All entities have two required default rules that are always evaluated first and cannot be edited or removed:
+1. **Health Check**: If health ≤ 0 → Set Broken (entity stops moving and can't do anything)
+2. **Energy Check**: If energy ≤ 0 → Rest at apartments (or Go To Pirate Den for pirates)
+
+These default rules ensure entities maintain their health and energy levels.
+
 ### Rule Priority
-Rules are evaluated in order from top to bottom. The first rule whose condition is met will be executed. You can drag and drop rules to reorder them and change their priority.
+Rules are evaluated in order from top to bottom. The first rule whose condition is met will be executed. Default rules are always evaluated first, followed by custom rules. You can drag and drop custom rules to reorder them and change their priority.
 
 ### Rule Behaviors
 The game includes pre-built rule behaviors:
 - **Miner Behavior**: Default mining and trading behavior
 - **Trader Behavior**: Default buying and selling behavior
 - **Bartender Behavior**: Default working and shopping behavior
+- **Pirate Behavior**: Default patrolling and chasing behavior
 
 You can apply these behaviors or create custom rules from scratch.
 
 ### Example Rules
-A miner's default rules:
-- If Money ≥ 50 → Socialize
-- If Ore ≤ 0 → Mine Ore
-- If Ore ≥ 10 → Trade Ore For Money
+A miner's custom rules (after default health/energy checks):
+- If Money ≥ 50 → Socialize At Bar
+- If Ore ≥ 10 → Sell Ore To Station
+- If Ore < 10 → Mine Ore From Asteroid
 
-A trader's default rules:
-- If Money > 0 → Go Shopping
-- If Money ≤ 0 → Go Selling
+A trader's custom rules (after default health/energy checks):
+- If Money ≥ 50 → Socialize At Bar
+- If product > 0 (of trader's type) → Sell Product To Station
+- If Money ≥ 1 → Buy Product From Station
 
 ## 📁 Project Structure
 
@@ -285,15 +332,17 @@ space-pants/
 
 ### World Configuration
 Edit `src/entities/game-config.ts` to modify:
-- World size (`WORLD_WIDTH`, `WORLD_HEIGHT`) - Default: 2500x2500
+- World size (`WORLD_WIDTH`, `WORLD_HEIGHT`) - Default: 5000x5000
 - Number of entities (in `ENTITY_COUNTS`):
-  - `TRADERS` - Default: 5
-  - `MINERS` - Default: 5
+  - `TRADERS` - Default: 14
+  - `MINERS` - Default: 14
   - `SPACE_STATIONS` - Default: 5 (one per product type)
-  - `ASTEROIDS` - Default: 5
-  - `SPACE_BARS` - Default: 2
-  - `SPACE_APARTMENTS` - Default: 2
-  - `BARTENDERS_PER_BAR` - Default: 1
+  - `ASTEROIDS` - Default: 10
+  - `SPACE_BARS` - Default: 10
+  - `SPACE_APARTMENTS` - Default: 10
+  - `BARTENDERS_PER_BAR` - Default: 2
+  - `PIRATES` - Default: 5
+  - `PIRATE_DENS` - Default: 1
 - Player speed - Default: 100 (configurable via `DEFAULT_SHIP_SPEED` in `src/entities/game-config.ts`)
 - Camera zoom level - Default: 2x
 - Star distribution and spacing (in `src/utils/createStarTilemap.ts`)

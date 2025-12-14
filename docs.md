@@ -12,6 +12,10 @@
 - Traders: Buy/sell products at stations
 - Space Stations: Convert ore to products
 - Space Bars: Social gathering spots
+- Space Apartments: Rest and recovery facilities
+- Bartenders: Work at bars, buy products
+- Pirates: Patrol, chase traders, steal money
+- Pirate Dens: Rest facilities for pirates
 - Asteroids: Ore sources
 - Player: Controllable character
 
@@ -25,7 +29,7 @@
 
 ### The Problem
 - State updates every 1000ms (1 second)
-- 20+ entities updating simultaneously
+- 70+ entities updating simultaneously
 - Complex UI cards per entity
 
 ### The Solution

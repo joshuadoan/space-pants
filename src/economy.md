@@ -25,7 +25,7 @@ Five distinct product types that space stations produce:
 ## Entity Types & Economic Roles
 
 ### Miners
-**Count**: 5  
+**Count**: 14  
 **Role**: Primary resource extractors
 
 **Economic Activities**:
@@ -35,17 +35,18 @@ Five distinct product types that space stations produce:
 - Rest at apartments when energy ≤ 0 (restores energy to 100, 3s delay)
 
 **Behavior Rules** (priority order):
-1. If energy ≤ 0 → Rest at apartments
-2. If money ≥ 50 → Socialize at bar
-3. If ore ≥ 10 → Sell ore to station
-4. If ore < 10 → Mine ore from asteroid
+1. If health ≤ 0 → Set Broken (required default rule)
+2. If energy ≤ 0 → Rest at apartments (required default rule)
+3. If money ≥ 50 → Socialize at bar
+4. If ore ≥ 10 → Sell ore to station
+5. If ore < 10 → Mine ore from asteroid
 
 **Destination Selection**: Rules can optionally specify destination types (e.g., target a specific SpaceStation type) or specific entity names for precise control over entity behavior.
 
 **Starting Resources**: 0 ore, 0 money
 
 ### Traders
-**Count**: 5  
+**Count**: 14  
 **Role**: Product distribution network
 
 **Economic Activities**:
@@ -56,17 +57,18 @@ Five distinct product types that space stations produce:
 - Each trader specializes in one product type
 
 **Behavior Rules** (priority order):
-1. If energy ≤ 0 → Rest at apartments (always prioritized - traders go home when energy is low, even after socializing)
-2. If money ≥ 50 → Socialize at bar
-3. If product > 0 (of trader's type) → Sell product to station
-4. If money ≥ 1 → Buy product from station
+1. If health ≤ 0 → Set Broken (required default rule)
+2. If energy ≤ 0 → Rest at apartments (always prioritized - traders go home when energy is low, even after socializing)
+3. If money ≥ 50 → Socialize at bar
+4. If product > 0 (of trader's type) → Sell product to station
+5. If money ≥ 1 → Buy product from station
 
 **Destination Selection**: Rules can optionally specify destination types (e.g., target a specific SpaceStation type) or specific entity names for precise control over entity behavior.
 
 **Starting Resources**: 1 money
 
 ### Space Stations
-**Count**: 5  
+**Count**: 5 (one per product type)  
 **Role**: Production hubs and trading centers
 
 **Economic Activities**:
@@ -87,7 +89,7 @@ Five distinct product types that space stations produce:
 **Specialization**: Each station produces one specific product type (Gruffle, Druffle, Klintzpaw, Grogin, or Fizz)
 
 ### Asteroids
-**Count**: 5  
+**Count**: 10  
 **Role**: Primary ore source
 
 **Economic Activities**:
@@ -101,7 +103,7 @@ Five distinct product types that space stations produce:
 **Starting Resources**: 1 ore
 
 ### Space Bars
-**Count**: 2  
+**Count**: 10  
 **Role**: Social hubs and service economy
 
 **Economic Activities**:
@@ -116,30 +118,63 @@ Five distinct product types that space stations produce:
 **Starting Resources**: 1 fizz, 0 money
 
 ### Bartenders
-**Count**: 1 per bar (2 total)  
+**Count**: 2 per bar (20 total)  
 **Role**: Service workers
 
 **Economic Activities**:
 - Work at space bars (earn 3 money, deplete energy to 0, 30s work shift)
-- Buy products from stations when money ≥ 50 (2 money → 1 product, 3s delay)
+- Buy products from stations when money ≥ 50 (1 money → 1 product, 3s delay)
 - Rest at apartments when energy ≤ 0 (restores energy to 100, 3s delay)
 
 **Behavior Rules** (priority order):
-1. If energy ≤ 0 → Rest at apartments
-2. If money ≥ 50 → Buy product from station
-3. If energy > 0 → Work at bar
+1. If health ≤ 0 → Set Broken (required default rule)
+2. If energy ≤ 0 → Rest at apartments (required default rule)
+3. If money ≥ 50 → Buy product from station
+4. If energy > 0 → Work at bar
 
 **Destination Selection**: Rules can optionally specify destination types (e.g., target a specific SpaceBar) or specific entity names for precise control over entity behavior.
 
 **Starting Resources**: 0 ore, 0 money
 
 ### Space Apartments
-**Count**: 2  
+**Count**: 10  
 **Role**: Rest and recovery facilities
 
 **Economic Activities**:
 - Provide free energy restoration (restores to 100 energy, 3s delay)
 - Maximum capacity: 5 visitors
+
+**No Economic Cost**: Resting is free (no money or resource cost)
+
+### Pirates
+**Count**: 5  
+**Role**: Hostile entities that disrupt trade
+
+**Economic Activities**:
+- Patrol the space (consumes 10 energy per movement, 2s delay)
+- Chase nearby traders when detected (within 400 units distance)
+- Steal money from traders when close enough (within 50 units, gains 1 money, loses 25% current energy)
+- Fire lasers during chases (every 500ms)
+- Rest at pirate dens when energy ≤ 0 (restores energy to 100, 5s delay)
+- Chase duration: 15 seconds per chase
+
+**Behavior Rules** (priority order):
+1. If health ≤ 0 → Set Broken (required default rule)
+2. If energy ≤ 0 → Go to pirate den (required default rule, replaces Rest at Apartments)
+3. If energy > 0 → Chase target (nearby traders)
+4. If energy > 0 → Patrol
+
+**Destination Selection**: Rules can optionally specify destination types (e.g., target a specific PirateDen) or specific entity names for precise control over entity behavior.
+
+**Starting Resources**: 0 ore, 0 money
+
+### Pirate Dens
+**Count**: 1  
+**Role**: Rest and recovery facilities for pirates
+
+**Economic Activities**:
+- Provide free energy restoration for pirates (restores to 100 energy, 5s delay)
+- Stationary structures (40x40 units)
 
 **No Economic Cost**: Resting is free (no money or resource cost)
 
@@ -204,10 +239,14 @@ Bartenders → Space Bars → Socializing Entities
 | Trading Ore | 5s | Miners ↔ Stations |
 | Socializing | 5s | All entities |
 | Working | 30s | Bartenders |
-| Resting | 3s | All entities |
+| Resting | 3s | All entities (apartments) |
+| Resting at Pirate Den | 5s | Pirates |
 | Shopping | 3s | Traders, Bartenders |
 | Selling | 3s | Traders |
 | Production | 0.5s check interval | Stations (1 product per 1 ore) |
+| Patrolling | 2s | Pirates |
+| Chasing | 15s | Pirates |
+| Laser Fire | 0.5s interval | Pirates (during chase) |
 
 ## Economic Balance Considerations
 
@@ -241,19 +280,28 @@ Bartenders → Space Bars → Socializing Entities
 
 ## Behavioral Economics
 
+### Default Rules
+All entities have two required default rules that are always evaluated first:
+1. **Health Check**: If health ≤ 0 → Set Broken (entity stops moving and can't do anything)
+2. **Energy Check**: If energy ≤ 0 → Rest at apartments (or Go To Pirate Den for pirates)
+
+These default rules ensure entities maintain their health and energy levels. They cannot be edited or removed.
+
 ### Energy Management
 Entities must balance work/activity with rest:
 - **Energy Depletion**: Working depletes energy
 - **Energy Restoration**: 
   - Free at apartments (3s delay)
+  - Free at pirate dens for pirates (5s delay)
   - Expensive at bars (spends all money ≥ 50, 5s delay)
 
 ### Decision Priorities
 Entities evaluate rules in priority order:
-1. **Survival**: Energy management (rest when depleted)
+1. **Survival**: Health and energy management (required default rules)
 2. **Luxury**: Social spending (when money available)
 3. **Work**: Resource gathering and trading
-4. **Idle**: Default state when no conditions met
+4. **Hostile**: Pirates chase and steal from traders
+5. **Idle**: Default state when no conditions met
 
 ### Destination Selection
 Rules can specify destinations for more precise control:
@@ -270,10 +318,12 @@ The economy creates emergent patterns through:
 3. **Price Discovery**: Fixed exchange rates create predictable profit margins
 4. **Service Economy**: Bars create money circulation through social spending
 5. **Energy Constraints**: Force entities to balance work and rest cycles
+6. **Hostile Disruption**: Pirates create risk and disruption in the trading network
 
 ## Configuration Parameters
 
 Key economic parameters (from `game-config.ts`):
+- `WORLD_WIDTH`, `WORLD_HEIGHT`: 5000x5000 (world size)
 - `TRADE_MONEY_AMOUNT`: 2 (ore value multiplier)
 - `PRODUCT_BUY_PRICE`: 1 (products cost 1 where they are created)
 - `PRODUCT_SELL_PRICE`: 2 (products sell for 2 where they are not created)
@@ -283,6 +333,10 @@ Key economic parameters (from `game-config.ts`):
 - `MINING_ORE_AMOUNT`: 1 (extraction rate)
 - `TRADE_ORE_AMOUNT`: 1 (trading batch size)
 - `TRADER_STARTING_MONEY`: 1 (traders start with minimal capital)
+- `PIRATE_CHASE_DETECTION_DISTANCE`: 400 (pirate detection range)
+- `PIRATE_STEAL_DISTANCE`: 50 (pirate steal range)
+- `PIRATE_CHASE_DURATION_MS`: 15000 (chase duration)
+- `PIRATE_PATROL_ENERGY_COST`: 10 (energy cost per patrol movement)
 
 ## Potential Economic Issues
 

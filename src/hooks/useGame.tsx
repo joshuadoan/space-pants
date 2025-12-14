@@ -23,7 +23,7 @@ import { MINER_RULES, PIRATE_RULES, TRADER_RULES, mergeRulesWithDefaults, DEFAUL
 import { SpaceApartments } from "../entities/SpaceApartments";
 import { SpaceBar } from "../entities/SpaceBar";
 import { SpaceStation } from "../entities/SpaceStation";
-import { MeepleType, Products, Resources } from "../entities/types";
+import { type GoodType, type Goods, MeepleStats, MeepleType, Products, Resources, type RuleBehavior } from "../entities/types";
 import { createEntityGraphic, EntityGraphicStyle } from "../entities/utils/createSpaceShipOutOfShapes";
 import { generateSpaceName } from "../entities/utils/generateSpaceName";
 import { createStarTilemap } from "../utils/createStarTilemap";
@@ -94,6 +94,7 @@ type MeepleCounts = {
 
 /** State shape for the game hook */
 type GameState = {
+  players: Player;
   game: Game | null;
   isLoading: boolean;
   meeples: Meeple[];
@@ -133,6 +134,10 @@ const emptyMeepleCounts: MeepleCounts = {
 };
 
 const initialState: GameState = {
+  players: {
+    name: "Player",
+    goods: {},
+  },
   game: null,
   isLoading: true,
   meeples: [],
@@ -165,11 +170,16 @@ function gameReducer(state: GameState, action: GameAction): GameState {
     case "set-meeples": {
       const categorized = categorizeMeeples(action.payload);
       const counts = calculateMeepleCounts(categorized);
+      const playerGoods = calculatePlayerGoodsFromCustomMeeples(action.payload);
       return {
         ...state,
         meeples: action.payload,
         categorizedMeeples: categorized,
         meepleCounts: counts,
+        players: {
+          ...state.players,
+          goods: playerGoods,
+        },
       };
     }
     case "zoom-to-entity": {
@@ -194,6 +204,24 @@ function gameReducer(state: GameState, action: GameAction): GameState {
 // ============================================================================
 
 /**
+ * Maps MeepleType to the corresponding key in CategorizedMeeples.
+ * This provides a type-safe way to categorize meeples.
+ */
+const MEEPLE_TYPE_TO_CATEGORY: Record<MeepleType, keyof CategorizedMeeples | null> = {
+  [MeepleType.Trader]: "traders",
+  [MeepleType.Miner]: "miners",
+  [MeepleType.SpaceBar]: "spacebars",
+  [MeepleType.SpaceStation]: "stations",
+  [MeepleType.Asteroid]: "asteroids",
+  [MeepleType.SpaceApartments]: "spaceapartments",
+  [MeepleType.Bartender]: "bartenders",
+  [MeepleType.Pirate]: "pirates",
+  [MeepleType.PirateDen]: "piratedens",
+  [MeepleType.Player]: null, // Player is not categorized separately
+  [MeepleType.Custom]: null, // Custom meeples are handled separately via "my-meeples" tab
+};
+
+/**
  * Categorizes meeples by type in a single pass for optimal performance.
  * This avoids multiple instanceof checks by doing them all at once.
  */
@@ -212,24 +240,9 @@ function categorizeMeeples(meeples: Meeple[]): CategorizedMeeples {
   };
 
   for (const meeple of meeples) {
-    if (meeple.type === MeepleType.Trader) {
-      categorized.traders.push(meeple);
-    } else if (meeple.type === MeepleType.Miner) {
-      categorized.miners.push(meeple);
-    } else if (meeple.type === MeepleType.SpaceBar) {
-      categorized.spacebars.push(meeple);
-    } else if (meeple.type === MeepleType.SpaceStation) {
-      categorized.stations.push(meeple);
-    } else if (meeple.type === MeepleType.Asteroid) {
-      categorized.asteroids.push(meeple);
-    } else if (meeple.type === MeepleType.SpaceApartments) {
-      categorized.spaceapartments.push(meeple);
-    } else if (meeple.type === MeepleType.Bartender) {
-      categorized.bartenders.push(meeple);
-    } else if (meeple.type === MeepleType.Pirate) {
-      categorized.pirates.push(meeple);
-    } else if (meeple.type === MeepleType.PirateDen) {
-      categorized.piratedens.push(meeple);
+    const category = MEEPLE_TYPE_TO_CATEGORY[meeple.type];
+    if (category) {
+      categorized[category].push(meeple);
     }
   }
 
@@ -251,6 +264,52 @@ function calculateMeepleCounts(categorized: CategorizedMeeples): MeepleCounts {
     pirates: categorized.pirates.length,
     piratedens: categorized.piratedens.length,
   };
+}
+
+/**
+ * Configuration for which goods should be aggregated from custom meeples to the player.
+ * Add or remove goods from this array to control what gets aggregated.
+ * 
+ * @example
+ * // To aggregate money and ore:
+ * [Resources.Money, Resources.Ore]
+ */
+const AGGREGATED_GOODS: GoodType[] = [
+  Resources.Money,
+  MeepleStats.Health,
+  MeepleStats.Energy,
+  ...Object.values(Products),
+];
+
+/**
+ * Calculates the aggregate goods from all custom meeples.
+ * Custom meeples are those with type MeepleType.Custom.
+ * 
+ * This function sums up the specified goods from all custom meeples
+ * and returns them as a Partial<Goods> object.
+ * 
+ * @param meeples - Array of all meeples in the game
+ * @returns Partial<Goods> object with aggregated values for configured goods
+ */
+function calculatePlayerGoodsFromCustomMeeples(meeples: Meeple[]): Partial<Goods> {
+  const customMeeples = meeples.filter((meeple) => meeple.type === MeepleType.Custom);
+  
+  const aggregatedGoods: Partial<Goods> = {};
+  
+  // Initialize all aggregated goods to 0
+  for (const good of AGGREGATED_GOODS) {
+    aggregatedGoods[good] = 0;
+  }
+  
+  // Sum up goods from all custom meeples
+  for (const meeple of customMeeples) {
+    for (const good of AGGREGATED_GOODS) {
+      const value = meeple.goods[good] ?? 0;
+      aggregatedGoods[good] = (aggregatedGoods[good] ?? 0) + value;
+    }
+  }
+  
+  return aggregatedGoods;
 }
 
 /**
@@ -624,6 +683,11 @@ export type TabType =
   | "create"
   | "help";
 
+ export type Player = {
+  name: string;
+  goods: Partial<Goods>;
+ } 
+
 /** Type for the game context value */
 type GameContextValue = {
   game: Game | null;
@@ -632,9 +696,10 @@ type GameContextValue = {
   activeMeeple: Meeple | null;
   categorizedMeeples: CategorizedMeeples;
   meepleCounts: MeepleCounts;
+  players: Player;
   getFilteredEntities: (tab: TabType) => Meeple[];
   zoomToEntity: (meeple: Meeple) => void;
-  createMeeple: (graphicStyle: EntityGraphicStyle, name: string, position?: Vector) => Meeple | null;
+  createMeeple: (graphicStyle: EntityGraphicStyle, name: string, position?: Vector, template?: RuleBehavior) => Meeple | null;
   zoom: number;
   setZoom: (zoom: number) => void;
 };
@@ -753,10 +818,11 @@ function useGameInternal(): GameContextValue {
    * @param graphicStyle - The EntityGraphicStyle to use for the meeple's appearance
    * @param name - The name of the meeple
    * @param position - Optional position vector. If not provided, uses a random position
+   * @param template - Optional behavior template to apply rules from
    * @returns The created Meeple instance, or null if the game is not initialized
    */
   const createMeeple = useCallback(
-    (graphicStyle: EntityGraphicStyle, name: string, position?: Vector): Meeple | null => {
+    (graphicStyle: EntityGraphicStyle, name: string, position?: Vector, template?: RuleBehavior): Meeple | null => {
       if (!gameRef.current) {
         console.warn("Cannot create meeple: game is not initialized");
         return null;
@@ -776,8 +842,17 @@ function useGameInternal(): GameContextValue {
       );
       meeple.type = MeepleType.Custom;
       meeple.speed = DEFAULT_SHIP_SPEED;
-      // Assign default rules (custom meeples start with just defaults)
-      meeple.rules = [...DEFAULT_RULES];
+      meeple.goods = {
+        [Resources.Money]: 10,
+        [MeepleStats.Health]: 100,
+        [MeepleStats.Energy]: 100,
+      };
+      // Apply template rules if provided, otherwise use just default rules
+      if (template) {
+        meeple.rules = mergeRulesWithDefaults(template.rules);
+      } else {
+        meeple.rules = [...DEFAULT_RULES];
+      }
       // Assign a random apartment as home
       meeple.home = getRandomSpaceApartment(gameRef.current);
 

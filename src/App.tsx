@@ -13,12 +13,15 @@ import {
 } from "@tabler/icons-react";
 import { Vector } from "excalibur";
 
+import { cloneElement, isValidElement } from "react";
 import { MeepleCard } from "./components/MeepleCard";
 import { Tabs } from "./components/Tabs";
 import { WORLD_HEIGHT, WORLD_WIDTH } from "./entities/game-config";
-import { MeepleType } from "./entities/types";
+import { MeepleStats, Resources, type GoodType, MeepleType } from "./entities/types";
+import { BUILT_IN_BEHAVIORS } from "./entities/ruleTemplates";
 import { EntityGraphicStyle } from "./entities/utils/createSpaceShipOutOfShapes";
 import { useGame, type TabType } from "./hooks/useGame";
+import { getGoodIcon, getGoodLabel, getGoodMetadata } from "./utils/goodsMetadata";
 
 import "./App.css";
 
@@ -44,6 +47,7 @@ function App() {
     meeples,
     zoom,
     setZoom,
+    players,
   } = useGame();
   const cardRefs = useRef<Map<number | string, HTMLDivElement>>(new Map());
 
@@ -75,6 +79,7 @@ function App() {
   type CreateMeepleFormState = {
     name: string;
     graphicStyle: EntityGraphicStyle;
+    templateId: string; // Empty string means no template
     useRandomPosition: boolean;
     positionX: number;
     positionY: number;
@@ -83,6 +88,7 @@ function App() {
   type CreateMeepleFormAction =
     | { type: "set-name"; payload: string }
     | { type: "set-graphic-style"; payload: EntityGraphicStyle }
+    | { type: "set-template-id"; payload: string }
     | { type: "set-use-random-position"; payload: boolean }
     | { type: "set-position-x"; payload: number }
     | { type: "set-position-y"; payload: number }
@@ -95,6 +101,8 @@ function App() {
           return { ...state, name: action.payload };
         case "set-graphic-style":
           return { ...state, graphicStyle: action.payload };
+        case "set-template-id":
+          return { ...state, templateId: action.payload };
         case "set-use-random-position":
           return { ...state, useRandomPosition: action.payload };
         case "set-position-x":
@@ -105,6 +113,7 @@ function App() {
           return {
             name: "",
             graphicStyle: EntityGraphicStyle.Default,
+            templateId: "",
             useRandomPosition: true,
             positionX: WORLD_WIDTH / 2,
             positionY: WORLD_HEIGHT / 2,
@@ -116,6 +125,7 @@ function App() {
     {
       name: "",
       graphicStyle: EntityGraphicStyle.Default,
+      templateId: "",
       useRandomPosition: true,
       positionX: WORLD_WIDTH / 2,
       positionY: WORLD_HEIGHT / 2,
@@ -136,10 +146,16 @@ function App() {
           Math.max(0, Math.min(WORLD_HEIGHT, formState.positionY))
         );
 
+    // Find the selected template if one is chosen
+    const selectedTemplate = formState.templateId
+      ? BUILT_IN_BEHAVIORS.find((b) => b.id === formState.templateId)
+      : undefined;
+
     const newMeeple = createMeeple(
       formState.graphicStyle,
       formState.name.trim(),
-      position
+      position,
+      selectedTemplate
     );
     
     if (newMeeple) {
@@ -161,6 +177,26 @@ function App() {
       payload: Math.random() * WORLD_HEIGHT,
     });
   };
+
+  // Compact goods display for header
+  const getBadgeColor = (good: GoodType): string => {
+    if (good === Resources.Money) {
+      return "badge-success";
+    }
+    if (good === Resources.Ore) {
+      return "badge-secondary";
+    }
+    // Products
+    return "badge-primary";
+  };
+
+  const compactGoodsEntries = Object.entries(players.goods).filter(
+    ([key, quantity]) => 
+      quantity !== undefined && 
+      quantity > 0 && 
+      key !== MeepleStats.Health && 
+      key !== MeepleStats.Energy
+  );
 
   return (
     <main className="w-screen h-screen flex flex-col">
@@ -197,15 +233,60 @@ function App() {
               </div>
             </div>
           </div>
-          <div className="hidden md:block">
-            <Tabs
-              activeTab={state.activeTab}
-              onTabChange={(tab) =>
-                dispatch({ type: "set-active-tab", payload: tab })
-              }
-              meepleCounts={meepleCounts}
-              customMeeplesCount={meeples.filter((m) => m.type === MeepleType.Custom).length}
-            />
+          <div className="hidden md:block w-full">
+            <div className="flex items-center justify-between gap-4 mb-2">
+              <Tabs
+                activeTab={state.activeTab}
+                onTabChange={(tab) =>
+                  dispatch({ type: "set-active-tab", payload: tab })
+                }
+                meepleCounts={meepleCounts}
+                customMeeplesCount={meeples.filter((m) => m.type === MeepleType.Custom).length}
+              />
+              <div className="flex-shrink-0">
+                <div className="flex items-center gap-3 px-3 py-1.5 bg-base-200/50 rounded-lg border border-base-300 shadow-sm">
+                  <span className="text-xs font-semibold text-base-content/70 uppercase tracking-wide whitespace-nowrap">
+                    Player
+                  </span>
+                  <div className="h-4 w-px bg-base-300" />
+                  {compactGoodsEntries.length === 0 ? (
+                    <span className="text-xs text-base-content/50 italic">No goods</span>
+                  ) : (
+                    <div className="flex items-center gap-1.5 flex-wrap">
+                      {compactGoodsEntries.map(([key, quantity]) => {
+                        const good = key as GoodType;
+                        const metadata = getGoodMetadata(good);
+                        const icon = getGoodIcon(good, 14);
+                        const label = metadata?.label || getGoodLabel(good);
+                        const badgeColor = getBadgeColor(good);
+
+                        const iconWithPointer = isValidElement(icon)
+                          ? cloneElement(icon as React.ReactElement<{ className?: string }>, {
+                              className: `${(icon.props as { className?: string }).className ?? ""} cursor-pointer`.trim(),
+                            })
+                          : icon;
+
+                        return (
+                          <div key={key} className="tooltip tooltip-bottom">
+                            <div className="tooltip-content">
+                              <div className="text-sm font-semibold text-base-content">
+                                {label}: {quantity}
+                              </div>
+                            </div>
+                            <div
+                              className={`badge ${badgeColor} badge-sm gap-1 px-2 py-1 shadow-sm hover:shadow-md transition-all duration-200 flex items-center`}
+                            >
+                              {iconWithPointer}
+                              <span className="font-semibold text-xs">{quantity}</span>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -293,6 +374,30 @@ function App() {
                       <option value={EntityGraphicStyle.SpaceStation}>Space Station</option>
                       <option value={EntityGraphicStyle.SpaceBar}>Space Bar</option>
                       <option value={EntityGraphicStyle.SpaceApartments}>Space Apartments</option>
+                    </select>
+                  </div>
+
+                  {/* Template Selector */}
+                  <div className="form-control">
+                    <label className="label">
+                      <span className="label-text font-semibold">Template</span>
+                    </label>
+                    <select
+                      className="select select-bordered w-full"
+                      value={formState.templateId}
+                      onChange={(e) =>
+                        dispatchForm({
+                          type: "set-template-id",
+                          payload: e.target.value,
+                        })
+                      }
+                    >
+                      <option value="">None (Default Rules Only)</option>
+                      {BUILT_IN_BEHAVIORS.map((behavior) => (
+                        <option key={behavior.id} value={behavior.id}>
+                          {behavior.name}
+                        </option>
+                      ))}
                     </select>
                   </div>
 
