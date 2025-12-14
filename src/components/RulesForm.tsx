@@ -69,8 +69,47 @@ export function RulesForm({
     ...state.customBehaviors,
   ];
 
+  // Validate that all rules are complete
+  const validateRules = (rules: LogicRule[]): { isValid: boolean; errors: string[] } => {
+    const errors: string[] = [];
+    
+    if (rules.length === 0) {
+      errors.push("At least one rule is required");
+      return { isValid: false, errors };
+    }
+
+    rules.forEach((rule, index) => {
+      if (!rule.good) {
+        errors.push(`Rule ${index + 1}: Good is required`);
+      }
+      if (!rule.operator) {
+        errors.push(`Rule ${index + 1}: Operator is required`);
+      }
+      if (rule.value === undefined || rule.value === null || isNaN(rule.value)) {
+        errors.push(`Rule ${index + 1}: Value is required`);
+      }
+      if (!rule.action) {
+        errors.push(`Rule ${index + 1}: Action is required`);
+      }
+    });
+
+    return { isValid: errors.length === 0, errors };
+  };
+
+  const validationResult = validateRules(state.localRules);
+  const hasInvalidRules = !validationResult.isValid;
+
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+
+    // Validate rules before saving
+    if (hasInvalidRules) {
+      const errorMessage = validationResult.errors.length > 0
+        ? validationResult.errors[0]
+        : "Please complete all rule fields before saving";
+      showToast(errorMessage, "error");
+      return;
+    }
 
     if (state.internalMode === "create") {
       // In create mode, save to behaviors
@@ -197,6 +236,13 @@ export function RulesForm({
   };
 
   const handleDeleteCustomBehavior = (behaviorId: string) => {
+    const behavior = state.customBehaviors.find((b) => b.id === behaviorId);
+    const behaviorName = behavior?.name || "this behavior";
+    
+    if (!window.confirm(`Are you sure you want to delete "${behaviorName}"? This action cannot be undone.`)) {
+      return;
+    }
+
     const updatedCustomBehaviors = state.customBehaviors.filter(
       (b) => b.id !== behaviorId
     );
@@ -215,6 +261,13 @@ export function RulesForm({
   };
 
   const handleDeleteRule = (ruleId: string) => {
+    const ruleIndex = state.localRules.findIndex((r) => r.id === ruleId);
+    const ruleNumber = ruleIndex + 1;
+    
+    if (!window.confirm(`Are you sure you want to delete Rule ${ruleNumber}?`)) {
+      return;
+    }
+
     dispatch({ type: "delete-rule", payload: ruleId });
   };
 
@@ -262,39 +315,41 @@ export function RulesForm({
               />
             )}
           </div>
-          {state.localRules.map((rule, index) => (
-            <DraggableRuleItem
-              key={rule.id}
-              rule={rule}
-              index={index}
-              meeples={meeples}
-              onMoveRule={handleMoveRule}
-              onOperatorChange={handleOperatorChange}
-              onGoodChange={handleGoodChange}
-              onValueChange={handleValueChange}
-              onActionChange={handleActionChange}
-              onDestinationTypeChange={handleDestinationTypeChange}
-              onDestinationNameChange={handleDestinationNameChange}
-              onDeleteRule={handleDeleteRule}
-            />
-          ))}
-          {(state.internalMode === "create" || 
-            (state.internalMode === "edit" && state.selectedBehavior)) && (
-            <div className="flex justify-start mt-2">
-              <button
-                type="button"
-                onClick={handleAddRule}
-                className="btn btn-secondary w-full sm:w-auto"
-              >
-                Add New Rule
-              </button>
-            </div>
-          )}
+          {state.localRules.map((rule, index) => {
+            const isRuleInvalid = !rule.good || !rule.operator || rule.value === undefined || rule.value === null || !rule.action;
+            return (
+              <DraggableRuleItem
+                key={rule.id}
+                rule={rule}
+                index={index}
+                meeples={meeples}
+                isInvalid={isRuleInvalid}
+                onMoveRule={handleMoveRule}
+                onOperatorChange={handleOperatorChange}
+                onGoodChange={handleGoodChange}
+                onValueChange={handleValueChange}
+                onActionChange={handleActionChange}
+                onDestinationTypeChange={handleDestinationTypeChange}
+                onDestinationNameChange={handleDestinationNameChange}
+                onDeleteRule={handleDeleteRule}
+              />
+            );
+          })}
+          <div className="flex justify-start mt-2">
+            <button
+              type="button"
+              onClick={handleAddRule}
+              className="btn btn-secondary w-full sm:w-auto"
+            >
+              Add New Rule
+            </button>
+          </div>
           <RuleFormActions
             saveStatus={state.saveStatus}
             internalMode={state.internalMode}
             selectedBehavior={state.selectedBehavior}
             isCustomBehavior={isCustomBehavior}
+            hasInvalidRules={hasInvalidRules}
             onDeleteBehavior={
               state.selectedBehavior
                 ? () => handleDeleteCustomBehavior(state.selectedBehavior)

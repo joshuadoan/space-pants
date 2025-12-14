@@ -149,7 +149,7 @@ function MeepleTabsSection({
         )}
         {tabState.activeTab === "rules" && (
           <div className="space-y-2">
-            {isActive && editState.isEditing ? (
+            {editState.isEditing ? (
               <RulesForm
                 rules={meeple.rules}
                 onUpdateRules={handleSave}
@@ -158,18 +158,16 @@ function MeepleTabsSection({
               />
             ) : (
               <>
-                {isActive && (
-                  <div className="flex items-center justify-end mb-2">
-                    <button
-                      className="btn btn-sm btn-primary btn-outline"
-                      onClick={() => dispatchEdit({ type: "start-edit" })}
-                      title="Edit rules"
-                    >
-                      <IconEdit size={14} />
-                      Edit Rules
-                    </button>
-                  </div>
-                )}
+                <div className="flex items-center justify-end mb-2">
+                  <button
+                    className="btn btn-sm btn-primary btn-outline"
+                    onClick={() => dispatchEdit({ type: "start-edit" })}
+                    title="Edit rules"
+                  >
+                    <IconEdit size={14} />
+                    Edit Rules
+                  </button>
+                </div>
                 <RulesReadOnly
                   rules={meeple.rules}
                   activeRuleId={meeple.activeRuleId}

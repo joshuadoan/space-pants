@@ -17,6 +17,7 @@ interface DraggableRuleItemProps {
   rule: LogicRule;
   index: number;
   meeples: Meeple[];
+  isInvalid?: boolean;
   onMoveRule: (dragIndex: number, hoverIndex: number) => void;
   onOperatorChange: (ruleId: string, operator: ComparisonOperator) => void;
   onGoodChange: (ruleId: string, good: string) => void;
@@ -31,6 +32,7 @@ export function DraggableRuleItem({
   rule,
   index,
   meeples,
+  isInvalid = false,
   onMoveRule,
   onOperatorChange,
   onGoodChange,
@@ -96,12 +98,18 @@ export function DraggableRuleItem({
 
   drag(drop(ref));
 
+  // Check which fields are missing
+  const missingGood = !rule.good;
+  const missingOperator = !rule.operator;
+  const missingValue = rule.value === undefined || rule.value === null || isNaN(rule.value);
+  const missingAction = !rule.action;
+
   return (
     <div
       ref={ref}
       className={`card bg-base-200 shadow-md hover:shadow-lg transition-shadow duration-200 ${
         isDragging ? "opacity-50" : ""
-      }`}
+      } ${isInvalid ? "border-2 border-error" : ""}`}
     >
       <div className="card-body p-4">
         <div className="flex justify-between items-start mb-2 gap-2">
@@ -141,7 +149,9 @@ export function DraggableRuleItem({
             <select
               value={rule.good || ""}
               onChange={(e) => onGoodChange(rule.id, e.target.value)}
-              className="select select-primary select-bordered w-full"
+              className={`select select-primary select-bordered w-full ${
+                missingGood ? "border-error" : ""
+              }`}
             >
               <option disabled={true} value="">
                 Pick a good
@@ -180,7 +190,9 @@ export function DraggableRuleItem({
               onChange={(e) =>
                 onOperatorChange(rule.id, e.target.value as ComparisonOperator)
               }
-              className="select select-primary select-bordered w-full"
+              className={`select select-primary select-bordered w-full ${
+                missingOperator ? "border-error" : ""
+              }`}
             >
               <option disabled={true} value="">
                 Pick an operator
@@ -198,20 +210,22 @@ export function DraggableRuleItem({
                 Value
               </span>
             </label>
-            <select
+            <input
+              type="number"
               value={rule.value ?? ""}
-              onChange={(e) => onValueChange(rule.id, Number(e.target.value))}
-              className="select select-primary select-bordered w-full"
-            >
-              <option disabled={true} value="">
-                Pick a value
-              </option>
-              {[0, 1, 5, 10, 20, 30, 40, 50].map((value) => (
-                <option key={value} value={value}>
-                  {value}
-                </option>
-              ))}
-            </select>
+              onChange={(e) => {
+                const numValue = e.target.value === "" ? 0 : Number(e.target.value);
+                if (!isNaN(numValue)) {
+                  onValueChange(rule.id, numValue);
+                }
+              }}
+              min="0"
+              step="1"
+              placeholder="Enter a value"
+              className={`input input-primary input-bordered w-full ${
+                missingValue ? "border-error" : ""
+              }`}
+            />
           </div>
         </div>
         <div className="flex flex-col sm:flex-row gap-3">
@@ -223,13 +237,27 @@ export function DraggableRuleItem({
             </label>
             <select
               value={rule.action || ""}
-              onChange={(e) =>
-                onActionChange(
-                  rule.id,
-                  e.target.value as LogicRuleActionType
-                )
-              }
-              className="select select-primary select-bordered w-full"
+              onChange={(e) => {
+                const newAction = e.target.value as LogicRuleActionType;
+                onActionChange(rule.id, newAction);
+                // Clear destination fields when action changes to incompatible action
+                const actionsWithDestinations = [
+                  LogicRuleActionType.MineOreFromAsteroid,
+                  LogicRuleActionType.SellOreToStation,
+                  LogicRuleActionType.SocializeAtBar,
+                  LogicRuleActionType.WorkAtBar,
+                  LogicRuleActionType.BuyProductFromStation,
+                  LogicRuleActionType.SellProductToStation,
+                  LogicRuleActionType.RestAtApartments,
+                ];
+                if (!actionsWithDestinations.includes(newAction)) {
+                  onDestinationTypeChange(rule.id, undefined);
+                  onDestinationNameChange(rule.id, undefined);
+                }
+              }}
+              className={`select select-primary select-bordered w-full ${
+                missingAction ? "border-error" : ""
+              }`}
             >
               <option disabled={true} value="">
                 Pick an action
@@ -305,7 +333,13 @@ export function DraggableRuleItem({
                 className="select select-primary select-bordered w-full"
                 disabled={availableDestinations.length === 0 || !rule.destinationType}
               >
-                <option value="">Any (random)</option>
+                <option value="">
+                  {availableDestinations.length === 0
+                    ? "No destinations available"
+                    : !rule.destinationType
+                    ? "Select destination type first"
+                    : "Any (random)"}
+                </option>
                 {availableDestinations.map((meeple) => (
                   <option key={meeple.name} value={meeple.name}>
                     {meeple.name} ({meeple.type})

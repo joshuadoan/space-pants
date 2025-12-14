@@ -5,6 +5,7 @@ interface RuleFormActionsProps {
   internalMode: "edit" | "create";
   selectedBehavior: string;
   isCustomBehavior: boolean;
+  hasInvalidRules?: boolean;
   onDeleteBehavior?: () => void;
   onCancel?: () => void;
 }
@@ -14,6 +15,7 @@ export function RuleFormActions({
   internalMode,
   selectedBehavior,
   isCustomBehavior,
+  hasInvalidRules = false,
   onDeleteBehavior,
   onCancel,
 }: RuleFormActionsProps) {
@@ -51,7 +53,8 @@ export function RuleFormActions({
             ? "btn-success"
             : ""
         }`}
-        disabled={saveStatus === "saving"}
+        disabled={saveStatus === "saving" || hasInvalidRules}
+        title={hasInvalidRules ? "Please complete all rule fields before saving" : undefined}
       >
         {saveStatus === "saving" ? (
           "Saving..."
@@ -74,7 +77,7 @@ export function RuleFormActions({
         ) : internalMode === "create" ? (
           "Save as Behavior"
         ) : (
-          "Save Behaviors"
+          "Save Rules"
         )}
       </button>
     </div>
