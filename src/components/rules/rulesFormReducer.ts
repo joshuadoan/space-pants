@@ -4,13 +4,15 @@ import type {
   ComparisonOperator,
   LogicRuleActionType,
   MeepleType,
+  RuleId,
+  BehaviorId,
 } from "../../entities/types";
 import { Products } from "../../entities/types";
 
 // State type
 export interface RulesFormState {
   localRules: LogicRule[];
-  selectedBehavior: string;
+  selectedBehavior: BehaviorId | "";
   saveStatus: "idle" | "saving" | "saved";
   customBehaviors: RuleBehavior[];
   rulesListName: string;
@@ -25,7 +27,7 @@ type SetLocalRulesAction = {
 
 type SetSelectedBehaviorAction = {
   type: "set-selected-behavior";
-  payload: string;
+  payload: BehaviorId | "";
 };
 
 type SetSaveStatusAction = {
@@ -50,42 +52,42 @@ type SetInternalModeAction = {
 
 type UpdateRuleOperatorAction = {
   type: "update-rule-operator";
-  payload: { ruleId: string; operator: ComparisonOperator };
+  payload: { ruleId: RuleId; operator: ComparisonOperator };
 };
 
 type UpdateRuleGoodAction = {
   type: "update-rule-good";
-  payload: { ruleId: string; good: string };
+  payload: { ruleId: RuleId; good: string };
 };
 
 type UpdateRuleValueAction = {
   type: "update-rule-value";
-  payload: { ruleId: string; value: number };
+  payload: { ruleId: RuleId; value: number };
 };
 
 type UpdateRuleActionAction = {
   type: "update-rule-action";
-  payload: { ruleId: string; action: LogicRuleActionType };
+  payload: { ruleId: RuleId; action: LogicRuleActionType };
 };
 
 type UpdateRuleProductTypeAction = {
   type: "update-rule-product-type";
-  payload: { ruleId: string; productType?: Products };
+  payload: { ruleId: RuleId; productType?: Products };
 };
 
 type UpdateRuleDestinationTypeAction = {
   type: "update-rule-destination-type";
-  payload: { ruleId: string; destinationType?: MeepleType };
+  payload: { ruleId: RuleId; destinationType?: MeepleType };
 };
 
 type UpdateRuleDestinationNameAction = {
   type: "update-rule-destination-name";
-  payload: { ruleId: string; destinationName?: string };
+  payload: { ruleId: RuleId; destinationName?: string };
 };
 
 type DeleteRuleAction = {
   type: "delete-rule";
-  payload: string;
+  payload: RuleId;
 };
 
 type MoveRuleAction = {
@@ -105,7 +107,7 @@ type ResetFormAction = {
 
 type LoadBehaviorAction = {
   type: "load-behavior";
-  payload: { behavior: RuleBehavior; behaviorId: string };
+  payload: { behavior: RuleBehavior; behaviorId: BehaviorId };
 };
 
 export type RulesFormAction =

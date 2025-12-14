@@ -5,6 +5,7 @@ import {
   Products,
   type Goods,
   type GoodType,
+  type RuleId,
 } from "../types";
 import type { Game } from "../Game";
 import {
@@ -34,7 +35,7 @@ export class Meeple extends Actor {
   state: MeepleState;
   type!: MeepleType; // Assigned by subclasses in their constructors
   visitors: Set<Meeple>;
-  activeRuleId: string | null = null;
+  activeRuleId: RuleId | null = null;
   productType: Products;
   home: Meeple | null = null; // Assigned home destination
   followers: Map<GoodType, Actor> = new Map(); // Made public for utility functions

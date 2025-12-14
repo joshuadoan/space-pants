@@ -1,5 +1,49 @@
 import type { Meeple } from "./Meeple/Meeple";
 
+// ============================================================================
+// Branded Types for IDs
+// ============================================================================
+
+/**
+ * Branded type for rule IDs to prevent mixing with other ID types
+ */
+export type RuleId = string & { readonly __brand: "RuleId" };
+
+/**
+ * Branded type for behavior IDs to prevent mixing with other ID types
+ */
+export type BehaviorId = string & { readonly __brand: "BehaviorId" };
+
+/**
+ * Branded type for meeple IDs to prevent mixing with other ID types
+ */
+export type MeepleId = string & { readonly __brand: "MeepleId" };
+
+/**
+ * Helper function to create a RuleId from a string
+ */
+export function createRuleId(id: string): RuleId {
+  return id as RuleId;
+}
+
+/**
+ * Helper function to create a BehaviorId from a string
+ */
+export function createBehaviorId(id: string): BehaviorId {
+  return id as BehaviorId;
+}
+
+/**
+ * Helper function to create a MeepleId from a string
+ */
+export function createMeepleId(id: string): MeepleId {
+  return id as MeepleId;
+}
+
+// ============================================================================
+// Enums
+// ============================================================================
+
 export enum Products {
     Gruffle = "gruffle",
     Druffle = "druffle",
@@ -75,7 +119,7 @@ export type MeepleStateWorking = {
   target: Meeple;
 };
 
-export type MeeplStateTraveling = {
+export type MeepleStateTraveling = {
   type: MeepleStateType.Traveling;
   target: Meeple;
 };
@@ -102,7 +146,7 @@ export type MeepleStatePatrolling = {
 export type MeepleState =
   | MeepleStateIdle
   | MeepleStateMining
-  | MeeplStateTraveling
+  | MeepleStateTraveling
   | MeepleStateTrading
   | MeepleStateChilling
   | MeepleStateSocializing
@@ -121,7 +165,7 @@ export enum ComparisonOperator {
 }
 
 export type LogicRule = {
-  id: string;
+  id: RuleId;
   good: GoodType;
   operator: ComparisonOperator;
   value: number;
@@ -144,7 +188,7 @@ export enum LogicRuleActionType {
 }
 
 export type RuleBehavior = {
-  id: string;
+  id: BehaviorId;
   name: string;
   rules: LogicRule[];
 };

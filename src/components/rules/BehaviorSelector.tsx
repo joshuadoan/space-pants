@@ -1,8 +1,8 @@
-import type { RuleBehavior } from "../../entities/types";
+import type { RuleBehavior, BehaviorId } from "../../entities/types";
 import { BUILT_IN_BEHAVIORS } from "../../entities/ruleTemplates";
 
 interface BehaviorSelectorProps {
-  selectedBehavior: string;
+  selectedBehavior: BehaviorId | "";
   customBehaviors: RuleBehavior[];
   onBehaviorChange: (behaviorId: string) => void;
 }

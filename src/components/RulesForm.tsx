@@ -1,10 +1,10 @@
 import { useRef, useReducer, useEffect, useMemo, useState } from "react";
-import type { LogicRule } from "../entities/types";
+import type { LogicRule, BehaviorId, RuleId } from "../entities/types";
 import { BUILT_IN_BEHAVIORS } from "../entities/ruleTemplates";
 import { useToast } from "./Toast";
 import { DndProvider } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
-import { ComparisonOperator, LogicRuleActionType } from "../entities/types";
+import { ComparisonOperator, LogicRuleActionType, createBehaviorId, createRuleId, MeepleType } from "../entities/types";
 import { DraggableRuleItem } from "./rules/DraggableRuleItem";
 import { BehaviorSelector } from "./rules/BehaviorSelector";
 import { RulesListNameInput } from "./rules/RulesListNameInput";
@@ -43,7 +43,7 @@ export function RulesForm({
     internalMode: mode,
   });
   const [deleteRuleState, setDeleteRuleState] = useState<{
-    ruleId: string | null;
+    ruleId: RuleId | null;
     ruleNumber: number | null;
   }>({ ruleId: null, ruleNumber: null });
   const { showToast } = useToast();
@@ -166,9 +166,9 @@ export function RulesForm({
       }
 
       // Generate a unique ID for the custom behavior
-      const behaviorId = `custom-${Date.now()}-${Math.random()
+      const behaviorId = createBehaviorId(`custom-${Date.now()}-${Math.random()
         .toString(36)
-        .substring(2, 9)}`;
+        .substring(2, 9)}`);
 
       const newBehavior = {
         id: behaviorId,
@@ -216,7 +216,7 @@ export function RulesForm({
   };
 
   const handleOperatorChange = (
-    ruleId: string,
+    ruleId: RuleId,
     operator: ComparisonOperator
   ) => {
     dispatch({
@@ -225,35 +225,35 @@ export function RulesForm({
     });
   };
 
-  const handleGoodChange = (ruleId: string, good: string) => {
+  const handleGoodChange = (ruleId: RuleId, good: string) => {
     dispatch({
       type: "update-rule-good",
       payload: { ruleId, good },
     });
   };
 
-  const handleValueChange = (ruleId: string, value: number) => {
+  const handleValueChange = (ruleId: RuleId, value: number) => {
     dispatch({
       type: "update-rule-value",
       payload: { ruleId, value },
     });
   };
 
-  const handleActionChange = (ruleId: string, action: LogicRuleActionType) => {
+  const handleActionChange = (ruleId: RuleId, action: LogicRuleActionType) => {
     dispatch({
       type: "update-rule-action",
       payload: { ruleId, action },
     });
   };
 
-  const handleDestinationTypeChange = (ruleId: string, destinationType?: string) => {
+  const handleDestinationTypeChange = (ruleId: RuleId, destinationType?: string) => {
     dispatch({
       type: "update-rule-destination-type",
-      payload: { ruleId, destinationType: destinationType ? (destinationType as any) : undefined },
+      payload: { ruleId, destinationType: destinationType ? (destinationType as MeepleType) : undefined },
     });
   };
 
-  const handleDestinationNameChange = (ruleId: string, destinationName?: string) => {
+  const handleDestinationNameChange = (ruleId: RuleId, destinationName?: string) => {
     dispatch({
       type: "update-rule-destination-name",
       payload: { ruleId, destinationName: destinationName?.trim() || undefined },
@@ -262,11 +262,12 @@ export function RulesForm({
 
   const handleBehaviorChange = (behaviorId: string) => {
     if (behaviorId) {
-      const behavior = allBehaviors.find((b) => b.id === behaviorId);
+      const brandedId = createBehaviorId(behaviorId);
+      const behavior = allBehaviors.find((b) => b.id === brandedId);
       if (behavior) {
         dispatch({
           type: "load-behavior",
-          payload: { behavior, behaviorId },
+          payload: { behavior, behaviorId: brandedId },
         });
       }
     } else {
@@ -275,7 +276,7 @@ export function RulesForm({
     }
   };
 
-  const handleDeleteCustomBehavior = (behaviorId: string) => {
+  const handleDeleteCustomBehavior = (behaviorId: BehaviorId) => {
     const behavior = state.customBehaviors.find((b) => b.id === behaviorId);
     const behaviorName = behavior?.name || "this behavior";
     
@@ -300,7 +301,7 @@ export function RulesForm({
     showToast("Behavior deleted", "success");
   };
 
-  const handleDeleteRule = (ruleId: string) => {
+  const handleDeleteRule = (ruleId: RuleId) => {
     const ruleIndex = state.localRules.findIndex((r) => r.id === ruleId);
     const ruleNumber = ruleIndex + 1;
     

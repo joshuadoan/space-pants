@@ -251,24 +251,24 @@ export const CANVAS_WAIT_CONFIG = {
 // ============================================================================
 
 /** Starting goods for miners */
-export const MINER_STARTING_GOODS: Partial<Record<string, number>> = {
+export const MINER_STARTING_GOODS = {
   [Resources.Ore]: 0,
   [Resources.Money]: 0,
-};
+} satisfies Partial<Record<string, number>>;
 
 /** Starting goods for traders */
-export const TRADER_STARTING_GOODS: Partial<Record<string, number>> = {
+export const TRADER_STARTING_GOODS = {
   [Resources.Money]: TRADER_STARTING_MONEY,
-};
+} satisfies Partial<Record<string, number>>;
 
 /** Starting goods for space bars */
-export const SPACE_BAR_STARTING_GOODS: Partial<Record<string, number>> = {
+export const SPACE_BAR_STARTING_GOODS = {
   [Products.Fizz]: SPACE_BAR_STARTING_FIZZ,
   [Resources.Money]: 0,
-};
+} satisfies Partial<Record<string, number>>;
 
 /** Starting goods for players */
-export const PLAYER_STARTING_GOODS: Partial<Record<string, number>> = {
+export const PLAYER_STARTING_GOODS = {
   [Resources.Money]: 0,
-};
+} satisfies Partial<Record<string, number>>;
 

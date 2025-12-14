@@ -1,15 +1,16 @@
-import type { LogicRule } from "../../entities/types";
-import { Resources, ComparisonOperator, LogicRuleActionType } from "../../entities/types";
+import type { LogicRule, RuleId } from "../../entities/types";
+import { Resources, ComparisonOperator, LogicRuleActionType, createRuleId } from "../../entities/types";
 
 /**
  * Generate a random ID for a rule
  */
-export function generateRuleId(): string {
-  return typeof crypto !== "undefined" && crypto.randomUUID
+export function generateRuleId(): RuleId {
+  const id = typeof crypto !== "undefined" && crypto.randomUUID
     ? crypto.randomUUID()
     : `${Date.now()}-${Math.random()
         .toString(36)
         .substring(2, 15)}-${Math.random().toString(36).substring(2, 15)}`;
+  return createRuleId(id);
 }
 
 /**

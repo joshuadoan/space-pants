@@ -1,6 +1,6 @@
 import { useRef, useMemo } from "react";
 import { useDrag, useDrop } from "react-dnd";
-import type { LogicRule } from "../../entities/types";
+import type { LogicRule, RuleId } from "../../entities/types";
 import {
   Resources,
   Products,
@@ -19,13 +19,13 @@ interface DraggableRuleItemProps {
   meeples: Meeple[];
   isInvalid?: boolean;
   onMoveRule: (dragIndex: number, hoverIndex: number) => void;
-  onOperatorChange: (ruleId: string, operator: ComparisonOperator) => void;
-  onGoodChange: (ruleId: string, good: string) => void;
-  onValueChange: (ruleId: string, value: number) => void;
-  onActionChange: (ruleId: string, action: LogicRuleActionType) => void;
-  onDestinationTypeChange: (ruleId: string, destinationType?: string) => void;
-  onDestinationNameChange: (ruleId: string, destinationName?: string) => void;
-  onDeleteRule: (ruleId: string) => void;
+  onOperatorChange: (ruleId: RuleId, operator: ComparisonOperator) => void;
+  onGoodChange: (ruleId: RuleId, good: string) => void;
+  onValueChange: (ruleId: RuleId, value: number) => void;
+  onActionChange: (ruleId: RuleId, action: LogicRuleActionType) => void;
+  onDestinationTypeChange: (ruleId: RuleId, destinationType?: string) => void;
+  onDestinationNameChange: (ruleId: RuleId, destinationName?: string) => void;
+  onDeleteRule: (ruleId: RuleId) => void;
 }
 
 export function DraggableRuleItem({
