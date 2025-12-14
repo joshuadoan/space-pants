@@ -108,7 +108,15 @@ const PIRATE_RULES_ARRAY = [
     value: 0,
     action: LogicRuleActionType.GoToPirateDen,
   },
-  // Priority 2: If energy is above 0, patrol (fly to random points)
+  // Priority 2: If energy is above 0 and not already chasing, try to chase nearby traders
+  {
+    id: createRuleId("chase-trader"),
+    good: MeepleStats.Energy,
+    operator: ComparisonOperator.GreaterThan,
+    value: 0,
+    action: LogicRuleActionType.ChaseTarget,
+  },
+  // Priority 3: If energy is above 0, patrol (fly to random points)
   {
     id: createRuleId("patrol"),
     good: MeepleStats.Energy,

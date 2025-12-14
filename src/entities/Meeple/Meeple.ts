@@ -26,6 +26,11 @@ import { meepleReducer } from "./meepleReducer";
 import type { MeepleAction } from "./meepleTypes";
 import { updateFollowers } from "./followers";
 import { executeRuleAction } from "./executeRuleAction";
+import {
+  PIRATE_CHASE_DURATION_MS,
+  PIRATE_STEAL_DISTANCE,
+} from "../game-config";
+import { executePatrol } from "./executePatrol";
 
 export class Meeple extends Actor {
   speed: number;
@@ -39,6 +44,9 @@ export class Meeple extends Actor {
   productType: Products;
   home: Meeple | null = null; // Assigned home destination
   followers: Map<GoodType, Actor> = new Map(); // Made public for utility functions
+  chaseTarget: Meeple | null = null; // Target being chased (for pirates)
+  chaseStartTime: number = 0; // When the chase started
+  hasStolen: boolean = false; // Whether money has been stolen in current chase
 
   private lastUpdateTime: number = 0;
 
@@ -144,6 +152,81 @@ export class Meeple extends Actor {
       updateFollowers(this);
     }
 
+    // Handle chasing behavior for pirates
+    if (this.type === MeepleType.Pirate && this.chaseTarget) {
+      const elapsed = Date.now() - this.chaseStartTime;
+
+      // Check if chase duration has elapsed
+      if (elapsed >= PIRATE_CHASE_DURATION_MS) {
+        this.stopMovement();
+        this.chaseTarget = null;
+        this.hasStolen = false;
+        this.dispatch({ type: "set-idle" });
+        // Only patrol if we have energy, otherwise let rule evaluation send us to recharge
+        const currentEnergy = this.goods[MeepleStats.Energy] ?? DEFAULT_ENERGY;
+        if (currentEnergy > 0) {
+          executePatrol(this);
+        }
+        return;
+      }
+
+      // Check if target is still valid (check if it's in the scene)
+      if (!this.chaseTarget.scene || this.chaseTarget.scene !== this.scene) {
+        this.stopMovement();
+        this.chaseTarget = null;
+        this.hasStolen = false;
+        this.dispatch({ type: "set-idle" });
+        // Only patrol if we have energy, otherwise let rule evaluation send us to recharge
+        const currentEnergy = this.goods[MeepleStats.Energy] ?? DEFAULT_ENERGY;
+        if (currentEnergy > 0) {
+          executePatrol(this);
+        }
+        return;
+      }
+
+      // Calculate distance to target
+      const distance = this.pos.distance(this.chaseTarget.pos);
+
+      // If close enough and haven't stolen yet, steal money
+      if (distance <= PIRATE_STEAL_DISTANCE && !this.hasStolen) {
+        const traderMoney = this.chaseTarget.goods[Resources.Money] ?? 0;
+        if (traderMoney > 0) {
+          // Pirate gains 1 money
+          this.dispatch({
+            type: "add-good",
+            payload: { good: Resources.Money, quantity: 1 },
+          });
+          // Trader loses 1 money
+          this.chaseTarget.dispatch({
+            type: "remove-good",
+            payload: { good: Resources.Money, quantity: 1 },
+          });
+          // Pirate loses 25% of current energy when stealing
+          const currentEnergy = this.goods[MeepleStats.Energy] ?? DEFAULT_ENERGY;
+          const energyCost = Math.max(1, Math.floor(currentEnergy * 0.25));
+          this.dispatch({
+            type: "remove-good",
+            payload: { good: MeepleStats.Energy, quantity: energyCost },
+          });
+          this.hasStolen = true;
+        }
+      }
+
+      // Move towards target using velocity
+      const direction = this.chaseTarget.pos.sub(this.pos);
+      const dist = direction.size;
+      
+      if (dist > 0) {
+        const normalized = direction.normalize();
+        this.vel.x = normalized.x * this.speed;
+        this.vel.y = normalized.y * this.speed;
+      } else {
+        this.stopMovement();
+      }
+
+      return; // Don't evaluate rules while chasing
+    }
+
     // Only evaluate rules if action queue is complete (no active movement/actions)
     // This ensures meeples don't start new actions while already performing one
     try {
@@ -177,9 +260,13 @@ export class Meeple extends Actor {
 
       if (evaluateRule(rule, this.goods[goodToCheck] ?? 0)) {
         this.activeRuleId = rule.id;
-        executeRuleAction(this, rule);
-        ruleMatched = true;
-        break; // Only execute one rule per update cycle
+        const actionExecuted = executeRuleAction(this, rule);
+        if (actionExecuted) {
+          ruleMatched = true;
+          break; // Only execute one rule per update cycle
+        }
+        // If action wasn't executed (e.g., no nearby trader for ChaseTarget),
+        // continue to next rule
       }
     }
     // Clear active rule if no rule matched and meeple is idle
