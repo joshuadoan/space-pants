@@ -11,10 +11,10 @@ import { Resources, Products } from "./types";
 // ============================================================================
 
 /** Width of the game world in pixels */
-export const WORLD_WIDTH = 2500;
+export const WORLD_WIDTH = 5000;
 
 /** Height of the game world in pixels */
-export const WORLD_HEIGHT = 2500;
+export const WORLD_HEIGHT = 5000;
 
 /** Initial camera zoom level */
 export const CAMERA_ZOOM = 2;
