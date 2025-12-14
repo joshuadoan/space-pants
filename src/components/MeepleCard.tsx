@@ -8,7 +8,6 @@ import {
   IconUsers,
   IconHeart,
   IconBolt,
-  IconEdit,
   IconHome
 } from "@tabler/icons-react";
 import { IconShip } from "@tabler/icons-react";
@@ -18,7 +17,7 @@ import { IconSatellite } from "@tabler/icons-react";
 import { IconBeer } from "@tabler/icons-react";
 import { IconRocket } from "@tabler/icons-react";
 import { IconRefresh } from "@tabler/icons-react";
-import { IconPackage, IconBulb, IconPlus } from "@tabler/icons-react";
+import { IconPackage, IconBulb, IconPlus, IconEdit } from "@tabler/icons-react";
 import { MeepleStateType, MeepleStats } from "../entities/types";
 import type { LogicRule } from "../entities/types";
 import { getGoodLabel } from "../utils/goodsMetadata";
@@ -26,7 +25,7 @@ import { GoodsDisplay } from "./GoodsDisplay";
 import { RulesForm } from "./RulesForm";
 import { RulesReadOnly } from "./RulesReadOnly";
 
-type TabType = "goods" | "rules" | "create";
+type TabType = "goods" | "rules" | "create" | "edit";
 
 type TabStateAction =
   | { type: "set-tab"; payload: TabType };
@@ -48,47 +47,19 @@ function tabStateReducer(state: TabState, action: TabStateAction): TabState {
   }
 }
 
-type EditStateAction =
-  | { type: "start-edit" }
-  | { type: "cancel-edit" }
-  | { type: "save-edit" };
-
-type EditState = {
-  isEditing: boolean;
-};
-
-const initialEditState: EditState = {
-  isEditing: false,
-};
-
-function editStateReducer(state: EditState, action: EditStateAction): EditState {
-  switch (action.type) {
-    case "start-edit":
-      return { isEditing: true };
-    case "cancel-edit":
-    case "save-edit":
-      return { isEditing: false };
-    default:
-      return state;
-  }
-}
-
 function MeepleTabsSection({ 
   meeple, 
-  activeEntity,
   onScrollToCard 
 }: { 
   meeple: Meeple;
-  activeEntity: Meeple | null;
   onScrollToCard?: () => void;
 }) {
   const [tabState, dispatchTab] = useReducer(tabStateReducer, initialTabState);
-  const [editState, dispatchEdit] = useReducer(editStateReducer, initialEditState);
-  const isActive = activeEntity && activeEntity.id === meeple.id;
 
   const handleSave = (rules: LogicRule[]) => {
     meeple.rules = rules;
-    dispatchEdit({ type: "save-edit" });
+    // Switch back to behaviors tab after saving
+    dispatchTab({ type: "set-tab", payload: "rules" });
     // Scroll after a brief delay to ensure state update is complete
     setTimeout(() => {
       onScrollToCard?.();
@@ -96,7 +67,8 @@ function MeepleTabsSection({
   };
 
   const handleCancel = () => {
-    dispatchEdit({ type: "cancel-edit" });
+    // Switch back to behaviors tab after canceling
+    dispatchTab({ type: "set-tab", payload: "rules" });
     // Scroll after a brief delay to ensure state update is complete
     setTimeout(() => {
       onScrollToCard?.();
@@ -142,46 +114,49 @@ function MeepleTabsSection({
           <IconPlus size={18} />
           Create
         </a>
+        <a
+          role="tab"
+          className={`tab flex items-center gap-2 font-semibold transition-all duration-200 ${
+            tabState.activeTab === "edit" 
+              ? "tab-active bg-warning text-warning-content shadow-lg scale-105" 
+              : "hover:bg-base-300/50"
+          }`}
+          onClick={() => dispatchTab({ type: "set-tab", payload: "edit" })}
+        >
+          <IconEdit size={18} />
+          Edit
+        </a>
       </div>
-      <div className="mt-3">
+      <div className="mt-3 px-1">
         {tabState.activeTab === "goods" && (
-          <GoodsDisplay goods={meeple.goods} />
+          <div className="w-full">
+            <GoodsDisplay goods={meeple.goods} />
+          </div>
         )}
         {tabState.activeTab === "rules" && (
-          <div className="space-y-2">
-            {editState.isEditing ? (
-              <RulesForm
-                rules={meeple.rules}
-                onUpdateRules={handleSave}
-                onCancel={handleCancel}
-                mode="edit"
-              />
-            ) : (
-              <>
-                <div className="flex items-center justify-end mb-2">
-                  <button
-                    className="btn btn-sm btn-primary btn-outline"
-                    onClick={() => dispatchEdit({ type: "start-edit" })}
-                    title="Edit rules"
-                  >
-                    <IconEdit size={14} />
-                    Edit Rules
-                  </button>
-                </div>
-                <RulesReadOnly
-                  rules={meeple.rules}
-                  activeRuleId={meeple.activeRuleId}
-                />
-              </>
-            )}
+          <div className="w-full">
+            <RulesReadOnly
+              rules={meeple.rules}
+              activeRuleId={meeple.activeRuleId}
+            />
           </div>
         )}
         {tabState.activeTab === "create" && (
-          <div className="space-y-2">
+          <div className="w-full">
             <RulesForm
               rules={[]}
               onUpdateRules={() => {}}
               mode="create"
+            />
+          </div>
+        )}
+        {tabState.activeTab === "edit" && (
+          <div className="w-full">
+            <RulesForm
+              rules={meeple.rules}
+              onUpdateRules={handleSave}
+              onCancel={handleCancel}
+              mode="edit"
             />
           </div>
         )}
@@ -193,12 +168,10 @@ function MeepleTabsSection({
 export function MeepleCard({
   meeple,
   onMeepleNameClick,
-  activeEntity,
   onScrollToCard,
 }: {
   meeple: Meeple;
   onMeepleNameClick: () => void;
-  activeEntity: Meeple | null;
   onScrollToCard?: () => void;
 }) {
   return (
@@ -553,7 +526,6 @@ export function MeepleCard({
       <div className="divider my-1"></div>
       <MeepleTabsSection 
         meeple={meeple} 
-        activeEntity={activeEntity}
         onScrollToCard={onScrollToCard}
       />
     </div>

@@ -86,7 +86,7 @@ export function DraggableRuleItem({
     }),
   });
 
-  const [, drop] = useDrop({
+  const [{ isOver, draggedItem }, drop] = useDrop({
     accept: DRAG_TYPE,
     hover: (draggedItem: { index: number }) => {
       if (draggedItem.index !== index) {
@@ -94,9 +94,16 @@ export function DraggableRuleItem({
         draggedItem.index = index;
       }
     },
+    collect: (monitor) => ({
+      isOver: monitor.isOver(),
+      draggedItem: monitor.getItem<{ index: number }>() || null,
+    }),
   });
 
   drag(drop(ref));
+
+  // Show placeholder when hovering over a drop target (but not the item being dragged itself)
+  const showPlaceholder = isOver && draggedItem && draggedItem.index !== index;
 
   // Check which fields are missing
   const missingGood = !rule.good;
@@ -105,12 +112,22 @@ export function DraggableRuleItem({
   const missingAction = !rule.action;
 
   return (
-    <div
-      ref={ref}
-      className={`card bg-base-200 shadow-md hover:shadow-lg transition-shadow duration-200 ${
-        isDragging ? "opacity-50" : ""
-      } ${isInvalid ? "border-2 border-error" : ""}`}
-    >
+    <>
+      {showPlaceholder && (
+        <div className="card bg-base-300 border-2 border-dashed border-primary/50 shadow-sm">
+          <div className="card-body p-4 min-h-[200px]">
+            <div className="flex items-center justify-center h-full">
+              <span className="text-base-content/40 text-sm italic">Drop here</span>
+            </div>
+          </div>
+        </div>
+      )}
+      <div
+        ref={ref}
+        className={`card bg-base-200 shadow-md hover:shadow-lg transition-shadow duration-200 ${
+          isDragging ? "opacity-50" : ""
+        } ${isInvalid ? "border-2 border-error" : ""} ${showPlaceholder ? "opacity-30" : ""}`}
+      >
       <div className="card-body p-4">
         <div className="flex justify-between items-start mb-2 gap-2">
           <div className="flex items-center gap-2 text-xs text-base-content/50">
@@ -351,6 +368,7 @@ export function DraggableRuleItem({
         )}
       </div>
     </div>
+    </>
   );
 }
 

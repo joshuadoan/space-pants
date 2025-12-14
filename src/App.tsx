@@ -223,7 +223,6 @@ function App() {
               <MeepleCard
                 meeple={entity}
                 onMeepleNameClick={() => zoomToEntity(entity)}
-                activeEntity={activeMeeple}
                 onScrollToCard={() => {
                   const cardElement = cardRefs.current.get(entity.id);
                   cardElement?.scrollIntoView({

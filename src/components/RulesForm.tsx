@@ -1,4 +1,4 @@
-import { useRef, useReducer, useEffect } from "react";
+import { useRef, useReducer, useEffect, useMemo, useState } from "react";
 import type { LogicRule } from "../entities/types";
 import { BUILT_IN_BEHAVIORS } from "../entities/ruleTemplates";
 import { useToast } from "./Toast";
@@ -17,6 +17,7 @@ import {
 import {
   createDefaultRule,
   createNewRule,
+  rulesArraysEqual,
 } from "./rules/ruleUtils";
 import { useGame } from "../hooks/useGame";
 
@@ -32,6 +33,7 @@ export function RulesForm({
   mode?: "edit" | "create";
 }) {
   const formRef = useRef<HTMLFormElement>(null);
+  const deleteModalRef = useRef<HTMLDialogElement>(null);
   const [state, dispatch] = useReducer(rulesFormReducer, {
     localRules: mode === "create" && rules.length === 0 ? [createDefaultRule()] : rules,
     selectedBehavior: "",
@@ -40,6 +42,10 @@ export function RulesForm({
     rulesListName: "",
     internalMode: mode,
   });
+  const [deleteRuleState, setDeleteRuleState] = useState<{
+    ruleId: string | null;
+    ruleNumber: number | null;
+  }>({ ruleId: null, ruleNumber: null });
   const { showToast } = useToast();
   const { meeples } = useGame();
 
@@ -55,19 +61,49 @@ export function RulesForm({
     }
   }, [mode, state.internalMode]);
 
+  // Get all behaviors (built-in + custom) - memoized to avoid recreating on every render
+  const allBehaviors = useMemo(() => [
+    ...BUILT_IN_BEHAVIORS,
+    ...state.customBehaviors,
+  ], [state.customBehaviors]);
+
   // Load custom behaviors on mount
   useEffect(() => {
+    const loadedBehaviors = loadCustomBehaviors();
     dispatch({
       type: "set-custom-behaviors",
-      payload: loadCustomBehaviors(),
+      payload: loadedBehaviors,
     });
   }, []);
 
-  // Get all behaviors (built-in + custom)
-  const allBehaviors = [
-    ...BUILT_IN_BEHAVIORS,
-    ...state.customBehaviors,
-  ];
+  // Find matching behavior when rules prop or behaviors change in edit mode
+  // Only match against the original rules prop, not localRules (which change as user edits)
+  useEffect(() => {
+    if (mode === "edit" && state.internalMode === "edit" && rules.length > 0 && allBehaviors.length > 0) {
+      // Check if current selected behavior still matches
+      const currentSelectedBehavior = allBehaviors.find(
+        (b) => b.id === state.selectedBehavior
+      );
+      const selectedStillMatches = currentSelectedBehavior && 
+        rulesArraysEqual(currentSelectedBehavior.rules, rules);
+      
+      // If no behavior selected or selected behavior doesn't match, find a new match
+      if (!state.selectedBehavior || !selectedStillMatches) {
+        const matchingBehavior = allBehaviors.find((behavior) =>
+          rulesArraysEqual(behavior.rules, rules)
+        );
+        if (matchingBehavior) {
+          dispatch({
+            type: "set-selected-behavior",
+            payload: matchingBehavior.id,
+          });
+        } else if (!selectedStillMatches) {
+          // Clear selection if rules don't match any behavior
+          dispatch({ type: "set-selected-behavior", payload: "" });
+        }
+      }
+    }
+  }, [rules, state.customBehaviors, state.internalMode, state.selectedBehavior, mode, allBehaviors]);
 
   // Validate that all rules are complete
   const validateRules = (rules: LogicRule[]): { isValid: boolean; errors: string[] } => {
@@ -170,6 +206,10 @@ export function RulesForm({
         // Reset button state after showing success
         setTimeout(() => {
           dispatch({ type: "set-save-status", payload: "idle" });
+          // Exit edit mode after successful save
+          if (onCancel) {
+            onCancel();
+          }
         }, 2000);
       }, 100);
     }
@@ -264,11 +304,21 @@ export function RulesForm({
     const ruleIndex = state.localRules.findIndex((r) => r.id === ruleId);
     const ruleNumber = ruleIndex + 1;
     
-    if (!window.confirm(`Are you sure you want to delete Rule ${ruleNumber}?`)) {
-      return;
-    }
+    setDeleteRuleState({ ruleId, ruleNumber });
+    deleteModalRef.current?.showModal();
+  };
 
-    dispatch({ type: "delete-rule", payload: ruleId });
+  const confirmDeleteRule = () => {
+    if (deleteRuleState.ruleId) {
+      dispatch({ type: "delete-rule", payload: deleteRuleState.ruleId });
+      setDeleteRuleState({ ruleId: null, ruleNumber: null });
+      deleteModalRef.current?.close();
+    }
+  };
+
+  const cancelDeleteRule = () => {
+    setDeleteRuleState({ ruleId: null, ruleNumber: null });
+    deleteModalRef.current?.close();
   };
 
   const handleMoveRule = (dragIndex: number, hoverIndex: number) => {
@@ -359,6 +409,35 @@ export function RulesForm({
           />
         </form>
       </DndProvider>
+      <dialog ref={deleteModalRef} className="modal">
+        <div className="modal-box">
+          <h3 className="font-bold text-lg">Delete Rule</h3>
+          <p className="py-4">
+            Are you sure you want to delete Rule {deleteRuleState.ruleNumber}? This action cannot be undone.
+          </p>
+          <div className="modal-action">
+            <form method="dialog">
+              <button
+                type="button"
+                onClick={cancelDeleteRule}
+                className="btn btn-ghost"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={confirmDeleteRule}
+                className="btn btn-error"
+              >
+                Delete
+              </button>
+            </form>
+          </div>
+        </div>
+        <form method="dialog" className="modal-backdrop">
+          <button>close</button>
+        </form>
+      </dialog>
     </div>
   );
 }
