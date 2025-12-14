@@ -54,8 +54,14 @@ type ZoomToEntityAction = {
   payload: Meeple | null;
 };
 
+/** Action to set the camera zoom level */
+type SetZoomAction = {
+  type: "set-zoom";
+  payload: number;
+};
+
 /** Union type of all possible game actions */
-type GameAction = SetMeeplesAction | SetIsLoadingAction | SetGameAction | ZoomToEntityAction;
+type GameAction = SetMeeplesAction | SetIsLoadingAction | SetGameAction | ZoomToEntityAction | SetZoomAction;
 
 /** Categorized meeples by type */
 type CategorizedMeeples = {
@@ -88,6 +94,7 @@ type GameState = {
   activeMeeple: Meeple | null;
   categorizedMeeples: CategorizedMeeples;
   meepleCounts: MeepleCounts;
+  zoom: number;
 };
 
 // ============================================================================
@@ -122,6 +129,7 @@ const initialState: GameState = {
   activeMeeple: null,
   categorizedMeeples: emptyCategorizedMeeples,
   meepleCounts: emptyMeepleCounts,
+  zoom: CAMERA_ZOOM,
 };
 
 // ============================================================================
@@ -158,6 +166,12 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       return {
         ...state,
         activeMeeple: action.payload,
+      };
+    }
+    case "set-zoom": {
+      return {
+        ...state,
+        zoom: action.payload,
       };
     }
     default:
@@ -543,6 +557,8 @@ type GameContextValue = {
   getFilteredEntities: (tab: TabType) => Meeple[];
   zoomToEntity: (meeple: Meeple) => void;
   createMeeple: (graphicStyle: EntityGraphicStyle, name: string, position?: Vector) => Meeple | null;
+  zoom: number;
+  setZoom: (zoom: number) => void;
 };
 
 // ============================================================================
@@ -627,6 +643,12 @@ function useGameInternal(): GameContextValue {
     }
   }, [gameState.activeMeeple]);
 
+  // Update camera zoom when zoom state changes
+  useEffect(() => {
+    if (!gameRef.current) return;
+    gameRef.current.currentScene.camera.zoom = gameState.zoom;
+  }, [gameState.zoom]);
+
 
   /**
    * Gets filtered entities based on the active tab.
@@ -700,6 +722,13 @@ function useGameInternal(): GameContextValue {
       dispatch({ type: "zoom-to-entity", payload: meeple });
     },
     createMeeple,
+    /**
+     * Sets the camera zoom level.
+     * @param zoom - The zoom level (typically between 0.5 and 5)
+     */
+    setZoom: (zoom: number) => {
+      dispatch({ type: "set-zoom", payload: zoom });
+    },
   };
 }
 

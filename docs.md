@@ -24,8 +24,8 @@
 ## Performance: React Auto-Memoization
 
 ### The Problem
-- State updates every 300ms
-- 30+ entities updating simultaneously
+- State updates every 1000ms (1 second)
+- 20+ entities updating simultaneously
 - Complex UI cards per entity
 
 ### The Solution
@@ -40,7 +40,7 @@
 - Happens automatically, no manual memo needed
 
 ### Key Point
-Even with 300ms updates, React's output comparison keeps it smooth because unchanged components don't re-render.
+Even with 1 second updates, React's output comparison keeps it smooth because unchanged components don't re-render.
 
 ## Tech Stack
 - React 19, TypeScript, Excalibur.js

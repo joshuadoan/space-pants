@@ -1,11 +1,12 @@
-import { useMemo, useReducer, useRef, useEffect } from "react";
+import { useMemo, useReducer, useRef } from "react";
 import { useFps } from "react-fps";
-import { IconRocket, IconPlus, IconBulb, IconGripVertical, IconDeviceFloppy, IconTrash, IconUser, IconClick } from "@tabler/icons-react";
+import { IconRocket, IconPlus, IconBulb, IconGripVertical, IconDeviceFloppy, IconTrash, IconUser, IconClick, IconDice } from "@tabler/icons-react";
 import { Vector } from "excalibur";
 
 import { useGame, type TabType } from "./hooks/useGame";
 import { EntityGraphicStyle } from "./entities/utils/createSpaceShipOutOfShapes";
 import { MeepleType } from "./entities/types";
+import { WORLD_WIDTH, WORLD_HEIGHT } from "./entities/game-config";
 
 import { Tabs } from "./components/Tabs";
 
@@ -32,9 +33,10 @@ function App() {
     getFilteredEntities,
     createMeeple,
     meeples,
+    zoom,
+    setZoom,
   } = useGame();
   const cardRefs = useRef<Map<number | string, HTMLDivElement>>(new Map());
-  const hasInitialized = useRef(false);
 
   const [state, dispatch] = useReducer((state: State, action: Action) => {
     switch (action.type) {
@@ -49,18 +51,9 @@ function App() {
         return state;
       }
     }
-  }, { activeTab: "create" }); // Start with create, will update if custom meeples exist
+  }, { activeTab: "traders" }); // Start with traders (ships tab)
 
-  // Check if there are custom meeples and set initial tab accordingly
-  useEffect(() => {
-    if (!hasInitialized.current && meeples.length > 0) {
-      const customMeeples = meeples.filter((meeple) => meeple.type === MeepleType.Custom);
-      if (customMeeples.length > 0 && state.activeTab === "create") {
-        dispatch({ type: "set-active-tab", payload: "my-meeples" });
-      }
-      hasInitialized.current = true;
-    }
-  }, [meeples, state.activeTab]);
+  // Note: Removed auto-switch to my-meeples tab since we start with traders tab now
 
   const { avgFps, maxFps, currentFps } = useFps(20);
 
@@ -69,22 +62,95 @@ function App() {
     [getFilteredEntities, state.activeTab]
   );
 
-  const handleCreateEntity = () => {
-    const dummyName = `Entity-${Date.now()}`;
-    const dummyPosition = new Vector(
-      Math.random() * 2000,
-      Math.random() * 2000
-    );
+  // Form state for creating new meeple
+  type CreateMeepleFormState = {
+    name: string;
+    graphicStyle: EntityGraphicStyle;
+    useRandomPosition: boolean;
+    positionX: number;
+    positionY: number;
+  };
+
+  type CreateMeepleFormAction =
+    | { type: "set-name"; payload: string }
+    | { type: "set-graphic-style"; payload: EntityGraphicStyle }
+    | { type: "set-use-random-position"; payload: boolean }
+    | { type: "set-position-x"; payload: number }
+    | { type: "set-position-y"; payload: number }
+    | { type: "reset" };
+
+  const [formState, dispatchForm] = useReducer(
+    (state: CreateMeepleFormState, action: CreateMeepleFormAction): CreateMeepleFormState => {
+      switch (action.type) {
+        case "set-name":
+          return { ...state, name: action.payload };
+        case "set-graphic-style":
+          return { ...state, graphicStyle: action.payload };
+        case "set-use-random-position":
+          return { ...state, useRandomPosition: action.payload };
+        case "set-position-x":
+          return { ...state, positionX: action.payload };
+        case "set-position-y":
+          return { ...state, positionY: action.payload };
+        case "reset":
+          return {
+            name: "",
+            graphicStyle: EntityGraphicStyle.Default,
+            useRandomPosition: true,
+            positionX: WORLD_WIDTH / 2,
+            positionY: WORLD_HEIGHT / 2,
+          };
+        default:
+          return state;
+      }
+    },
+    {
+      name: "",
+      graphicStyle: EntityGraphicStyle.Default,
+      useRandomPosition: true,
+      positionX: WORLD_WIDTH / 2,
+      positionY: WORLD_HEIGHT / 2,
+    }
+  );
+
+  const handleCreateEntity = (e?: React.FormEvent) => {
+    e?.preventDefault();
+    
+    if (!formState.name.trim()) {
+      return; // Don't create if name is empty
+    }
+
+    const position = formState.useRandomPosition
+      ? undefined
+      : new Vector(
+          Math.max(0, Math.min(WORLD_WIDTH, formState.positionX)),
+          Math.max(0, Math.min(WORLD_HEIGHT, formState.positionY))
+        );
+
     const newMeeple = createMeeple(
-      EntityGraphicStyle.Default,
-      dummyName,
-      dummyPosition
+      formState.graphicStyle,
+      formState.name.trim(),
+      position
     );
+    
     if (newMeeple) {
       zoomToEntity(newMeeple);
       // Switch to my-meeples tab to see the newly created entity
       dispatch({ type: "set-active-tab", payload: "my-meeples" });
+      // Reset form
+      dispatchForm({ type: "reset" });
     }
+  };
+
+  const handleRandomizePosition = () => {
+    dispatchForm({
+      type: "set-position-x",
+      payload: Math.random() * WORLD_WIDTH,
+    });
+    dispatchForm({
+      type: "set-position-y",
+      payload: Math.random() * WORLD_HEIGHT,
+    });
   };
 
   return (
@@ -104,6 +170,23 @@ function App() {
               </h1>
             </div>
             <div className="flex-1" />
+            <div className="flex items-center gap-3">
+              <div className="flex flex-col items-end gap-1">
+                <span className="text-xs text-base-content/70">Zoom</span>
+                <span className="text-sm font-semibold text-base-content">{zoom.toFixed(1)}x</span>
+              </div>
+              <div className="w-32">
+                <input
+                  type="range"
+                  min="0.3"
+                  max="5"
+                  step="0.1"
+                  value={zoom}
+                  onChange={(e) => setZoom(parseFloat(e.target.value))}
+                  className="range range-secondary range-sm"
+                />
+              </div>
+            </div>
           </div>
           <div className="hidden md:block">
             <Tabs
@@ -155,15 +238,149 @@ function App() {
             <div className="card bg-base-100 shadow-md hover:shadow-lg transition-all duration-200 border border-base-300 rounded-lg p-4 m-2">
               <div className="card-body">
                 <h2 className="text-xl font-bold mb-4">Create New Entity</h2>
-                <button
-                  className="btn btn-primary flex items-center gap-2"
-                  onClick={handleCreateEntity}
-                >
-                  <IconPlus size={16} />
-                  Create New Entity
-                </button>
+                <form onSubmit={handleCreateEntity} className="space-y-4">
+                  {/* Name Input */}
+                  <div className="form-control">
+                    <label className="label">
+                      <span className="label-text font-semibold">Name</span>
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="Enter entity name"
+                      className="input input-bordered w-full"
+                      value={formState.name}
+                      onChange={(e) =>
+                        dispatchForm({ type: "set-name", payload: e.target.value })
+                      }
+                      required
+                    />
+                  </div>
+
+                  {/* Graphic Style Selector */}
+                  <div className="form-control">
+                    <label className="label">
+                      <span className="label-text font-semibold">Graphic Style</span>
+                    </label>
+                    <select
+                      className="select select-bordered w-full"
+                      value={formState.graphicStyle}
+                      onChange={(e) =>
+                        dispatchForm({
+                          type: "set-graphic-style",
+                          payload: e.target.value as EntityGraphicStyle,
+                        })
+                      }
+                    >
+                      <option value={EntityGraphicStyle.Default}>Default</option>
+                      <option value={EntityGraphicStyle.Miner}>Miner</option>
+                      <option value={EntityGraphicStyle.Miner2}>Miner 2</option>
+                      <option value={EntityGraphicStyle.Trader}>Trader</option>
+                      <option value={EntityGraphicStyle.Trader2}>Trader 2</option>
+                      <option value={EntityGraphicStyle.Bartender}>Bartender</option>
+                      <option value={EntityGraphicStyle.Bartender2}>Bartender 2</option>
+                      <option value={EntityGraphicStyle.Pirate}>Pirate</option>
+                      <option value={EntityGraphicStyle.Police}>Police</option>
+                      <option value={EntityGraphicStyle.CruiseShip}>Cruise Ship</option>
+                      <option value={EntityGraphicStyle.GalacticZoo}>Galactic Zoo</option>
+                      <option value={EntityGraphicStyle.SpaceStation}>Space Station</option>
+                      <option value={EntityGraphicStyle.SpaceBar}>Space Bar</option>
+                      <option value={EntityGraphicStyle.SpaceApartments}>Space Apartments</option>
+                    </select>
+                  </div>
+
+                  {/* Position Options */}
+                  <div className="form-control">
+                    <label className="label">
+                      <span className="label-text font-semibold">Position</span>
+                    </label>
+                    <div className="flex items-center gap-2 mb-2">
+                      <input
+                        type="checkbox"
+                        className="checkbox checkbox-primary"
+                        checked={formState.useRandomPosition}
+                        onChange={(e) =>
+                          dispatchForm({
+                            type: "set-use-random-position",
+                            payload: e.target.checked,
+                          })
+                        }
+                      />
+                      <span className="label-text">Use random position</span>
+                    </div>
+                    {!formState.useRandomPosition && (
+                      <div className="space-y-2">
+                        <div className="flex gap-2">
+                          <div className="form-control flex-1">
+                            <label className="label">
+                              <span className="label-text text-xs">X</span>
+                            </label>
+                            <input
+                              type="number"
+                              className="input input-bordered input-sm"
+                              min="0"
+                              max={WORLD_WIDTH}
+                              value={formState.positionX}
+                              onChange={(e) =>
+                                dispatchForm({
+                                  type: "set-position-x",
+                                  payload: parseFloat(e.target.value) || 0,
+                                })
+                              }
+                            />
+                          </div>
+                          <div className="form-control flex-1">
+                            <label className="label">
+                              <span className="label-text text-xs">Y</span>
+                            </label>
+                            <input
+                              type="number"
+                              className="input input-bordered input-sm"
+                              min="0"
+                              max={WORLD_HEIGHT}
+                              value={formState.positionY}
+                              onChange={(e) =>
+                                dispatchForm({
+                                  type: "set-position-y",
+                                  payload: parseFloat(e.target.value) || 0,
+                                })
+                              }
+                            />
+                          </div>
+                          <div className="form-control">
+                            <label className="label">
+                              <span className="label-text text-xs opacity-0">Random</span>
+                            </label>
+                            <button
+                              type="button"
+                              className="btn btn-sm btn-outline"
+                              onClick={handleRandomizePosition}
+                              title="Randomize position"
+                            >
+                              <IconDice size={16} />
+                            </button>
+                          </div>
+                        </div>
+                        <p className="text-xs text-base-content/50">
+                          World size: {WORLD_WIDTH} × {WORLD_HEIGHT}
+                        </p>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Submit Button */}
+                  <div className="form-control mt-6">
+                    <button
+                      type="submit"
+                      className="btn btn-primary flex items-center gap-2"
+                      disabled={!formState.name.trim()}
+                    >
+                      <IconPlus size={16} />
+                      Create New Entity
+                    </button>
+                  </div>
+                </form>
                 <p className="text-sm text-base-content/70 mt-4">
-                  Creates a new entity with zero goods at a random position.
+                  New entities start with zero goods and can be customized with behavior rules.
                 </p>
               </div>
             </div>

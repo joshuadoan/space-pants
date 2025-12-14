@@ -25,7 +25,7 @@ Five distinct product types that space stations produce:
 ## Entity Types & Economic Roles
 
 ### Miners
-**Count**: 10  
+**Count**: 5  
 **Role**: Primary resource extractors
 
 **Economic Activities**:
@@ -45,7 +45,7 @@ Five distinct product types that space stations produce:
 **Starting Resources**: 0 ore, 0 money
 
 ### Traders
-**Count**: 10  
+**Count**: 5  
 **Role**: Product distribution network
 
 **Economic Activities**:
@@ -70,9 +70,9 @@ Five distinct product types that space stations produce:
 **Role**: Production hubs and trading centers
 
 **Economic Activities**:
-- **Production**: Convert ore to products (1 ore → 1 product of station's type, 3s conversion delay)
+- **Production**: Convert ore to products (1 ore → 1 product of station's type)
   - Production checks every 0.5 seconds
-  - Produces `floor(ore / 1)` products per cycle
+  - Produces 1 product per 1 ore per cycle
 - **Trading**: 
   - Buy ore from miners (1 ore → 2 money)
   - Buy products from traders (1 product → 2 money)
@@ -101,7 +101,7 @@ Five distinct product types that space stations produce:
 **Starting Resources**: 1 ore
 
 ### Space Bars
-**Count**: 3  
+**Count**: 2  
 **Role**: Social hubs and service economy
 
 **Economic Activities**:
@@ -116,7 +116,7 @@ Five distinct product types that space stations produce:
 **Starting Resources**: 1 fizz, 0 money
 
 ### Bartenders
-**Count**: 3 per bar (9 total)  
+**Count**: 1 per bar (2 total)  
 **Role**: Service workers
 
 **Economic Activities**:
@@ -134,7 +134,7 @@ Five distinct product types that space stations produce:
 **Starting Resources**: 0 ore, 0 money
 
 ### Space Apartments
-**Count**: 3  
+**Count**: 2  
 **Role**: Rest and recovery facilities
 
 **Economic Activities**:
@@ -207,7 +207,7 @@ Bartenders → Space Bars → Socializing Entities
 | Resting | 3s | All entities |
 | Shopping | 3s | Traders, Bartenders |
 | Selling | 3s | Traders |
-| Production | 3s | Stations |
+| Production | 0.5s check interval | Stations (1 product per 1 ore) |
 
 ## Economic Balance Considerations
 

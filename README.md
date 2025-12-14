@@ -15,7 +15,7 @@ A real-time space economy simulation game built with React, TypeScript, and Exca
 - **FPS Monitoring**: Real-time performance metrics displayed on screen
 
 ### Economic Systems
-- **Dynamic Production**: Space stations convert ore into various products (Gruffle, Druffle, Klintzpaw, Grogin, Fizz) at a rate of 1 product per 10 ore per second
+- **Dynamic Production**: Space stations convert ore into various products (Gruffle, Druffle, Klintzpaw, Grogin, Fizz) at a rate of 1 product per 1 ore, with production checks every 0.5 seconds
 - **Trading System**: Entities buy and sell goods at space stations
 - **Social System**: Entities visit space bars and space apartments to socialize and spend money
 - **Resource Management**: Visual indicators show goods carried by entities (followers display goods quantities)
@@ -56,8 +56,9 @@ A real-time space economy simulation game built with React, TypeScript, and Exca
 ### Space Stations
 - Stationary trading hubs (60x60 units)
 - Accept ore and produce various products
-- Production rate: 1 product per 10 ore per second
+- Production rate: 1 product per 1 ore, with production checks every 0.5 seconds
 - Products include: Gruffle, Druffle, Klintzpaw, Grogin, Fizz
+- Each station specializes in producing one product type
 - Randomly colored with unique designs
 - Handle transactions with visiting entities
 
@@ -207,6 +208,7 @@ Rules are evaluated in order from top to bottom. The first rule whose condition 
 The game includes pre-built rule behaviors:
 - **Miner Behavior**: Default mining and trading behavior
 - **Trader Behavior**: Default buying and selling behavior
+- **Bartender Behavior**: Default working and shopping behavior
 
 You can apply these behaviors or create custom rules from scratch.
 
@@ -251,19 +253,16 @@ space-pants/
 │   │       ├── createSpaceShipOutOfShapes.ts
 │   │       └── generateSpaceName.ts
 │   ├── hooks/                # React hooks
-│   │   ├── useGame.ts        # Game initialization and setup
-│   │   ├── useGameEntities.ts # Entity state management
-│   │   └── useKeyboardControls.ts # Keyboard input handling
+│   │   └── useGame.tsx       # Game initialization and setup
 │   ├── utils/                # Utility functions
-│   │   ├── addStars.ts       # Star generation utility
+│   │   ├── createStarTilemap.ts # Star generation utility
 │   │   ├── goodsMetadata.tsx # Goods metadata and icons
 │   │   ├── goodsUtils.ts     # Goods manipulation utilities
 │   │   ├── keyboardControls.ts # Keyboard control utilities
 │   │   └── ruleUtils.ts      # Rule evaluation utilities
 │   ├── App.tsx               # Main application component
 │   ├── main.tsx              # Application entry point
-│   ├── types.ts              # TypeScript type definitions
-│   ├── consts.ts             # Application constants
+│   ├── consts.ts             # Application constants (re-exports from game-config)
 │   ├── App.css               # Application styles
 │   └── index.css             # Global styles
 ├── public/                   # Static assets
@@ -285,22 +284,23 @@ space-pants/
 ## 🎨 Customization
 
 ### World Configuration
-Edit `src/hooks/useGame.ts` to modify:
-- World size (`WORLD_WIDTH`, `WORLD_HEIGHT`) - Default: 1000x1000
-- Number of entities:
-  - `NUMBER_OF_TRADERS` - Default: 10
-  - `NUMBER_OF_MINERS` - Default: 10
-  - `NUMBER_OF_SPACE_STATIONS` - Default: 5
-  - `NUMBER_OF_ASTEROIDS` - Default: 5
-  - `NUMBER_OF_SPACE_BARS` - Default: 3
-  - `NUMBER_OF_SPACE_APARTMENTS` - Default: 3
-- Player speed - Default: 100 (configurable via `DEFAULT_SHIP_SPEED` in `src/consts.ts`)
+Edit `src/entities/game-config.ts` to modify:
+- World size (`WORLD_WIDTH`, `WORLD_HEIGHT`) - Default: 2500x2500
+- Number of entities (in `ENTITY_COUNTS`):
+  - `TRADERS` - Default: 5
+  - `MINERS` - Default: 5
+  - `SPACE_STATIONS` - Default: 5 (one per product type)
+  - `ASTEROIDS` - Default: 5
+  - `SPACE_BARS` - Default: 2
+  - `SPACE_APARTMENTS` - Default: 2
+  - `BARTENDERS_PER_BAR` - Default: 1
+- Player speed - Default: 100 (configurable via `DEFAULT_SHIP_SPEED` in `src/entities/game-config.ts`)
 - Camera zoom level - Default: 2x
-- Star distribution and spacing (in `src/utils/addStars.ts`)
+- Star distribution and spacing (in `src/utils/createStarTilemap.ts`)
 
 ### Entity Behavior
 - Modify entity classes in `src/entities/` to change default rules and starting conditions
-- Edit rule behaviors in `src/entities/ruleTemplates.ts`
+- Edit rule behaviors in `src/entities/ruleTemplates.ts` (includes Miner, Trader, and Bartender behaviors)
 - Customize entity appearance in entity constructors
 
 ### Styling
@@ -311,8 +311,8 @@ Edit `src/hooks/useGame.ts` to modify:
 ## ⚡ Performance
 
 The game uses React's automatic memoization to maintain smooth performance:
-- State updates occur every 300ms
-- 30+ entities update simultaneously
+- State updates occur every 1000ms (1 second)
+- 20+ entities update simultaneously
 - React compares component output automatically
 - Only components with changed output re-render
 - This enables smooth 60 FPS gameplay even with frequent updates
