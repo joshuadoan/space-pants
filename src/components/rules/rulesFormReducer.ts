@@ -238,9 +238,13 @@ export function rulesFormReducer(
         selectedBehavior: "",
       };
     case "load-behavior":
+      // Filter out required rules from display (they're always included automatically)
+      const behaviorRulesWithoutDefaults = action.payload.behavior.rules.filter(
+        (rule) => !rule.required
+      );
       return {
         ...state,
-        localRules: action.payload.behavior.rules,
+        localRules: behaviorRulesWithoutDefaults,
         rulesListName: action.payload.behavior.name,
         selectedBehavior: action.payload.behaviorId,
       };

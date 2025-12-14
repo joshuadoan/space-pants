@@ -19,7 +19,7 @@ import {
 } from "../entities/game-config";
 import { Meeple } from "../entities/Meeple/Meeple";
 import { PirateDen } from "../entities/PirateDen";
-import { MINER_RULES, PIRATE_RULES, TRADER_RULES } from "../entities/ruleTemplates";
+import { MINER_RULES, PIRATE_RULES, TRADER_RULES, mergeRulesWithDefaults, DEFAULT_RULES } from "../entities/ruleTemplates";
 import { SpaceApartments } from "../entities/SpaceApartments";
 import { SpaceBar } from "../entities/SpaceBar";
 import { SpaceStation } from "../entities/SpaceStation";
@@ -336,7 +336,7 @@ function createMiners(game: Game): void {
     const miner = new Meeple(getRandomPosition(), 1, generateSpaceName(), Object.values(Products)[Math.floor(Math.random() * Object.values(Products).length)]);
     miner.name = generateSpaceName();
     miner.type = MeepleType.Miner;
-    miner.rules = MINER_RULES;
+    miner.rules = mergeRulesWithDefaults(MINER_RULES);
     miner.speed = DEFAULT_SHIP_SPEED;
     // Ships get a random apartment as their home
     miner.home = getRandomSpaceApartment(game);
@@ -363,7 +363,7 @@ function createTraders(game: Game): void {
     );
     trader.name = generateSpaceName();
     trader.type = MeepleType.Trader;
-    trader.rules = TRADER_RULES;
+    trader.rules = mergeRulesWithDefaults(TRADER_RULES);
     trader.goods[Resources.Money] = TRADER_STARTING_MONEY;
     trader.speed = DEFAULT_SHIP_SPEED;
     // Ships get a random apartment as their home
@@ -467,7 +467,7 @@ function createPirates(game: Game): void {
     );
     pirate.name = generateSpaceName();
     pirate.type = MeepleType.Pirate;
-    pirate.rules = PIRATE_RULES;
+    pirate.rules = mergeRulesWithDefaults(PIRATE_RULES);
     pirate.speed = DEFAULT_SHIP_SPEED;
     // Pirates get a random pirate den as their home
     pirate.home = getRandomPirateDen(game);
@@ -776,6 +776,8 @@ function useGameInternal(): GameContextValue {
       );
       meeple.type = MeepleType.Custom;
       meeple.speed = DEFAULT_SHIP_SPEED;
+      // Assign default rules (custom meeples start with just defaults)
+      meeple.rules = [...DEFAULT_RULES];
       // Assign a random apartment as home
       meeple.home = getRandomSpaceApartment(gameRef.current);
 

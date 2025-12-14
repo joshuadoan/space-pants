@@ -186,6 +186,7 @@ export type LogicRule = {
   productType?: Products; // Optional product type, defaults to meeple's productType
   destinationType?: MeepleType; // Optional destination type to target specific entity types
   destinationName?: string; // Optional specific destination name (takes precedence over destinationType)
+  required?: boolean; // If true, this rule cannot be edited or removed (default rules)
 };
 
 export enum LogicRuleActionType {

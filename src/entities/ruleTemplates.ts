@@ -10,23 +10,32 @@ import {
   type RuleBehavior,
 } from "./types";
 
-const TRADER_RULES_ARRAY = [
+/**
+ * Default rules that are required for all meeples.
+ * These rules are always at the top of the rules list and cannot be edited or removed.
+ */
+export const DEFAULT_RULES: LogicRule[] = [
   // Priority 1: If health is 0 or below, set broken state (ship stops moving and can't do anything)
   {
-    id: createRuleId("set-broken-if-health-zero"),
+    id: createRuleId("default-set-broken-if-health-zero"),
     good: MeepleStats.Health,
     operator: ComparisonOperator.LessThanOrEqual,
     value: 0,
     action: LogicRuleActionType.SetBroken,
+    required: true,
   },
   // Priority 2: Energy check - always go home if energy is low
   {
-    id: createRuleId("go-home-if-energy-low"),
+    id: createRuleId("default-go-home-if-energy-low"),
     good: MeepleStats.Energy,
     operator: ComparisonOperator.LessThanOrEqual,
     value: 0,
     action: LogicRuleActionType.RestAtApartments,
+    required: true,
   },
+];
+
+const TRADER_RULES_ARRAY = [
   // Priority 2: If money is greater than or equal to 50, go to space bar to socialize
   {
     id: createRuleId("go-to-space-bar"),
@@ -56,22 +65,6 @@ const TRADER_RULES_ARRAY = [
 ] satisfies LogicRule[];
 
 const MINER_RULES_ARRAY = [
-  // Priority 1: If health is 0 or below, set broken state (ship stops moving and can't do anything)
-  {
-    id: createRuleId("set-broken-if-health-zero"),
-    good: MeepleStats.Health,
-    operator: ComparisonOperator.LessThanOrEqual,
-    value: 0,
-    action: LogicRuleActionType.SetBroken,
-  },
-  // Priority 2: Energy check - always go home if energy is low
-  {
-    id: createRuleId("go-home-if-energy-low"),
-    good: MeepleStats.Energy,
-    operator: ComparisonOperator.LessThanOrEqual,
-    value: 0,
-    action: LogicRuleActionType.RestAtApartments,
-  },
   // if money is greater than or equal to 50 go to space bar
   {
     id: createRuleId("go-to-space-bar"),
@@ -99,22 +92,6 @@ const MINER_RULES_ARRAY = [
 ] satisfies LogicRule[];
 
 const BARTENDER_RULES_ARRAY = [
-  // Priority 1: If health is 0 or below, set broken state (ship stops moving and can't do anything)
-  {
-    id: createRuleId("set-broken-if-health-zero"),
-    good: MeepleStats.Health,
-    operator: ComparisonOperator.LessThanOrEqual,
-    value: 0,
-    action: LogicRuleActionType.SetBroken,
-  },
-  // Priority 2: If energy is 0 or less, go home to recover
-  {
-    id: createRuleId("go-home-if-energy-low"),
-    good: MeepleStats.Energy,
-    operator: ComparisonOperator.LessThanOrEqual,
-    value: 0,
-    action: LogicRuleActionType.RestAtApartments,
-  },
   // Priority 2: If money is 50+, go shopping for products
   {
     id: createRuleId("go-shopping"),
@@ -134,22 +111,6 @@ const BARTENDER_RULES_ARRAY = [
 ] satisfies LogicRule[];
 
 const PIRATE_RULES_ARRAY = [
-  // Priority 1: If health is 0 or below, set broken state (ship stops moving and can't do anything)
-  {
-    id: createRuleId("set-broken-if-health-zero"),
-    good: MeepleStats.Health,
-    operator: ComparisonOperator.LessThanOrEqual,
-    value: 0,
-    action: LogicRuleActionType.SetBroken,
-  },
-  // Priority 2: If energy is 0 or less, go to pirate den to recover
-  {
-    id: createRuleId("go-to-pirate-den-if-energy-low"),
-    good: MeepleStats.Energy,
-    operator: ComparisonOperator.LessThanOrEqual,
-    value: 0,
-    action: LogicRuleActionType.GoToPirateDen,
-  },
   // Priority 2: If energy is above 0 and not already chasing, try to chase nearby traders
   {
     id: createRuleId("chase-trader"),
@@ -199,6 +160,47 @@ export const BUILT_IN_BEHAVIORS: RuleBehavior[] = [
   BARTENDER_BEHAVIOR,
   PIRATE_BEHAVIOR,
 ];
+
+/**
+ * Merges default rules with custom rules, ensuring default rules are always at the top.
+ * Filters out any custom rules that duplicate default rules (by action type).
+ * Special handling for pirates: if custom rules include GoToPirateDen, replace
+ * RestAtApartments in defaults with GoToPirateDen.
+ * 
+ * @param customRules - Custom rules to merge with defaults
+ * @returns Combined rules array with defaults first, then custom rules
+ */
+export function mergeRulesWithDefaults(customRules: LogicRule[]): LogicRule[] {
+  // Check if custom rules include GoToPirateDen (for pirates)
+  const hasPirateDenRule = customRules.some(
+    rule => rule.action === LogicRuleActionType.GoToPirateDen
+  );
+  
+  // Create defaults, replacing RestAtApartments with GoToPirateDen for pirates
+  const defaults = DEFAULT_RULES.map(rule => {
+    if (hasPirateDenRule && rule.action === LogicRuleActionType.RestAtApartments) {
+      return {
+        ...rule,
+        action: LogicRuleActionType.GoToPirateDen,
+        id: createRuleId("default-go-to-pirate-den-if-energy-low"),
+      };
+    }
+    return rule;
+  });
+  
+  // Get default rule action types to filter duplicates
+  const defaultActionTypes = new Set(
+    defaults.map(rule => rule.action)
+  );
+  
+  // Filter out custom rules that duplicate default rules
+  const filteredCustomRules = customRules.filter(
+    rule => !defaultActionTypes.has(rule.action) || rule.required === true
+  );
+  
+  // Return defaults first, then custom rules
+  return [...defaults, ...filteredCustomRules];
+}
 
 // Legacy exports for backward compatibility (if needed elsewhere)
 export const TRADER_RULES = TRADER_RULES_ARRAY;

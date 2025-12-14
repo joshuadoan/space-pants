@@ -2,7 +2,7 @@ import type { Vector } from "excalibur";
 
 import { DEFAULT_SHIP_SPEED } from "./game-config";
 import { Meeple } from "./Meeple/Meeple";
-import { BARTENDER_RULES } from "./ruleTemplates";
+import { BARTENDER_RULES, mergeRulesWithDefaults } from "./ruleTemplates";
 import { MeepleType, Products, Resources } from "./types";
 
 export class Bartender extends Meeple {
@@ -17,7 +17,7 @@ export class Bartender extends Meeple {
     this.speed = DEFAULT_SHIP_SPEED;
     this.goods[Resources.Ore] = 0;
     this.goods[Resources.Money] = 0;
-    this.rules = BARTENDER_RULES;
+    this.rules = mergeRulesWithDefaults(BARTENDER_RULES);
   }
 }
 

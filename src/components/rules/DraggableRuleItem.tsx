@@ -80,9 +80,12 @@ export function DraggableRuleItem({
     });
   }, [meeples, rule.action, rule.destinationType]);
 
+  const isRequired = rule.required === true;
+
   const [{ isDragging }, drag] = useDrag({
     type: DRAG_TYPE,
     item: { index },
+    canDrag: !isRequired, // Prevent dragging required rules
     collect: (monitor) => ({
       isDragging: monitor.isDragging(),
     }),
@@ -133,30 +136,39 @@ export function DraggableRuleItem({
       <div className="card-body p-4">
         <div className="flex justify-between items-start mb-2 gap-2">
           <div className="flex items-center gap-2 text-xs text-base-content/50">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="h-4 w-4 cursor-move"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M4 8h16M4 16h16"
-              />
-            </svg>
+            {!isRequired && (
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-4 w-4 cursor-move"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M4 8h16M4 16h16"
+                />
+              </svg>
+            )}
             Rule {index + 1}
+            {isRequired && (
+              <span className="badge badge-sm badge-info badge-outline" title="This is a required rule that cannot be edited or removed">
+                Required
+              </span>
+            )}
           </div>
-          <button
-            type="button"
-            onClick={() => onDeleteRule(rule.id)}
-            className="btn btn-sm btn-error btn-outline"
-            aria-label={`Delete rule`}
-          >
-            Delete
-          </button>
+          {!isRequired && (
+            <button
+              type="button"
+              onClick={() => onDeleteRule(rule.id)}
+              className="btn btn-sm btn-error btn-outline"
+              aria-label={`Delete rule`}
+            >
+              Delete
+            </button>
+          )}
         </div>
         <div className="flex flex-col sm:flex-row gap-3 mt-3">
           <div className="flex-1">
@@ -168,9 +180,10 @@ export function DraggableRuleItem({
             <select
               value={rule.good || ""}
               onChange={(e) => onGoodChange(rule.id, e.target.value)}
+              disabled={isRequired}
               className={`select select-primary select-bordered w-full ${
                 missingGood ? "border-error" : ""
-              }`}
+              } ${isRequired ? "opacity-60 cursor-not-allowed" : ""}`}
             >
               <option disabled={true} value="">
                 Pick a good
@@ -209,9 +222,10 @@ export function DraggableRuleItem({
               onChange={(e) =>
                 onOperatorChange(rule.id, e.target.value as ComparisonOperator)
               }
+              disabled={isRequired}
               className={`select select-primary select-bordered w-full ${
                 missingOperator ? "border-error" : ""
-              }`}
+              } ${isRequired ? "opacity-60 cursor-not-allowed" : ""}`}
             >
               <option disabled={true} value="">
                 Pick an operator
@@ -241,9 +255,10 @@ export function DraggableRuleItem({
               min="0"
               step="1"
               placeholder="Enter a value"
+              disabled={isRequired}
               className={`input input-primary input-bordered w-full ${
                 missingValue ? "border-error" : ""
-              }`}
+              } ${isRequired ? "opacity-60 cursor-not-allowed" : ""}`}
             />
           </div>
         </div>
@@ -274,9 +289,10 @@ export function DraggableRuleItem({
                   onDestinationNameChange(rule.id, undefined);
                 }
               }}
+              disabled={isRequired}
               className={`select select-primary select-bordered w-full ${
                 missingAction ? "border-error" : ""
-              }`}
+              } ${isRequired ? "opacity-60 cursor-not-allowed" : ""}`}
             >
               <option disabled={true} value="">
                 Pick an action
@@ -314,7 +330,10 @@ export function DraggableRuleItem({
                     e.target.value || undefined
                   )
                 }
-                className="select select-primary select-bordered w-full"
+                disabled={isRequired}
+                className={`select select-primary select-bordered w-full ${
+                  isRequired ? "opacity-60 cursor-not-allowed" : ""
+                }`}
               >
                 <option value="">Any (random)</option>
                 {Object.values(MeepleType)
@@ -350,7 +369,7 @@ export function DraggableRuleItem({
                   )
                 }
                 className="select select-primary select-bordered w-full"
-                disabled={availableDestinations.length === 0 || !rule.destinationType}
+                disabled={isRequired || availableDestinations.length === 0 || !rule.destinationType}
               >
                 <option value="">
                   {availableDestinations.length === 0
