@@ -18,7 +18,7 @@ import { IconSatellite } from "@tabler/icons-react";
 import { IconBeer } from "@tabler/icons-react";
 import { IconRocket } from "@tabler/icons-react";
 import { IconRefresh } from "@tabler/icons-react";
-import { IconPackage, IconBulb, IconGripVertical, IconDeviceFloppy, IconPlus, IconTrash } from "@tabler/icons-react";
+import { IconPackage, IconBulb, IconPlus } from "@tabler/icons-react";
 import { MeepleStateType, MeepleStats } from "../entities/types";
 import type { LogicRule } from "../entities/types";
 import { getGoodLabel } from "../utils/goodsMetadata";
@@ -340,6 +340,39 @@ export function MeepleCard({
                 </span>
               </div>
             ),
+            [MeepleType.Pirate]: (
+              <div className="tooltip">
+                <div className="tooltip-content">
+                  <div className="text-sm font-semibold text-base-content">Pirate</div>
+                </div>
+                <span className="badge badge-sm badge-error badge-outline flex items-center gap-1">
+                  <IconShip size={14} className="cursor-pointer" />
+                  Pirate
+                </span>
+              </div>
+            ),
+            [MeepleType.PirateDen]: (
+              <div className="tooltip">
+                <div className="tooltip-content">
+                  <div className="text-sm font-semibold text-base-content">Pirate Den</div>
+                </div>
+                <span className="badge badge-sm badge-error badge-outline flex items-center gap-1">
+                  <IconBuilding size={14} className="cursor-pointer" />
+                  Pirate Den
+                </span>
+              </div>
+            ),
+            [MeepleType.Custom]: (
+              <div className="tooltip">
+                <div className="tooltip-content">
+                  <div className="text-sm font-semibold text-base-content">Custom</div>
+                </div>
+                <span className="badge badge-sm badge-ghost badge-outline flex items-center gap-1">
+                  <IconShip size={14} className="cursor-pointer" />
+                  Custom
+                </span>
+              </div>
+            ),
           }[meeple.type]
         }
         {
@@ -453,6 +486,17 @@ export function MeepleCard({
                 </span>
               </div>
             ),
+            [MeepleStateType.Patrolling]: (
+              <div className="tooltip">
+                <div className="tooltip-content">
+                  <div className="text-sm font-semibold text-base-content">Patrolling</div>
+                </div>
+                <span className="badge badge-sm badge-error badge-outline flex items-center gap-1">
+                  <IconShip size={14} className="cursor-pointer" />
+                  Patrolling
+                </span>
+              </div>
+            ),
           }[meeple.state.type]
         }
       </div>
@@ -460,7 +504,8 @@ export function MeepleCard({
       {(meeple.type === MeepleType.Asteroid ||
         meeple.type === MeepleType.SpaceStation ||
         meeple.type === MeepleType.SpaceBar ||
-        meeple.type === MeepleType.SpaceApartments) && (
+        meeple.type === MeepleType.SpaceApartments ||
+        meeple.type === MeepleType.PirateDen) && (
         <>
           <div className="divider my-1"></div>
           <div className="space-y-2">
@@ -492,6 +537,9 @@ export function MeepleCard({
                         [MeepleType.SpaceApartments]: <IconBuilding size={14} className="cursor-pointer" />,
                         [MeepleType.Bartender]: <IconBeer size={14} className="cursor-pointer" />,
                         [MeepleType.Player]: <IconRocket size={14} className="cursor-pointer" />,
+                        [MeepleType.Pirate]: <IconShip size={14} className="cursor-pointer" />,
+                        [MeepleType.PirateDen]: <IconBuilding size={14} className="cursor-pointer" />,
+                        [MeepleType.Custom]: <IconShip size={14} className="cursor-pointer" />,
                       }[visitor.type]
                     }{" "}
                     {visitor.name}
