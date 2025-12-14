@@ -11,10 +11,10 @@ import { Resources, Products } from "./types";
 // ============================================================================
 
 /** Width of the game world in pixels */
-export const WORLD_WIDTH = 1000;
+export const WORLD_WIDTH = 5000;
 
 /** Height of the game world in pixels */
-export const WORLD_HEIGHT = 1000;
+export const WORLD_HEIGHT = 5000;
 
 /** Initial camera zoom level */
 export const CAMERA_ZOOM = 2;
@@ -30,6 +30,9 @@ export const ENTITY_COUNTS = {
   ASTEROIDS: 3,
   MINERS: 14,
   SPACE_BARS: 10,
+  SPACE_CAFES: 5,
+  SPACE_DANCES: 5,
+  SPACE_FUNS: 5,
   SPACE_APARTMENTS: 10,
   BARTENDERS_PER_BAR: 2,
   PIRATES: 30,

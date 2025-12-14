@@ -75,6 +75,9 @@ export enum MeepleType {
   Player = "Player",
   SpaceStation = "SpaceStation",
   SpaceBar = "SpaceBar",
+  SpaceCafe = "SpaceCafe",
+  SpaceDance = "SpaceDance",
+  SpaceFun = "SpaceFun",
   SpaceApartments = "SpaceApartments",
   Bartender = "Bartender",
   Pirate = "Pirate",
@@ -209,4 +212,20 @@ export type RuleBehavior = {
   id: BehaviorId;
   name: string;
   rules: LogicRule[];
+};
+
+// ============================================================================
+// Diary Types
+// ============================================================================
+
+/**
+ * A diary entry that records an action or state change for a meeple
+ */
+export type DiaryEntry = {
+  timestamp: number;
+  ruleId: RuleId | null;
+  action: LogicRuleActionType | null;
+  state: MeepleStateType;
+  targetName: string | null;
+  goods: Partial<Goods>; // Snapshot of inventory at the time of the entry
 };

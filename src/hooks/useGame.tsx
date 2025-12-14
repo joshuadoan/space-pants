@@ -23,6 +23,9 @@ import { PirateDen } from "../entities/PirateDen";
 import { MINER_RULES, PIRATE_RULES, TRADER_RULES, MECHANIC_RULES, mergeRulesWithDefaults, DEFAULT_RULES } from "../entities/ruleTemplates";
 import { SpaceApartments } from "../entities/SpaceApartments";
 import { SpaceBar } from "../entities/SpaceBar";
+import { SpaceCafe } from "../entities/SpaceCafe";
+import { SpaceDance } from "../entities/SpaceDance";
+import { SpaceFun } from "../entities/SpaceFun";
 import { SpaceStation } from "../entities/SpaceStation";
 import { type GoodType, type Goods, MeepleStats, MeepleType, Products, Resources, type RuleBehavior } from "../entities/types";
 import { createEntityGraphic, EntityGraphicStyle } from "../entities/utils/createSpaceShipOutOfShapes";
@@ -71,6 +74,9 @@ type CategorizedMeeples = {
   traders: Meeple[];
   miners: Meeple[];
   spacebars: Meeple[];
+  spacecafes: Meeple[];
+  spacedances: Meeple[];
+  spacefuns: Meeple[];
   stations: Meeple[];
   asteroids: Meeple[];
   spaceapartments: Meeple[];
@@ -88,6 +94,9 @@ type MeepleCounts = {
   asteroids: number;
   stations: number;
   spacebars: number;
+  spacecafes: number;
+  spacedances: number;
+  spacefuns: number;
   spaceapartments: number;
   bartenders: number;
   pirates: number;
@@ -115,6 +124,9 @@ const emptyCategorizedMeeples: CategorizedMeeples = {
   traders: [],
   miners: [],
   spacebars: [],
+  spacecafes: [],
+  spacedances: [],
+  spacefuns: [],
   stations: [],
   asteroids: [],
   spaceapartments: [],
@@ -131,6 +143,9 @@ const emptyMeepleCounts: MeepleCounts = {
   asteroids: 0,
   stations: 0,
   spacebars: 0,
+  spacecafes: 0,
+  spacedances: 0,
+  spacefuns: 0,
   spaceapartments: 0,
   bartenders: 0,
   pirates: 0,
@@ -216,6 +231,9 @@ const MEEPLE_TYPE_TO_CATEGORY: Record<MeepleType, keyof CategorizedMeeples | nul
   [MeepleType.Trader]: "traders",
   [MeepleType.Miner]: "miners",
   [MeepleType.SpaceBar]: "spacebars",
+  [MeepleType.SpaceCafe]: "spacecafes",
+  [MeepleType.SpaceDance]: "spacedances",
+  [MeepleType.SpaceFun]: "spacefuns",
   [MeepleType.SpaceStation]: "stations",
   [MeepleType.Asteroid]: "asteroids",
   [MeepleType.SpaceApartments]: "spaceapartments",
@@ -236,6 +254,9 @@ function categorizeMeeples(meeples: Meeple[]): CategorizedMeeples {
     traders: [],
     miners: [],
     spacebars: [],
+    spacecafes: [],
+    spacedances: [],
+    spacefuns: [],
     stations: [],
     asteroids: [],
     spaceapartments: [],
@@ -266,6 +287,9 @@ function calculateMeepleCounts(categorized: CategorizedMeeples): MeepleCounts {
     asteroids: categorized.asteroids.length,
     stations: categorized.stations.length,
     spacebars: categorized.spacebars.length,
+    spacecafes: categorized.spacecafes.length,
+    spacedances: categorized.spacedances.length,
+    spacefuns: categorized.spacefuns.length,
     spaceapartments: categorized.spaceapartments.length,
     bartenders: categorized.bartenders.length,
     mechanics: categorized.mechanics.length,
@@ -460,6 +484,57 @@ function createSpaceBars(game: Game): void {
 }
 
 /**
+ * Creates space cafes where entities can socialize and spend money.
+ */
+function createSpaceCafes(game: Game): void {
+  for (let i = 0; i < ENTITY_COUNTS.SPACE_CAFES; i++) {
+    const spaceCafe = new SpaceCafe(getRandomPosition(), generateSpaceName());
+    spaceCafe.name = generateSpaceName();
+    // Destinations get themselves as their home
+    spaceCafe.home = spaceCafe;
+    
+    const cafeDesign = createEntityGraphic(EntityGraphicStyle.SpaceCafe);
+    spaceCafe.graphics.use(cafeDesign);
+    
+    game.currentScene.add(spaceCafe);
+  }
+}
+
+/**
+ * Creates space dance venues where entities can socialize and spend money.
+ */
+function createSpaceDances(game: Game): void {
+  for (let i = 0; i < ENTITY_COUNTS.SPACE_DANCES; i++) {
+    const spaceDance = new SpaceDance(getRandomPosition(), generateSpaceName());
+    spaceDance.name = generateSpaceName();
+    // Destinations get themselves as their home
+    spaceDance.home = spaceDance;
+    
+    const danceDesign = createEntityGraphic(EntityGraphicStyle.SpaceDance);
+    spaceDance.graphics.use(danceDesign);
+    
+    game.currentScene.add(spaceDance);
+  }
+}
+
+/**
+ * Creates space fun venues where entities can socialize and spend money.
+ */
+function createSpaceFuns(game: Game): void {
+  for (let i = 0; i < ENTITY_COUNTS.SPACE_FUNS; i++) {
+    const spaceFun = new SpaceFun(getRandomPosition(), generateSpaceName());
+    spaceFun.name = generateSpaceName();
+    // Destinations get themselves as their home
+    spaceFun.home = spaceFun;
+    
+    const funDesign = createEntityGraphic(EntityGraphicStyle.SpaceFun);
+    spaceFun.graphics.use(funDesign);
+    
+    game.currentScene.add(spaceFun);
+  }
+}
+
+/**
  * Creates space apartments in the game world.
  */
 function createSpaceApartments(game: Game): void {
@@ -618,6 +693,9 @@ function initializeGameEntities(game: Game): void {
   createSpaceStations(game);
   createAsteroids(game);
   createSpaceBars(game);
+  createSpaceCafes(game);
+  createSpaceDances(game);
+  createSpaceFuns(game);
   createSpaceApartments(game); // Create apartments before ships so they can be assigned as homes
   createPirateDens(game); // Create pirate dens before pirates so they can be assigned as homes
   createMiners(game);
@@ -705,6 +783,9 @@ export type TabType =
   | "stations"
   | "asteroids"
   | "spacebars"
+  | "spacecafes"
+  | "spacedances"
+  | "spacefuns"
   | "spaceapartments"
   | "bartenders"
   | "pirates"

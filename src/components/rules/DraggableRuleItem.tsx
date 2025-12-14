@@ -62,6 +62,8 @@ export function DraggableRuleItem({
         validTypes = [MeepleType.SpaceStation];
         break;
       case LogicRuleActionType.SocializeAtBar:
+        validTypes = [MeepleType.SpaceBar, MeepleType.SpaceCafe, MeepleType.SpaceDance, MeepleType.SpaceFun];
+        break;
       case LogicRuleActionType.WorkAtBar:
         validTypes = [MeepleType.SpaceBar];
         break;
@@ -341,7 +343,12 @@ export function DraggableRuleItem({
                     // Filter based on action type
                     (rule.action === LogicRuleActionType.MineOreFromAsteroid && type === MeepleType.Asteroid) ||
                     (rule.action === LogicRuleActionType.SellOreToStation && type === MeepleType.SpaceStation) ||
-                    (rule.action === LogicRuleActionType.SocializeAtBar && type === MeepleType.SpaceBar) ||
+                    (rule.action === LogicRuleActionType.SocializeAtBar && (
+                      type === MeepleType.SpaceBar ||
+                      type === MeepleType.SpaceCafe ||
+                      type === MeepleType.SpaceDance ||
+                      type === MeepleType.SpaceFun
+                    )) ||
                     (rule.action === LogicRuleActionType.WorkAtBar && type === MeepleType.SpaceBar) ||
                     (rule.action === LogicRuleActionType.BuyProductFromStation && type === MeepleType.SpaceStation) ||
                     (rule.action === LogicRuleActionType.SellProductToStation && type === MeepleType.SpaceStation) ||

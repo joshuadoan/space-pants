@@ -4,6 +4,7 @@ import {
   IconBolt,
   IconBuilding,
   IconBulb,
+  IconCoffee,
   IconCurrencyDollar,
   IconEdit,
   IconHeart,
@@ -11,12 +12,14 @@ import {
   IconInfoCircle,
   IconMeteor,
   IconMoodSmile,
+  IconMusic,
   IconPick,
   IconPlus,
   IconRefresh,
   IconRocket,
   IconShip,
   IconSatellite,
+  IconStar,
   IconTarget,
   IconUsers,
 } from "@tabler/icons-react";
@@ -27,6 +30,7 @@ import { getGoodLabel } from "../utils/goodsMetadata";
 import { GoodsDisplay } from "./GoodsDisplay";
 import { RulesForm } from "./RulesForm";
 import { RulesReadOnly } from "./RulesReadOnly";
+import { DiaryDisplay } from "./DiaryDisplay";
 
 type TabType = "details" | "rules" | "create" | "edit";
 
@@ -148,7 +152,7 @@ function MeepleTabsSection({
       <div className="mt-3 px-1">
         {tabState.activeTab === "details" && (
           <div className="w-full">
-            {/* Details content will go here */}
+            <DiaryDisplay diary={meeple.diary} />
           </div>
         )}
         {tabState.activeTab === "rules" && (
@@ -189,10 +193,12 @@ export function MeepleCard({
   meeple,
   onMeepleNameClick,
   onScrollToCard,
+  isSelected = false,
 }: {
   meeple: Meeple;
   onMeepleNameClick: () => void;
   onScrollToCard?: () => void;
+  isSelected?: boolean;
 }) {
   return (
     <div className="card-body p-0 gap-2">
@@ -295,6 +301,39 @@ export function MeepleCard({
                 <span className="badge badge-sm badge-warning badge-outline flex items-center gap-1">
                   <IconBeer size={14} className="cursor-pointer" />
                   Space Bar
+                </span>
+              </div>
+            ),
+            [MeepleType.SpaceCafe]: (
+              <div className="tooltip">
+                <div className="tooltip-content">
+                  <div className="text-sm font-semibold text-base-content">Space Cafe</div>
+                </div>
+                <span className="badge badge-sm badge-warning badge-outline flex items-center gap-1">
+                  <IconCoffee size={14} className="cursor-pointer" />
+                  Space Cafe
+                </span>
+              </div>
+            ),
+            [MeepleType.SpaceDance]: (
+              <div className="tooltip">
+                <div className="tooltip-content">
+                  <div className="text-sm font-semibold text-base-content">Space Dance</div>
+                </div>
+                <span className="badge badge-sm badge-warning badge-outline flex items-center gap-1">
+                  <IconMusic size={14} className="cursor-pointer" />
+                  Space Dance
+                </span>
+              </div>
+            ),
+            [MeepleType.SpaceFun]: (
+              <div className="tooltip">
+                <div className="tooltip-content">
+                  <div className="text-sm font-semibold text-base-content">Space Fun</div>
+                </div>
+                <span className="badge badge-sm badge-warning badge-outline flex items-center gap-1">
+                  <IconStar size={14} className="cursor-pointer" />
+                  Space Fun
                 </span>
               </div>
             ),
@@ -525,6 +564,9 @@ export function MeepleCard({
       {(meeple.type === MeepleType.Asteroid ||
         meeple.type === MeepleType.SpaceStation ||
         meeple.type === MeepleType.SpaceBar ||
+        meeple.type === MeepleType.SpaceCafe ||
+        meeple.type === MeepleType.SpaceDance ||
+        meeple.type === MeepleType.SpaceFun ||
         meeple.type === MeepleType.SpaceApartments ||
         meeple.type === MeepleType.PirateDen) && (
         <>
@@ -555,6 +597,9 @@ export function MeepleCard({
                         [MeepleType.Asteroid]: <IconMeteor size={14} className="cursor-pointer" />,
                         [MeepleType.SpaceStation]: <IconSatellite size={14} className="cursor-pointer" />,
                         [MeepleType.SpaceBar]: <IconBeer size={14} className="cursor-pointer" />,
+                        [MeepleType.SpaceCafe]: <IconCoffee size={14} className="cursor-pointer" />,
+                        [MeepleType.SpaceDance]: <IconMusic size={14} className="cursor-pointer" />,
+                        [MeepleType.SpaceFun]: <IconStar size={14} className="cursor-pointer" />,
                         [MeepleType.SpaceApartments]: <IconBuilding size={14} className="cursor-pointer" />,
                         [MeepleType.Bartender]: <IconBeer size={14} className="cursor-pointer" />,
                         [MeepleType.Player]: <IconRocket size={14} className="cursor-pointer" />,
@@ -573,11 +618,15 @@ export function MeepleCard({
           </div>
         </>
       )}
-      <div className="divider my-1"></div>
-      <MeepleTabsSection 
-        meeple={meeple} 
-        onScrollToCard={onScrollToCard}
-      />
+      {isSelected && (
+        <>
+          <div className="divider my-1"></div>
+          <MeepleTabsSection 
+            meeple={meeple} 
+            onScrollToCard={onScrollToCard}
+          />
+        </>
+      )}
     </div>
   );
 }

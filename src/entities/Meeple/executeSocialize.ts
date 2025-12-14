@@ -1,6 +1,6 @@
 import { DEFAULT_ENERGY, SOCIALIZING_DELAY_MS } from "../game-config";
 import { MeepleStateType, MeepleStats, MeepleType, Resources } from "../types";
-import { findDestination, getRandomSpaceBar } from "./meepleFinders";
+import { findDestination, getRandomSocializingDestination } from "./meepleFinders";
 import { visitTarget } from "./visitTarget";
 import type { Meeple } from "./Meeple";
 
@@ -9,15 +9,18 @@ export function executeSocialize(
   destinationName?: string,
   destinationType?: MeepleType
 ): void {
-  const spaceBar =
-    findDestination(meeple, destinationName, destinationType ?? MeepleType.SpaceBar) ??
-    getRandomSpaceBar(meeple);
-  if (!spaceBar) return;
+  // If a specific destination type is provided, use it; otherwise default to SpaceBar for backward compatibility
+  const defaultType = destinationType ?? MeepleType.SpaceBar;
+  
+  const destination =
+    findDestination(meeple, destinationName, defaultType) ??
+    getRandomSocializingDestination(meeple, defaultType);
+  if (!destination) return;
 
   const moneyAmount = meeple.goods[Resources.Money] ?? 0;
-  visitTarget(meeple, spaceBar, MeepleStateType.Socializing, () => {
+  visitTarget(meeple, destination, MeepleStateType.Socializing, () => {
     meeple.transact("remove", Resources.Money, moneyAmount);
-    spaceBar.transact("add", Resources.Money, moneyAmount);
+    destination.transact("add", Resources.Money, moneyAmount);
     meeple.dispatch({
       type: "set-good",
       payload: { good: MeepleStats.Energy, quantity: DEFAULT_ENERGY },

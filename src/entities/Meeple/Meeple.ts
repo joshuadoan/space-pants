@@ -23,6 +23,7 @@ import {
   type LogicRule,
   type MeepleState,
   type RuleId,
+  type DiaryEntry,
 } from "../types";
 import { evaluateRule } from "../../utils/ruleUtils";
 
@@ -49,17 +50,35 @@ export class Meeple extends Actor {
   chaseStartTime: number = 0; // When the chase started
   hasStolen: boolean = false; // Whether money has been stolen in current chase
   lastLaserFireTime: number = 0; // When the last laser was fired
+  diary: DiaryEntry[] = []; // Stores the last 20 actions/rules for storytelling
 
   private lastUpdateTime: number = 0;
+  private isRecordingRuleExecution: boolean = false; // Flag to prevent duplicate diary entries
   private isBrokenVisualApplied: boolean = false; // Track if broken visual effect is applied
   private originalColors: Map<Rectangle, import("excalibur").Color> = new Map(); // Store original colors for restoration
   private originalSpeed: number | null = null; // Store original speed before breaking
   private previousStateType: MeepleStateType | null = null; // Track previous state to detect transitions
 
   /**
+   * Add an entry to the diary, maintaining a maximum of 20 entries
+   */
+  addDiaryEntry(entry: Omit<DiaryEntry, "timestamp">): void {
+    const fullEntry: DiaryEntry = {
+      ...entry,
+      timestamp: Date.now(),
+    };
+    this.diary.push(fullEntry);
+    // Keep only the last 20 entries
+    if (this.diary.length > 20) {
+      this.diary.shift();
+    }
+  }
+
+  /**
    * Dispatch an action to update state and goods
    */
   dispatch(action: MeepleAction): void {
+    const previousState = this.state;
     const newState = meepleReducer(
       {
         goods: this.goods,
@@ -69,6 +88,21 @@ export class Meeple extends Actor {
     );
     this.goods = newState.goods;
     this.state = newState.state;
+    
+    // Record state change in diary if state actually changed
+    // Skip if we're in the middle of recording a rule execution (to avoid duplicates)
+    if (previousState.type !== newState.state.type && !this.isRecordingRuleExecution) {
+      const targetName = "target" in newState.state ? newState.state.target?.name ?? null : null;
+      // Create a snapshot of goods at this moment
+      const goodsSnapshot = { ...this.goods };
+      this.addDiaryEntry({
+        ruleId: null,
+        action: null,
+        state: newState.state.type,
+        targetName,
+        goods: goodsSnapshot,
+      });
+    }
   }
 
   constructor(
@@ -167,6 +201,12 @@ export class Meeple extends Actor {
         this.hasStolen = false;
       }
       this.dispatch({ type: "set-broken" });
+    }
+    
+    // Check if health is above 0 and clear broken state if needed
+    // This handles cases where health is restored through other means
+    if (currentHealth > 0 && this.state.type === MeepleStateType.Broken) {
+      this.dispatch({ type: "set-idle" });
     }
 
     // Check if state transitioned from Broken to non-Broken
@@ -296,6 +336,9 @@ export class Meeple extends Actor {
             m.type === MeepleType.Asteroid ||
             m.type === MeepleType.SpaceStation ||
             m.type === MeepleType.SpaceBar ||
+            m.type === MeepleType.SpaceCafe ||
+            m.type === MeepleType.SpaceDance ||
+            m.type === MeepleType.SpaceFun ||
             m.type === MeepleType.SpaceApartments ||
             m.type === MeepleType.PirateDen
           ) {
@@ -409,8 +452,22 @@ export class Meeple extends Actor {
 
       if (evaluateRule(rule, this.goods[goodToCheck] ?? 0)) {
         this.activeRuleId = rule.id;
+        // Set flag to prevent duplicate state change entries
+        this.isRecordingRuleExecution = true;
         const actionExecuted = executeRuleAction(this, rule);
+        this.isRecordingRuleExecution = false;
         if (actionExecuted) {
+          // Record rule execution in diary (state change already happened in executeRuleAction)
+          const targetName = "target" in this.state ? this.state.target?.name ?? null : null;
+          // Create a snapshot of goods at this moment
+          const goodsSnapshot = { ...this.goods };
+          this.addDiaryEntry({
+            ruleId: rule.id,
+            action: rule.action,
+            state: this.state.type,
+            targetName,
+            goods: goodsSnapshot,
+          });
           ruleMatched = true;
           break; // Only execute one rule per update cycle
         }

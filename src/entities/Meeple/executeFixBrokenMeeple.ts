@@ -51,11 +51,13 @@ export function executeFixBrokenMeeple(meeple: Meeple): boolean {
     nearestBroken,
     MeepleStateType.Transacting,
     () => {
-      // Fix the broken meeple: restore health to max
+      // Fix the broken meeple: restore health to max and clear broken state
       nearestBroken!.dispatch({
         type: "set-good",
         payload: { good: MeepleStats.Health, quantity: DEFAULT_HEALTH },
       });
+      // Clear broken state by setting to idle
+      nearestBroken!.dispatch({ type: "set-idle" });
       // Mechanic earns 1 dollar for fixing
       meeple.dispatch({
         type: "add-good",

@@ -320,6 +320,7 @@ function App() {
                     block: "nearest",
                   });
                 }}
+                isSelected={activeMeeple?.id === entity.id}
               />
             </div>
           ))}

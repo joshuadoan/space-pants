@@ -11,9 +11,12 @@ import {
   IconPlus,
   IconHelp,
   IconTool,
+  IconCoffee,
+  IconMusic,
+  IconStar,
 } from "@tabler/icons-react";
 
-type TabType = "traders" | "miners" | "stations" | "asteroids" | "spacebars" | "spaceapartments" | "bartenders" | "pirates" | "piratedens" | "mechanics" | "all" | "player" | "my-meeples" | "create" | "help";
+type TabType = "traders" | "miners" | "stations" | "asteroids" | "spacebars" | "spacecafes" | "spacedances" | "spacefuns" | "spaceapartments" | "bartenders" | "pirates" | "piratedens" | "mechanics" | "all" | "player" | "my-meeples" | "create" | "help";
 
 type MainTabType = "ships" | "destinations" | "player" | "help";
 
@@ -23,6 +26,9 @@ type MeepleCounts = {
   asteroids: number;
   stations: number;
   spacebars: number;
+  spacecafes: number;
+  spacedances: number;
+  spacefuns: number;
   spaceapartments: number;
   bartenders: number;
   pirates: number;
@@ -95,6 +101,9 @@ const DESTINATION_SUBTABS: { value: TabType; label: string; icon: React.Componen
   { value: "stations", label: "Stations", icon: IconSatellite, badgeColor: "badge-info" },
   { value: "asteroids", label: "Asteroids", icon: IconMeteor, badgeColor: "badge-accent" },
   { value: "spacebars", label: "Space Bars", icon: IconBeer, badgeColor: "badge-warning" },
+  { value: "spacecafes", label: "Space Cafes", icon: IconCoffee, badgeColor: "badge-warning" },
+  { value: "spacedances", label: "Space Dances", icon: IconMusic, badgeColor: "badge-warning" },
+  { value: "spacefuns", label: "Space Fun", icon: IconStar, badgeColor: "badge-warning" },
   { value: "spaceapartments", label: "Space Apartments", icon: IconBuilding, badgeColor: "badge-info" },
   { value: "piratedens", label: "Pirate Dens", icon: IconBuilding, badgeColor: "badge-error" },
 ];
@@ -110,7 +119,7 @@ export function Tabs({ activeTab, onTabChange, meepleCounts, customMeeplesCount 
 
   // Calculate aggregate counts for main tabs
   const shipsCount = meepleCounts.traders + meepleCounts.miners + meepleCounts.bartenders + meepleCounts.pirates + meepleCounts.mechanics;
-  const destinationsCount = meepleCounts.stations + meepleCounts.asteroids + meepleCounts.spacebars + meepleCounts.spaceapartments + meepleCounts.piratedens;
+  const destinationsCount = meepleCounts.stations + meepleCounts.asteroids + meepleCounts.spacebars + meepleCounts.spacecafes + meepleCounts.spacedances + meepleCounts.spacefuns + meepleCounts.spaceapartments + meepleCounts.piratedens;
 
   const handleMainTabChange = (mainTab: MainTabType) => {
     // Update parent component with the appropriate tab

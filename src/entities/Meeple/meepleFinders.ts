@@ -95,6 +95,38 @@ export function getRandomSpaceBar(meeple: Meeple): Meeple | undefined {
 }
 
 /**
+ * Gets a random socializing destination (SpaceBar, SpaceCafe, SpaceDance, or SpaceFun) from the scene.
+ */
+export function getRandomSocializingDestination(
+  meeple: Meeple,
+  destinationType?: MeepleType
+): Meeple | undefined {
+  const meeples = meeple.scene?.actors.filter(
+    (a: Actor) => a instanceof Meeple
+  ) as Meeple[];
+  
+  // If a specific type is provided, use it
+  if (destinationType) {
+    const destinations = meeples.filter(
+      (m: Meeple) => m.type === destinationType && m !== meeple
+    );
+    return destinations?.[Math.floor(Math.random() * destinations.length)] ?? undefined;
+  }
+  
+  // Otherwise, get a random destination from any socializing type
+  const socializingTypes = [
+    MeepleType.SpaceBar,
+    MeepleType.SpaceCafe,
+    MeepleType.SpaceDance,
+    MeepleType.SpaceFun,
+  ];
+  const destinations = meeples.filter(
+    (m: Meeple) => socializingTypes.includes(m.type) && m !== meeple
+  );
+  return destinations?.[Math.floor(Math.random() * destinations.length)] ?? undefined;
+}
+
+/**
  * Gets a random space apartments from the scene.
  */
 export function getRandomSpaceApartments(meeple: Meeple): Meeple | undefined {
