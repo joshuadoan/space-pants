@@ -1,4 +1,4 @@
-import { MeepleStateType } from "../types";
+import { MeepleStateType, MeepleStats } from "../types";
 
 import type { MeepleAction, MeepleReducerState } from "./meepleTypes";
 
@@ -55,20 +55,31 @@ export function meepleReducer(
         },
       };
     case "remove-good":
+      const currentValue = state.goods[action.payload.good] || 0;
+      const newValue = currentValue - action.payload.quantity;
+      // Ensure health never drops below 0
+      const clampedValue =
+        action.payload.good === MeepleStats.Health
+          ? Math.max(0, newValue)
+          : newValue;
       return {
         ...state,
         goods: {
           ...state.goods,
-          [action.payload.good]:
-            (state.goods[action.payload.good] || 0) - action.payload.quantity,
+          [action.payload.good]: clampedValue,
         },
       };
     case "set-good":
+      // Ensure health never drops below 0
+      const setValue =
+        action.payload.good === MeepleStats.Health
+          ? Math.max(0, action.payload.quantity)
+          : action.payload.quantity;
       return {
         ...state,
         goods: {
           ...state.goods,
-          [action.payload.good]: action.payload.quantity,
+          [action.payload.good]: setValue,
         },
       };
     default:

@@ -1,6 +1,5 @@
 import { Actor, Color, Rectangle, Vector } from "excalibur";
 
-import { MeepleStats, MeepleType } from "../types";
 import { Meeple } from "./Meeple";
 
 /**
@@ -11,11 +10,12 @@ import { Meeple } from "./Meeple";
 export class Laser extends Actor {
   private spawnTime: number;
   private readonly lifetime: number = 2000; // 2 seconds in milliseconds (travels twice as far)
-  private hasHitTarget: boolean = false; // Track if laser has already hit something
+  readonly owner: Meeple; // The meeple that fired this laser
 
   constructor(
     position: Vector,
     direction: Vector,
+    owner: Meeple,
     speed: number = 200
   ) {
     const laserSize = 4; // Tiny square
@@ -26,6 +26,7 @@ export class Laser extends Actor {
       height: laserSize,
     });
 
+    this.owner = owner;
     this.spawnTime = Date.now();
     
     // Normalize direction and set velocity
@@ -43,31 +44,7 @@ export class Laser extends Actor {
   }
 
   onInitialize(): void {
-    // Set up collision detection for ships
-    this.on("collisionstart", (evt) => {
-      if (this.hasHitTarget) return; // Don't process multiple hits
-      
-      const other = evt.other;
-      // Check if the other actor is a Meeple (ship)
-      if (other instanceof Meeple) {
-        // Only damage ships: Traders, Miners, and Players
-        if (
-          other.type === MeepleType.Trader ||
-          other.type === MeepleType.Miner ||
-          other.type === MeepleType.Player
-        ) {
-          // Reduce health by 10
-          other.dispatch({
-            type: "remove-good",
-            payload: { good: MeepleStats.Health, quantity: 10 },
-          });
-          
-          // Mark as hit and destroy the laser
-          this.hasHitTarget = true;
-          this.kill();
-        }
-      }
-    });
+    // Collision handling is done in Meeple.onCollisionStart
   }
 
   onPreUpdate(): void {

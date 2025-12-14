@@ -11,10 +11,10 @@ import { Resources, Products } from "./types";
 // ============================================================================
 
 /** Width of the game world in pixels */
-export const WORLD_WIDTH = 5000;
+export const WORLD_WIDTH = 1000;
 
 /** Height of the game world in pixels */
-export const WORLD_HEIGHT = 5000;
+export const WORLD_HEIGHT = 1000;
 
 /** Initial camera zoom level */
 export const CAMERA_ZOOM = 2;
@@ -27,12 +27,12 @@ export const CAMERA_ZOOM = 2;
 export const ENTITY_COUNTS = {
   TRADERS: 14,
   SPACE_STATIONS: Object.values(Products).length,
-  ASTEROIDS: 10,
+  ASTEROIDS: 3,
   MINERS: 14,
   SPACE_BARS: 10,
   SPACE_APARTMENTS: 10,
   BARTENDERS_PER_BAR: 2,
-  PIRATES: 14,
+  PIRATES: 30,
   PIRATE_DENS: 1,
 } as const;
 
@@ -212,6 +212,9 @@ export const PIRATE_STEAL_DISTANCE = 50;
 
 /** Interval between laser shots during chase in milliseconds */
 export const PIRATE_LASER_FIRE_INTERVAL_MS = 500;
+
+/** Distance at which a pirate abandons chase when near a destination (asteroid, station, etc.) */
+export const PIRATE_CHASE_ABANDON_DISTANCE = 100;
 
 /** Default transaction time in milliseconds */
 export const DEFAULT_TRANSACTION_TIME_MS = 1000;

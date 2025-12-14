@@ -1,4 +1,4 @@
-import { Actor, Scene, Vector } from "excalibur";
+import { Actor, Collider, CollisionContact, GraphicsGroup, Rectangle, Scene, Side, Vector } from "excalibur";
 
 import type { Game } from "../Game";
 import {
@@ -7,6 +7,7 @@ import {
   DEFAULT_TRANSACTION_TIME_MS,
   MEEPLE_SIZE,
   MEEPLE_UPDATE_INTERVAL_MS,
+  PIRATE_CHASE_ABANDON_DISTANCE,
   PIRATE_CHASE_DURATION_MS,
   PIRATE_LASER_FIRE_INTERVAL_MS,
   PIRATE_STEAL_DISTANCE,
@@ -50,6 +51,8 @@ export class Meeple extends Actor {
   lastLaserFireTime: number = 0; // When the last laser was fired
 
   private lastUpdateTime: number = 0;
+  private isBrokenVisualApplied: boolean = false; // Track if broken visual effect is applied
+  private originalColors: Map<Rectangle, import("excalibur").Color> = new Map(); // Store original colors for restoration
 
   /**
    * Dispatch an action to update state and goods
@@ -115,6 +118,28 @@ export class Meeple extends Actor {
       return;
   }
 
+  onCollisionStart(_self: Collider, other: Collider, _side: Side, _contact: CollisionContact): void {
+    // Check if the collision is with a Laser (bullet)
+    if (other.owner instanceof Laser) {
+      const laser = other.owner;
+      // Don't damage the meeple that fired the laser
+      if (laser.owner === this) {
+        return;
+      }
+      // Don't damage meeples of the same type as the laser owner (friendly fire prevention)
+      if (this.type === laser.owner.type) {
+        return;
+      }
+      // Remove 10 health when hit by a bullet
+      this.dispatch({
+        type: "remove-good",
+        payload: { good: MeepleStats.Health, quantity: 10 },
+      });
+      // Destroy the laser after it hits
+      laser.kill();
+    }
+  }
+
   onPreKill(_scene: Scene): void {
     // Clean up all followers when the meeple is removed
     for (const follower of this.followers.values()) {
@@ -134,6 +159,21 @@ export class Meeple extends Actor {
         this.hasStolen = false;
       }
       this.dispatch({ type: "set-broken" });
+    }
+
+    // Update visual appearance based on broken state
+    const isBroken = this.state.type === MeepleStateType.Broken;
+    if (isBroken && !this.isBrokenVisualApplied) {
+      // Apply broken visual: reduce opacity and darken
+      this.graphics.opacity = 0.5;
+      // Apply a dark gray tint by modifying the graphics group colors
+      this.applyBrokenVisual();
+      this.isBrokenVisualApplied = true;
+    } else if (!isBroken && this.isBrokenVisualApplied) {
+      // Restore normal visual
+      this.graphics.opacity = 1.0;
+      this.restoreNormalVisual();
+      this.isBrokenVisualApplied = false;
     }
 
     // If broken, stop all movement and prevent any actions
@@ -208,6 +248,43 @@ export class Meeple extends Actor {
         return;
       }
 
+      // Check if pirate is close to any destination (asteroid, station, bar, apartments, pirate den)
+      // If so, abandon chase to avoid getting stuck
+      const scene = this.scene;
+      if (scene) {
+        const allActors = scene.actors.filter(
+          (actor) => actor instanceof Meeple
+        ) as Meeple[];
+        const nearbyDestination = allActors.find((m) => {
+          if (m === this) return false;
+          // Check if it's a destination type
+          if (
+            m.type === MeepleType.Asteroid ||
+            m.type === MeepleType.SpaceStation ||
+            m.type === MeepleType.SpaceBar ||
+            m.type === MeepleType.SpaceApartments ||
+            m.type === MeepleType.PirateDen
+          ) {
+            const distanceToDestination = this.pos.distance(m.pos);
+            return distanceToDestination <= PIRATE_CHASE_ABANDON_DISTANCE;
+          }
+          return false;
+        });
+        if (nearbyDestination) {
+          // Abandon chase when close to a destination
+          this.stopMovement();
+          this.chaseTarget = null;
+          this.hasStolen = false;
+          this.dispatch({ type: "set-idle" });
+          // Only patrol if we have energy, otherwise let rule evaluation send us to recharge
+          const currentEnergy = this.goods[MeepleStats.Energy] ?? DEFAULT_ENERGY;
+          if (currentEnergy > 0) {
+            executePatrol(this);
+          }
+          return;
+        }
+      }
+
       // Calculate distance to target
       const distance = this.pos.distance(this.chaseTarget.pos);
 
@@ -252,6 +329,7 @@ export class Meeple extends Actor {
           const laser = new Laser(
             this.pos.clone(),
             direction,
+            this, // Owner of the laser
             200 // Laser speed
           );
           this.scene?.add(laser);
@@ -364,6 +442,54 @@ export class Meeple extends Actor {
         }
       }, transactionTime);
     });
+  }
+
+  /**
+   * Apply broken visual effect: darken colors and reduce opacity
+   */
+  private applyBrokenVisual(): void {
+    // Darken all colors in the graphics group
+    if (this.graphics.current instanceof GraphicsGroup) {
+      const graphicsGroup = this.graphics.current;
+      for (const member of graphicsGroup.members) {
+        const graphic = 'graphic' in member ? member.graphic : null;
+        if (graphic instanceof Rectangle) {
+          // Store original color if not already stored
+          if (!this.originalColors.has(graphic)) {
+            this.originalColors.set(graphic, graphic.color.clone());
+          }
+          
+          // Darken the color by reducing RGB values
+          const originalColor = graphic.color;
+          const darkenedColor = originalColor.clone();
+          darkenedColor.r = Math.max(0, originalColor.r * 0.3);
+          darkenedColor.g = Math.max(0, originalColor.g * 0.3);
+          darkenedColor.b = Math.max(0, originalColor.b * 0.3);
+          graphic.color = darkenedColor;
+        }
+      }
+    }
+  }
+
+  /**
+   * Restore normal visual appearance
+   */
+  private restoreNormalVisual(): void {
+    // Restore original colors
+    if (this.graphics.current instanceof GraphicsGroup) {
+      const graphicsGroup = this.graphics.current;
+      for (const member of graphicsGroup.members) {
+        const graphic = 'graphic' in member ? member.graphic : null;
+        if (graphic instanceof Rectangle) {
+          const originalColor = this.originalColors.get(graphic);
+          if (originalColor) {
+            graphic.color = originalColor.clone();
+          }
+        }
+      }
+    }
+    // Clear stored colors
+    this.originalColors.clear();
   }
 }
 
