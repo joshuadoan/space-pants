@@ -53,6 +53,8 @@ export class Meeple extends Actor {
   private lastUpdateTime: number = 0;
   private isBrokenVisualApplied: boolean = false; // Track if broken visual effect is applied
   private originalColors: Map<Rectangle, import("excalibur").Color> = new Map(); // Store original colors for restoration
+  private originalSpeed: number | null = null; // Store original speed before breaking
+  private previousStateType: MeepleStateType | null = null; // Track previous state to detect transitions
 
   /**
    * Dispatch an action to update state and goods
@@ -153,6 +155,12 @@ export class Meeple extends Actor {
     const currentHealth = this.goods[MeepleStats.Health] ?? DEFAULT_HEALTH;
     if (currentHealth <= 0 && this.state.type !== MeepleStateType.Broken) {
       this.stopMovement();
+      // Store original speed before breaking
+      if (this.originalSpeed === null) {
+        this.originalSpeed = this.speed;
+      }
+      // Set speed to zero when broken
+      this.speed = 0;
       // Stop any ongoing chase
       if (this.chaseTarget) {
         this.chaseTarget = null;
@@ -160,6 +168,30 @@ export class Meeple extends Actor {
       }
       this.dispatch({ type: "set-broken" });
     }
+
+    // Check if state transitioned from Broken to non-Broken
+    const previousWasBroken = this.previousStateType === MeepleStateType.Broken;
+    const isNowBroken = this.state.type === MeepleStateType.Broken;
+    
+    // If transitioning to broken state (via rule action or health check)
+    if (!previousWasBroken && isNowBroken) {
+      // Store original speed before breaking if not already stored
+      if (this.originalSpeed === null) {
+        this.originalSpeed = this.speed;
+      }
+      // Set speed to zero when broken
+      this.speed = 0;
+    }
+    
+    // If transitioning from broken to fixed (state changed from Broken to non-Broken)
+    if (previousWasBroken && !isNowBroken && this.originalSpeed !== null) {
+      // Restore original speed
+      this.speed = this.originalSpeed;
+      this.originalSpeed = null;
+    }
+
+    // Update previous state type for next frame
+    this.previousStateType = this.state.type;
 
     // Update visual appearance based on broken state
     const isBroken = this.state.type === MeepleStateType.Broken;
@@ -178,6 +210,8 @@ export class Meeple extends Actor {
 
     // If broken, stop all movement and prevent any actions
     if (this.state.type === MeepleStateType.Broken) {
+      // Ensure speed is zero
+      this.speed = 0;
       this.stopMovement();
       // Ensure chase is stopped
       if (this.chaseTarget) {

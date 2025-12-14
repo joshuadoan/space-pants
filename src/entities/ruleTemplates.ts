@@ -129,6 +129,25 @@ const PIRATE_RULES_ARRAY = [
   },
 ] satisfies LogicRule[];
 
+const MECHANIC_RULES_ARRAY = [
+  // Priority 2: If money is greater than or equal to 20, go to space bar to socialize
+  {
+    id: createRuleId("go-to-space-bar"),
+    good: Resources.Money,
+    operator: ComparisonOperator.GreaterThanOrEqual,
+    value: 20,
+    action: LogicRuleActionType.SocializeAtBar,
+  },
+  // Priority 3: If money is less than 20, look for and fix broken meeples
+  {
+    id: createRuleId("fix-broken-meeple"),
+    good: Resources.Money,
+    operator: ComparisonOperator.LessThan,
+    value: 20,
+    action: LogicRuleActionType.FixBrokenMeeple,
+  },
+] satisfies LogicRule[];
+
 export const TRADER_BEHAVIOR = {
   id: createBehaviorId("trader"),
   name: "Trader",
@@ -153,12 +172,19 @@ export const PIRATE_BEHAVIOR = {
   rules: PIRATE_RULES_ARRAY,
 } satisfies RuleBehavior;
 
+export const MECHANIC_BEHAVIOR = {
+  id: createBehaviorId("mechanic"),
+  name: "Mechanic",
+  rules: MECHANIC_RULES_ARRAY,
+} satisfies RuleBehavior;
+
 // Export all built-in behaviors as an array
 export const BUILT_IN_BEHAVIORS: RuleBehavior[] = [
   TRADER_BEHAVIOR,
   MINER_BEHAVIOR,
   BARTENDER_BEHAVIOR,
   PIRATE_BEHAVIOR,
+  MECHANIC_BEHAVIOR,
 ];
 
 /**
@@ -212,4 +238,5 @@ export const TRADER_RULES = TRADER_RULES_ARRAY;
 export const MINER_RULES = MINER_RULES_ARRAY;
 export const BARTENDER_RULES = BARTENDER_RULES_ARRAY;
 export const PIRATE_RULES = PIRATE_RULES_ARRAY;
+export const MECHANIC_RULES = MECHANIC_RULES_ARRAY;
 

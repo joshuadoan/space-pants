@@ -2,6 +2,7 @@ import { PIRATE_CHASE_DETECTION_DISTANCE } from "../game-config";
 import { LogicRuleActionType, MeepleType, type LogicRule } from "../types";
 import { executeChaseTarget } from "./executeChaseTarget";
 import { executeChillingAtHome } from "./executeChillingAtHome";
+import { executeFixBrokenMeeple } from "./executeFixBrokenMeeple";
 import { executeGoSelling } from "./executeGoSelling";
 import { executeGoShopping } from "./executeGoShopping";
 import { executeGoToPirateDen } from "./executeGoToPirateDen";
@@ -81,6 +82,9 @@ export function executeRuleAction(meeple: Meeple, rule: LogicRule): boolean {
       meeple.stopMovement();
       meeple.dispatch({ type: "set-broken" });
       return true;
+    case LogicRuleActionType.FixBrokenMeeple:
+      // Find and fix a broken meeple
+      return executeFixBrokenMeeple(meeple);
     default:
       // TypeScript exhaustiveness check - if we get here, we've missed a case
       const _exhaustive: never = rule.action;

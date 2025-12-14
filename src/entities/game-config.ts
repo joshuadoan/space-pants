@@ -34,6 +34,7 @@ export const ENTITY_COUNTS = {
   BARTENDERS_PER_BAR: 2,
   PIRATES: 30,
   PIRATE_DENS: 1,
+  MECHANICS: 5,
 } as const;
 
 // ============================================================================

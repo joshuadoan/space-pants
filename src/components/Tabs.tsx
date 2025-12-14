@@ -10,9 +10,10 @@ import {
   IconUsers,
   IconPlus,
   IconHelp,
+  IconTool,
 } from "@tabler/icons-react";
 
-type TabType = "traders" | "miners" | "stations" | "asteroids" | "spacebars" | "spaceapartments" | "bartenders" | "pirates" | "piratedens" | "all" | "player" | "my-meeples" | "create" | "help";
+type TabType = "traders" | "miners" | "stations" | "asteroids" | "spacebars" | "spaceapartments" | "bartenders" | "pirates" | "piratedens" | "mechanics" | "all" | "player" | "my-meeples" | "create" | "help";
 
 type MainTabType = "ships" | "destinations" | "player" | "help";
 
@@ -26,6 +27,7 @@ type MeepleCounts = {
   bartenders: number;
   pirates: number;
   piratedens: number;
+  mechanics: number;
 };
 
 type TabsProps = {
@@ -43,7 +45,7 @@ function getMainTabFromTabType(tab: TabType): MainTabType {
   if (tab === "player" || tab === "my-meeples" || tab === "create") {
     return "player";
   }
-  if (tab === "traders" || tab === "miners" || tab === "bartenders" || tab === "pirates") {
+  if (tab === "traders" || tab === "miners" || tab === "bartenders" || tab === "pirates" || tab === "mechanics") {
     return "ships";
   }
   return "destinations";
@@ -86,6 +88,7 @@ const SHIP_SUBTABS: { value: TabType; label: string; icon: React.ComponentType<{
   { value: "miners", label: "Miners", icon: IconPick, badgeColor: "badge-secondary" },
   { value: "bartenders", label: "Bartenders", icon: IconUser, badgeColor: "badge-secondary" },
   { value: "pirates", label: "Pirates", icon: IconShip, badgeColor: "badge-error" },
+  { value: "mechanics", label: "Mechanics", icon: IconTool, badgeColor: "badge-info" },
 ];
 
 const DESTINATION_SUBTABS: { value: TabType; label: string; icon: React.ComponentType<{ size?: number; className?: string }>; badgeColor: string }[] = [
@@ -106,7 +109,7 @@ export function Tabs({ activeTab, onTabChange, meepleCounts, customMeeplesCount 
   const currentSubTab = getSubTabFromTabType(activeTab, customMeeplesCount);
 
   // Calculate aggregate counts for main tabs
-  const shipsCount = meepleCounts.traders + meepleCounts.miners + meepleCounts.bartenders + meepleCounts.pirates;
+  const shipsCount = meepleCounts.traders + meepleCounts.miners + meepleCounts.bartenders + meepleCounts.pirates + meepleCounts.mechanics;
   const destinationsCount = meepleCounts.stations + meepleCounts.asteroids + meepleCounts.spacebars + meepleCounts.spaceapartments + meepleCounts.piratedens;
 
   const handleMainTabChange = (mainTab: MainTabType) => {

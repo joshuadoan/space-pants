@@ -79,6 +79,7 @@ export enum MeepleType {
   Bartender = "Bartender",
   Pirate = "Pirate",
   PirateDen = "PirateDen",
+  Mechanic = "Mechanic",
   Custom = "Custom",
 }
 
@@ -201,6 +202,7 @@ export enum LogicRuleActionType {
   GoToPirateDen = "Go To Pirate Den",
   ChaseTarget = "Chase Target",
   SetBroken = "Set Broken",
+  FixBrokenMeeple = "Fix Broken Meeple",
 }
 
 export type RuleBehavior = {

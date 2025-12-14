@@ -8,9 +8,9 @@ import {
   IconEdit,
   IconHeart,
   IconHome,
+  IconInfoCircle,
   IconMeteor,
   IconMoodSmile,
-  IconPackage,
   IconPick,
   IconPlus,
   IconRefresh,
@@ -28,7 +28,7 @@ import { GoodsDisplay } from "./GoodsDisplay";
 import { RulesForm } from "./RulesForm";
 import { RulesReadOnly } from "./RulesReadOnly";
 
-type TabType = "goods" | "rules" | "create" | "edit";
+type TabType = "details" | "rules" | "create" | "edit";
 
 type TabStateAction =
   | { type: "set-tab"; payload: TabType };
@@ -38,7 +38,7 @@ type TabState = {
 };
 
 const initialTabState: TabState = {
-  activeTab: "goods",
+  activeTab: "details",
 };
 
 function tabStateReducer(state: TabState, action: TabStateAction): TabState {
@@ -95,14 +95,14 @@ function MeepleTabsSection({
         <a
           role="tab"
           className={`tab flex items-center gap-2 font-semibold transition-all duration-200 ${
-            tabState.activeTab === "goods" 
+            tabState.activeTab === "details" 
               ? "tab-active bg-primary text-primary-content shadow-lg scale-105" 
               : "hover:bg-base-300/50"
           }`}
-          onClick={() => dispatchTab({ type: "set-tab", payload: "goods" })}
+          onClick={() => dispatchTab({ type: "set-tab", payload: "details" })}
         >
-          <IconPackage size={18} />
-          Goods
+          <IconInfoCircle size={18} />
+          Details
         </a>
         <a
           role="tab"
@@ -146,9 +146,9 @@ function MeepleTabsSection({
         )}
       </div>
       <div className="mt-3 px-1">
-        {tabState.activeTab === "goods" && (
+        {tabState.activeTab === "details" && (
           <div className="w-full">
-            <GoodsDisplay goods={meeple.goods} />
+            {/* Details content will go here */}
           </div>
         )}
         {tabState.activeTab === "rules" && (
@@ -517,6 +517,9 @@ export function MeepleCard({
             ),
           }[meeple.state.type]
         }
+      </div>
+      <div className="mb-2">
+        <GoodsDisplay goods={meeple.goods} />
       </div>
       {/* <-- Visitors */}
       {(meeple.type === MeepleType.Asteroid ||

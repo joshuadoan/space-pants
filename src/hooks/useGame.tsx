@@ -6,6 +6,7 @@ import { Vector } from "excalibur";
 import { Asteroid } from "../entities/Asteroid";
 import { Bartender } from "../entities/Bartender";
 import { Game } from "../entities/Game";
+import { Mechanic } from "../entities/Mechanic";
 import {
   ASTEROID_SIZE_RANGE,
   CAMERA_ZOOM,
@@ -19,7 +20,7 @@ import {
 } from "../entities/game-config";
 import { Meeple } from "../entities/Meeple/Meeple";
 import { PirateDen } from "../entities/PirateDen";
-import { MINER_RULES, PIRATE_RULES, TRADER_RULES, mergeRulesWithDefaults, DEFAULT_RULES } from "../entities/ruleTemplates";
+import { MINER_RULES, PIRATE_RULES, TRADER_RULES, MECHANIC_RULES, mergeRulesWithDefaults, DEFAULT_RULES } from "../entities/ruleTemplates";
 import { SpaceApartments } from "../entities/SpaceApartments";
 import { SpaceBar } from "../entities/SpaceBar";
 import { SpaceStation } from "../entities/SpaceStation";
@@ -76,6 +77,7 @@ type CategorizedMeeples = {
   bartenders: Meeple[];
   pirates: Meeple[];
   piratedens: Meeple[];
+  mechanics: Meeple[];
   all: Meeple[];
 };
 
@@ -90,6 +92,7 @@ type MeepleCounts = {
   bartenders: number;
   pirates: number;
   piratedens: number;
+  mechanics: number;
 };
 
 /** State shape for the game hook */
@@ -118,6 +121,7 @@ const emptyCategorizedMeeples: CategorizedMeeples = {
   bartenders: [],
   pirates: [],
   piratedens: [],
+  mechanics: [],
   all: [],
 };
 
@@ -131,6 +135,7 @@ const emptyMeepleCounts: MeepleCounts = {
   bartenders: 0,
   pirates: 0,
   piratedens: 0,
+  mechanics: 0,
 };
 
 const initialState: GameState = {
@@ -217,6 +222,7 @@ const MEEPLE_TYPE_TO_CATEGORY: Record<MeepleType, keyof CategorizedMeeples | nul
   [MeepleType.Bartender]: "bartenders",
   [MeepleType.Pirate]: "pirates",
   [MeepleType.PirateDen]: "piratedens",
+  [MeepleType.Mechanic]: "mechanics",
   [MeepleType.Player]: null, // Player is not categorized separately
   [MeepleType.Custom]: null, // Custom meeples are handled separately via "my-meeples" tab
 };
@@ -236,6 +242,7 @@ function categorizeMeeples(meeples: Meeple[]): CategorizedMeeples {
     bartenders: [],
     pirates: [],
     piratedens: [],
+    mechanics: [],
     all: meeples,
   };
 
@@ -261,6 +268,7 @@ function calculateMeepleCounts(categorized: CategorizedMeeples): MeepleCounts {
     spacebars: categorized.spacebars.length,
     spaceapartments: categorized.spaceapartments.length,
     bartenders: categorized.bartenders.length,
+    mechanics: categorized.mechanics.length,
     pirates: categorized.pirates.length,
     piratedens: categorized.piratedens.length,
   };
@@ -578,6 +586,29 @@ function createBartenders(game: Game): void {
 }
 
 /**
+ * Creates mechanic entities that fix broken meeples.
+ * Mechanics look for broken meeples when they have less than 10 money,
+ * and socialize when they have 10 or more money.
+ */
+function createMechanics(game: Game): void {
+  for (let i = 0; i < ENTITY_COUNTS.MECHANICS; i++) {
+    const mechanic = new Mechanic(
+      getRandomPosition(),
+      DEFAULT_SHIP_SPEED,
+      generateSpaceName()
+    );
+    mechanic.name = generateSpaceName();
+    // Mechanics get a random apartment as their home
+    mechanic.home = getRandomSpaceApartment(game);
+    
+    const mechanicDesign = createEntityGraphic(EntityGraphicStyle.Police); // Using Police style for mechanics
+    mechanic.graphics.use(mechanicDesign);
+    
+    game.currentScene.add(mechanic);
+  }
+}
+
+/**
  * Initializes all game entities in the correct order.
  * This includes background stars and all NPC entities.
  */
@@ -593,6 +624,7 @@ function initializeGameEntities(game: Game): void {
   createTraders(game);
   createBartenders(game); // Create bartenders after space bars so they can be positioned near them
   createPirates(game); // Create pirates after pirate dens so they can be assigned as homes
+  createMechanics(game); // Create mechanics to fix broken meeples
 }
 
 // ============================================================================
@@ -677,6 +709,7 @@ export type TabType =
   | "bartenders"
   | "pirates"
   | "piratedens"
+  | "mechanics"
   | "all"
   | "player"
   | "my-meeples"
