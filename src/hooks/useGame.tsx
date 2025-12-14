@@ -9,6 +9,7 @@ import { SpaceBar } from "../entities/SpaceBar";
 import { generateSpaceName } from "../entities/utils/generateSpaceName";
 import { SpaceApartments } from "../entities/SpaceApartments";
 import { Bartender } from "../entities/Bartender";
+import { PirateDen } from "../entities/PirateDen";
 import type { Actor } from "excalibur";
 import { Meeple } from "../entities/Meeple/Meeple";
 import {
@@ -23,7 +24,7 @@ import {
   TRADER_STARTING_MONEY,
 } from "../entities/game-config";
 import { MeepleType, Products, Resources } from "../entities/types";
-import { MINER_RULES, TRADER_RULES } from "../entities/ruleTemplates";
+import { MINER_RULES, TRADER_RULES, PIRATE_RULES } from "../entities/ruleTemplates";
 import { createEntityGraphic, EntityGraphicStyle } from "../entities/utils/createSpaceShipOutOfShapes";
 
 // ============================================================================
@@ -72,6 +73,8 @@ type CategorizedMeeples = {
   asteroids: Meeple[];
   spaceapartments: Meeple[];
   bartenders: Meeple[];
+  pirates: Meeple[];
+  piratedens: Meeple[];
   all: Meeple[];
 };
 
@@ -84,6 +87,8 @@ type MeepleCounts = {
   spacebars: number;
   spaceapartments: number;
   bartenders: number;
+  pirates: number;
+  piratedens: number;
 };
 
 /** State shape for the game hook */
@@ -109,6 +114,8 @@ const emptyCategorizedMeeples: CategorizedMeeples = {
   asteroids: [],
   spaceapartments: [],
   bartenders: [],
+  pirates: [],
+  piratedens: [],
   all: [],
 };
 
@@ -120,6 +127,8 @@ const emptyMeepleCounts: MeepleCounts = {
   spacebars: 0,
   spaceapartments: 0,
   bartenders: 0,
+  pirates: 0,
+  piratedens: 0,
 };
 
 const initialState: GameState = {
@@ -196,6 +205,8 @@ function categorizeMeeples(meeples: Meeple[]): CategorizedMeeples {
     asteroids: [],
     spaceapartments: [],
     bartenders: [],
+    pirates: [],
+    piratedens: [],
     all: meeples,
   };
 
@@ -214,6 +225,10 @@ function categorizeMeeples(meeples: Meeple[]): CategorizedMeeples {
       categorized.spaceapartments.push(meeple);
     } else if (meeple.type === MeepleType.Bartender) {
       categorized.bartenders.push(meeple);
+    } else if (meeple.type === MeepleType.Pirate) {
+      categorized.pirates.push(meeple);
+    } else if (meeple.type === MeepleType.PirateDen) {
+      categorized.piratedens.push(meeple);
     }
   }
 
@@ -232,6 +247,8 @@ function calculateMeepleCounts(categorized: CategorizedMeeples): MeepleCounts {
     spacebars: categorized.spacebars.length,
     spaceapartments: categorized.spaceapartments.length,
     bartenders: categorized.bartenders.length,
+    pirates: categorized.pirates.length,
+    piratedens: categorized.piratedens.length,
   };
 }
 
@@ -405,6 +422,62 @@ function getRandomSpaceApartment(game: Game): Meeple | null {
   return apartments[Math.floor(Math.random() * apartments.length)];
 }
 
+/**
+ * Gets a random pirate den from the scene.
+ */
+function getRandomPirateDen(game: Game): Meeple | null {
+  const pirateDens = game.currentScene.actors.filter(
+    (actor: Actor) => actor instanceof PirateDen
+  ) as PirateDen[];
+  if (pirateDens.length === 0) return null;
+  return pirateDens[Math.floor(Math.random() * pirateDens.length)];
+}
+
+/**
+ * Creates pirate dens in the game world.
+ */
+function createPirateDens(game: Game): void {
+  for (let i = 0; i < ENTITY_COUNTS.PIRATE_DENS; i++) {
+    const pirateDen = new PirateDen(
+      getRandomPosition(),
+      generateSpaceName()
+    );
+    pirateDen.name = generateSpaceName();
+    // Destinations get themselves as their home
+    pirateDen.home = pirateDen;
+    
+    const denDesign = createEntityGraphic(EntityGraphicStyle.SpaceApartments); // Using SpaceApartments style for now
+    pirateDen.graphics.use(denDesign);
+    
+    game.currentScene.add(pirateDen);
+  }
+}
+
+/**
+ * Creates pirate entities that patrol the space.
+ */
+function createPirates(game: Game): void {
+  for (let i = 0; i < ENTITY_COUNTS.PIRATES; i++) {
+    const pirate = new Meeple(
+      getRandomPosition(),
+      DEFAULT_SHIP_SPEED,
+      generateSpaceName(),
+      Object.values(Products)[Math.floor(Math.random() * Object.values(Products).length)]
+    );
+    pirate.name = generateSpaceName();
+    pirate.type = MeepleType.Pirate;
+    pirate.rules = PIRATE_RULES;
+    pirate.speed = DEFAULT_SHIP_SPEED;
+    // Pirates get a random pirate den as their home
+    pirate.home = getRandomPirateDen(game);
+    
+    const pirateDesign = createEntityGraphic(EntityGraphicStyle.Pirate);
+    pirate.graphics.use(pirateDesign);
+    
+    game.currentScene.add(pirate);
+  }
+}
+
 
 /**
  * Creates bartender entities - configured number of bartenders per space bar.
@@ -455,9 +528,11 @@ function initializeGameEntities(game: Game): void {
   createAsteroids(game);
   createSpaceBars(game);
   createSpaceApartments(game); // Create apartments before ships so they can be assigned as homes
+  createPirateDens(game); // Create pirate dens before pirates so they can be assigned as homes
   createMiners(game);
   createTraders(game);
   createBartenders(game); // Create bartenders after space bars so they can be positioned near them
+  createPirates(game); // Create pirates after pirate dens so they can be assigned as homes
 }
 
 // ============================================================================
@@ -540,6 +615,8 @@ export type TabType =
   | "spacebars"
   | "spaceapartments"
   | "bartenders"
+  | "pirates"
+  | "piratedens"
   | "all"
   | "player"
   | "my-meeples"

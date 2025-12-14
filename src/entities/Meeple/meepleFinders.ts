@@ -111,6 +111,21 @@ export function getRandomSpaceApartments(meeple: Meeple): Meeple | undefined {
 }
 
 /**
+ * Gets a random pirate den from the scene.
+ */
+export function getRandomPirateDen(meeple: Meeple): Meeple | undefined {
+  const meeples = meeple.scene?.actors.filter(
+    (a: Actor) => a instanceof Meeple
+  );
+  const pirateDens = meeples?.filter(
+    (m: Meeple) => m.type === MeepleType.PirateDen && m !== meeple
+  );
+  return (
+    pirateDens?.[Math.floor(Math.random() * pirateDens.length)] ?? undefined
+  );
+}
+
+/**
  * Finds a destination by name (exact match) or by type (random from that type).
  * Returns undefined if no destination is found.
  */

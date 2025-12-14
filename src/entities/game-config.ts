@@ -32,6 +32,8 @@ export const ENTITY_COUNTS = {
   SPACE_BARS: 2,
   SPACE_APARTMENTS: 2,
   BARTENDERS_PER_BAR: 1,
+  PIRATES: 3,
+  PIRATE_DENS: 1,
 } as const;
 
 // ============================================================================
@@ -59,6 +61,12 @@ export const SPACE_BAR_SIZE = {
 /** Space apartments size */
 export const SPACE_APARTMENTS_SIZE = {
   WIDTH: 50,
+  HEIGHT: 40,
+} as const;
+
+/** Pirate den size */
+export const PIRATE_DEN_SIZE = {
+  WIDTH: 40,
   HEIGHT: 40,
 } as const;
 
@@ -183,6 +191,15 @@ export const SELLING_DELAY_MS = 3000;
 
 /** Delay for space station converting ore to product in milliseconds */
 export const SPACE_STATION_CONVERSION_DELAY_MS = 3000;
+
+/** Energy cost per patrol movement for pirates */
+export const PIRATE_PATROL_ENERGY_COST = 10;
+
+/** Delay for patrolling action in milliseconds */
+export const PATROLLING_DELAY_MS = 2000;
+
+/** Delay for resting at pirate den in milliseconds */
+export const PIRATE_DEN_REST_DELAY_MS = 5000;
 
 /** Default transaction time in milliseconds */
 export const DEFAULT_TRANSACTION_TIME_MS = 1000;

@@ -7,6 +7,8 @@ import { executeWork } from "./executeWork";
 import { executeGoShopping } from "./executeGoShopping";
 import { executeGoSelling } from "./executeGoSelling";
 import { executeChillingAtHome } from "./executeChillingAtHome";
+import { executePatrol } from "./executePatrol";
+import { executeGoToPirateDen } from "./executeGoToPirateDen";
 
 export function executeRuleAction(meeple: Meeple, rule: LogicRule): void {
   switch (rule.action) {
@@ -30,6 +32,12 @@ export function executeRuleAction(meeple: Meeple, rule: LogicRule): void {
       break;
     case LogicRuleActionType.RestAtApartments:
       executeChillingAtHome(meeple, rule.destinationName, rule.destinationType);
+      break;
+    case LogicRuleActionType.Patrol:
+      executePatrol(meeple);
+      break;
+    case LogicRuleActionType.GoToPirateDen:
+      executeGoToPirateDen(meeple, rule.destinationName, rule.destinationType);
       break;
   }
 }

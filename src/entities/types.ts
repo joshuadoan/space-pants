@@ -33,6 +33,8 @@ export enum MeepleType {
   SpaceBar = "SpaceBar",
   SpaceApartments = "SpaceApartments",
   Bartender = "Bartender",
+  Pirate = "Pirate",
+  PirateDen = "PirateDen",
   Custom = "Custom",
 }
 
@@ -46,6 +48,7 @@ export enum MeepleStateType {
   Transacting = "transacting",
   Working = "working",
   Converting = "converting",
+  Patrolling = "patrolling",
 }
 
 export type MeepleStateIdle = {
@@ -92,6 +95,10 @@ export type MeepleStateConverting = {
   productType: Products;
 };
 
+export type MeepleStatePatrolling = {
+  type: MeepleStateType.Patrolling;
+};
+
 export type MeepleState =
   | MeepleStateIdle
   | MeepleStateMining
@@ -101,7 +108,8 @@ export type MeepleState =
   | MeepleStateSocializing
   | MeepleStateTransacting
   | MeepleStateWorking
-  | MeepleStateConverting;
+  | MeepleStateConverting
+  | MeepleStatePatrolling;
 
 export enum ComparisonOperator {
   Equal = "=",
@@ -131,6 +139,8 @@ export enum LogicRuleActionType {
   BuyProductFromStation = "Buy Product From Station",
   SellProductToStation = "Sell Product To Station",
   RestAtApartments = "Rest At Apartments",
+  Patrol = "Patrol",
+  GoToPirateDen = "Go To Pirate Den",
 }
 
 export type RuleBehavior = {
