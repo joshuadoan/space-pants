@@ -17,7 +17,7 @@ import { IconSatellite } from "@tabler/icons-react";
 import { IconBeer } from "@tabler/icons-react";
 import { IconRocket } from "@tabler/icons-react";
 import { IconRefresh } from "@tabler/icons-react";
-import { IconPackage, IconBulb, IconPlus, IconEdit } from "@tabler/icons-react";
+import { IconPackage, IconBulb, IconPlus, IconEdit, IconTarget } from "@tabler/icons-react";
 import { MeepleStateType, MeepleStats } from "../entities/types";
 import type { LogicRule } from "../entities/types";
 import { getGoodLabel } from "../utils/goodsMetadata";
@@ -465,6 +465,22 @@ export function MeepleCard({
                 <span className="badge badge-sm badge-error badge-outline flex items-center gap-1">
                   <IconShip size={14} className="cursor-pointer" />
                   Patrolling
+                </span>
+              </div>
+            ),
+            [MeepleStateType.Chasing]: (
+              <div className="tooltip">
+                <div className="tooltip-content">
+                  <div className="text-sm font-semibold text-base-content">
+                    Chasing {meeple.state.type === MeepleStateType.Chasing &&
+                      meeple.state.target.name}
+                  </div>
+                </div>
+                <span className="badge badge-sm badge-error badge-outline flex items-center gap-1">
+                  <IconTarget size={14} className="cursor-pointer" />
+                  Chasing{" "}
+                  {meeple.state.type === MeepleStateType.Chasing &&
+                    meeple.state.target.name}
                 </span>
               </div>
             ),

@@ -202,7 +202,7 @@ export const PATROLLING_DELAY_MS = 2000;
 export const PIRATE_DEN_REST_DELAY_MS = 5000;
 
 /** Distance at which a pirate detects and starts chasing a trader */
-export const PIRATE_CHASE_DETECTION_DISTANCE = 150;
+export const PIRATE_CHASE_DETECTION_DISTANCE = 600;
 
 /** Duration for which a pirate chases a trader in milliseconds */
 export const PIRATE_CHASE_DURATION_MS = 5000;
