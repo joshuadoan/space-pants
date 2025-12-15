@@ -1,25 +1,6 @@
-import {
-  IconUser,
-  IconShip,
-  IconPick,
-  IconMeteor,
-  IconSatellite,
-  IconBeer,
-  IconBuilding,
-  IconMapPin,
-  IconUsers,
-  IconPlus,
-  IconHelp,
-  IconTool,
-  IconCoffee,
-  IconMusic,
-  IconStar,
-  IconCurrencyDollar,
-} from "@tabler/icons-react";
+import { MAIN_TAB_ICONS, SUBTAB_ICONS, type MainTabType, type TabType } from "../utils/iconMap";
 
-type TabType = "traders" | "miners" | "stations" | "asteroids" | "spacebars" | "spacecafes" | "spacedances" | "spacefuns" | "spaceapartments" | "bartenders" | "pirates" | "piratedens" | "mechanics" | "all" | "player" | "my-meeples" | "create" | "help" | "economy";
-
-type MainTabType = "ships" | "destinations" | "player" | "help" | "economy";
+// Tab types are exported from iconMap
 
 type MeepleCounts = {
   traders: number;
@@ -27,9 +8,6 @@ type MeepleCounts = {
   asteroids: number;
   stations: number;
   spacebars: number;
-  spacecafes: number;
-  spacedances: number;
-  spacefuns: number;
   spaceapartments: number;
   bartenders: number;
   pirates: number;
@@ -87,35 +65,32 @@ function getIconColorClass(badgeColor: string): string {
 }
 
 const MAIN_TABS: { value: MainTabType; label: string; icon?: React.ComponentType<{ size?: number; className?: string }>; badgeColor?: string }[] = [
-  { value: "player", label: "Player", icon: IconUser, badgeColor: "badge-success" },
-  { value: "ships", label: "Ships", icon: IconShip, badgeColor: "badge-primary" },
-  { value: "destinations", label: "Destinations", icon: IconMapPin, badgeColor: "badge-info" },
-  { value: "economy", label: "Economy", icon: IconCurrencyDollar, badgeColor: "badge-warning" },
-  { value: "help", label: "Help", icon: IconHelp, badgeColor: "badge-accent" },
+  { value: "player", label: "Player", icon: MAIN_TAB_ICONS.player, badgeColor: "badge-success" },
+  { value: "ships", label: "Ships", icon: MAIN_TAB_ICONS.ships, badgeColor: "badge-primary" },
+  { value: "destinations", label: "Destinations", icon: MAIN_TAB_ICONS.destinations, badgeColor: "badge-info" },
+  { value: "economy", label: "Economy", icon: MAIN_TAB_ICONS.economy, badgeColor: "badge-warning" },
+  { value: "help", label: "Help", icon: MAIN_TAB_ICONS.help, badgeColor: "badge-accent" },
 ];
 
 const SHIP_SUBTABS: { value: TabType; label: string; icon: React.ComponentType<{ size?: number; className?: string }>; badgeColor: string }[] = [
-  { value: "traders", label: "Traders", icon: IconShip, badgeColor: "badge-primary" },
-  { value: "miners", label: "Miners", icon: IconPick, badgeColor: "badge-secondary" },
-  { value: "bartenders", label: "Bartenders", icon: IconUser, badgeColor: "badge-secondary" },
-  { value: "pirates", label: "Pirates", icon: IconShip, badgeColor: "badge-error" },
-  { value: "mechanics", label: "Mechanics", icon: IconTool, badgeColor: "badge-info" },
+  { value: "traders", label: "Traders", icon: SUBTAB_ICONS.traders, badgeColor: "badge-primary" },
+  { value: "miners", label: "Miners", icon: SUBTAB_ICONS.miners, badgeColor: "badge-secondary" },
+  { value: "bartenders", label: "Bartenders", icon: SUBTAB_ICONS.bartenders, badgeColor: "badge-secondary" },
+  { value: "pirates", label: "Pirates", icon: SUBTAB_ICONS.pirates, badgeColor: "badge-error" },
+  { value: "mechanics", label: "Mechanics", icon: SUBTAB_ICONS.mechanics, badgeColor: "badge-info" },
 ];
 
 const DESTINATION_SUBTABS: { value: TabType; label: string; icon: React.ComponentType<{ size?: number; className?: string }>; badgeColor: string }[] = [
-  { value: "stations", label: "Stations", icon: IconSatellite, badgeColor: "badge-info" },
-  { value: "asteroids", label: "Asteroids", icon: IconMeteor, badgeColor: "badge-accent" },
-  { value: "spacebars", label: "Space Bars", icon: IconBeer, badgeColor: "badge-warning" },
-  { value: "spacecafes", label: "Space Cafes", icon: IconCoffee, badgeColor: "badge-warning" },
-  { value: "spacedances", label: "Space Dances", icon: IconMusic, badgeColor: "badge-warning" },
-  { value: "spacefuns", label: "Space Fun", icon: IconStar, badgeColor: "badge-warning" },
-  { value: "spaceapartments", label: "Space Apartments", icon: IconBuilding, badgeColor: "badge-info" },
-  { value: "piratedens", label: "Pirate Dens", icon: IconBuilding, badgeColor: "badge-error" },
+  { value: "stations", label: "Stations", icon: SUBTAB_ICONS.stations, badgeColor: "badge-info" },
+  { value: "asteroids", label: "Asteroids", icon: SUBTAB_ICONS.asteroids, badgeColor: "badge-accent" },
+  { value: "spacebars", label: "Space Bars", icon: SUBTAB_ICONS.spacebars, badgeColor: "badge-warning" },
+  { value: "spaceapartments", label: "Space Apartments", icon: SUBTAB_ICONS.spaceapartments, badgeColor: "badge-info" },
+  { value: "piratedens", label: "Pirate Dens", icon: SUBTAB_ICONS.piratedens, badgeColor: "badge-error" },
 ];
 
 const PLAYER_SUBTABS: { value: TabType; label: string; icon: React.ComponentType<{ size?: number; className?: string }>; badgeColor: string }[] = [
-  { value: "my-meeples", label: "My Meeples", icon: IconUsers, badgeColor: "badge-success" },
-  { value: "create", label: "Create", icon: IconPlus, badgeColor: "badge-success" },
+  { value: "my-meeples", label: "My Meeples", icon: SUBTAB_ICONS["my-meeples"], badgeColor: "badge-success" },
+  { value: "create", label: "Create", icon: SUBTAB_ICONS.create, badgeColor: "badge-success" },
 ];
 
 export function Tabs({ activeTab, onTabChange, meepleCounts, customMeeplesCount = 0 }: TabsProps) {
@@ -124,7 +99,7 @@ export function Tabs({ activeTab, onTabChange, meepleCounts, customMeeplesCount 
 
   // Calculate aggregate counts for main tabs
   const shipsCount = meepleCounts.traders + meepleCounts.miners + meepleCounts.bartenders + meepleCounts.pirates + meepleCounts.mechanics;
-  const destinationsCount = meepleCounts.stations + meepleCounts.asteroids + meepleCounts.spacebars + meepleCounts.spacecafes + meepleCounts.spacedances + meepleCounts.spacefuns + meepleCounts.spaceapartments + meepleCounts.piratedens;
+  const destinationsCount = meepleCounts.stations + meepleCounts.asteroids + meepleCounts.spacebars + meepleCounts.spaceapartments + meepleCounts.piratedens;
 
   const handleMainTabChange = (mainTab: MainTabType) => {
     // Update parent component with the appropriate tab

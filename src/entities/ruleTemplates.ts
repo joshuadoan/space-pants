@@ -42,7 +42,7 @@ export const DEFAULT_RULES: LogicRule[] = [
 ];
 
 const TRADER_RULES_ARRAY = [
-  // Priority 2: If money is greater than or equal to threshold, go to a random social place (SpaceBar, SpaceCafe, SpaceDance, or SpaceFun) to socialize
+  // Priority 2: If money is greater than or equal to threshold, go to a space bar to socialize
   {
     id: createRuleId("go-to-space-bar"),
     good: Resources.Money,
@@ -72,7 +72,7 @@ const TRADER_RULES_ARRAY = [
 ] satisfies LogicRule[];
 
 const MINER_RULES_ARRAY = [
-  // if money is greater than or equal to threshold go to a random social place (SpaceBar, SpaceCafe, SpaceDance, or SpaceFun)
+  // if money is greater than or equal to threshold go to a space bar
   {
     id: createRuleId("go-to-space-bar"),
     good: Resources.Money,
@@ -138,7 +138,7 @@ const PIRATE_RULES_ARRAY = [
 ] satisfies LogicRule[];
 
 const MECHANIC_RULES_ARRAY = [
-  // Priority 2: If money is greater than or equal to threshold, go to a random social place (SpaceBar, SpaceCafe, SpaceDance, or SpaceFun) to socialize
+  // Priority 2: If money is greater than or equal to threshold, go to a space bar to socialize
   {
     id: createRuleId("go-to-space-bar"),
     good: Resources.Money,
@@ -200,34 +200,13 @@ export const BUILT_IN_BEHAVIORS: RuleBehavior[] = [
 /**
  * Merges default rules with custom rules, ensuring default rules are always at the top.
  * Filters out any custom rules that duplicate default rules (by action type).
- * Special handling for pirates: if custom rules include GoToPirateDen or if this is
- * PIRATE_RULES, replace RestAtApartments in defaults with GoToPirateDen.
  * 
  * @param customRules - Custom rules to merge with defaults
  * @returns Combined rules array with defaults first, then custom rules
  */
 export function mergeRulesWithDefaults(customRules: LogicRule[]): LogicRule[] {
-  // Check if custom rules include GoToPirateDen (for pirates)
-  const hasPirateDenRule = customRules.some(
-    rule => rule.action === LogicRuleActionType.GoToPirateDen
-  );
-  
-  // Check if this is PIRATE_RULES by checking for pirate-specific actions
-  const isPirateRules = customRules.some(
-    rule => rule.action === LogicRuleActionType.Patrol || rule.action === LogicRuleActionType.ChaseTarget
-  );
-  
-  // Create defaults, replacing RestAtApartments with GoToPirateDen for pirates
-  const defaults = DEFAULT_RULES.map(rule => {
-    if ((hasPirateDenRule || isPirateRules) && rule.action === LogicRuleActionType.RestAtApartments) {
-      return {
-        ...rule,
-        action: LogicRuleActionType.GoToPirateDen,
-        id: createRuleId("default-go-to-pirate-den-if-energy-low"),
-      };
-    }
-    return rule;
-  });
+  // Use defaults as-is (RestAtApartments works for all meeple types, including pirates)
+  const defaults = DEFAULT_RULES;
   
   // Get default rule action types to filter duplicates
   const defaultActionTypes = new Set(

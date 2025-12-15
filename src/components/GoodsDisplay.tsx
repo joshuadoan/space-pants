@@ -1,5 +1,5 @@
 import { cloneElement, isValidElement } from "react";
-import { IconMailOff } from "@tabler/icons-react";
+import { OTHER_ICONS } from "../utils/iconMap";
 
 import { MeepleStats, Resources, type Goods, type GoodType } from "../entities/types";
 import { getGoodIcon, getGoodLabel, getGoodMetadata } from "../utils/goodsMetadata";
@@ -31,7 +31,7 @@ export function GoodsDisplay({ goods }: GoodsDisplayProps) {
   if (goodsEntries.length === 0) {
     return (
       <div className="text-base-content/50 text-sm italic flex items-center gap-1">
-        <IconMailOff size={16} className="cursor-pointer" />
+        <OTHER_ICONS.mailOff size={16} className="cursor-pointer" />
         <span>No goods</span>
       </div>
     );

@@ -1,4 +1,5 @@
-import { IconCurrencyDollar, IconPick } from "@tabler/icons-react";
+import { GOODS_ICONS, IconComponent } from "../utils/iconMap";
+import { Resources } from "../entities/types";
 
 type MoneyDisplayProps = {
   amount: number;
@@ -7,7 +8,7 @@ type MoneyDisplayProps = {
 export function MoneyDisplay({ amount }: MoneyDisplayProps) {
   return (
     <span className="flex items-center gap-1">
-      <IconCurrencyDollar size={16} />
+      <IconComponent icon={GOODS_ICONS[Resources.Money]} size={16} />
       ${amount}
     </span>
   );
@@ -22,7 +23,7 @@ type OreDisplayProps = {
 export function OreDisplay({ current, max, showLabel = true }: OreDisplayProps) {
   return (
     <span className="flex items-center gap-1">
-      <IconPick size={16} />
+      <IconComponent icon={GOODS_ICONS[Resources.Ore]} size={16} />
       {current}/{max}
       {showLabel ? " ore" : ""}
     </span>

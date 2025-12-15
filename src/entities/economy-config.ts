@@ -119,11 +119,17 @@ export const ASTEROID_REGENERATION_RATE_MS = 1000;
 export const ASTEROID_REGENERATION_AMOUNT = 1;
 
 /**
- * Minimum ore threshold for space station regeneration
- * Stations regenerate ore when below this value
+ * Minimum product threshold for space station regeneration
+ * Stations regenerate their product when below this value
  * 
- * Higher values = regeneration starts earlier, more consistent production
- * Lower values = regeneration starts later, production interruptions
+ * Higher values = regeneration starts earlier, more consistent product availability
+ * Lower values = regeneration starts later, product shortages
+ */
+export const SPACE_STATION_MIN_PRODUCT_THRESHOLD = 50;
+
+/**
+ * Minimum ore threshold for space station regeneration (deprecated, kept for backward compatibility)
+ * @deprecated Use SPACE_STATION_MIN_PRODUCT_THRESHOLD instead
  */
 export const SPACE_STATION_MIN_ORE_THRESHOLD = 50;
 

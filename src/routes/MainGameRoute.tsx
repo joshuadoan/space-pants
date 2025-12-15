@@ -1,18 +1,7 @@
 import { useMemo, useReducer, useRef } from "react";
 import { useFps } from "react-fps";
 import { useOutletContext } from "react-router-dom";
-import {
-  IconArrowRight,
-  IconBulb,
-  IconClick,
-  IconDice,
-  IconGripVertical,
-  IconPlus,
-  IconRocket,
-  IconTrash,
-  IconUser,
-  IconDeviceFloppy,
-} from "@tabler/icons-react";
+import { ACTION_ICONS, OTHER_ICONS, MAIN_TAB_ICONS } from "../utils/iconMap";
 import { Vector } from "excalibur";
 
 import { MeepleCard } from "../components/MeepleCard";
@@ -235,7 +224,7 @@ export function MainGameRoute() {
                         onClick={handleRandomizeName}
                         title="Generate random name"
                       >
-                        <IconDice size={16} />
+                        <ACTION_ICONS.randomize size={16} />
                       </button>
                     </div>
                   </div>
@@ -364,7 +353,7 @@ export function MainGameRoute() {
                               onClick={handleRandomizePosition}
                               title="Randomize position"
                             >
-                              <IconDice size={16} />
+                              <ACTION_ICONS.randomize size={16} />
                             </button>
                           </div>
                         </div>
@@ -382,7 +371,7 @@ export function MainGameRoute() {
                       className="btn btn-primary flex items-center gap-2"
                       disabled={!formState.name.trim()}
                     >
-                      <IconPlus size={16} />
+                      <ACTION_ICONS.add size={16} />
                       Create New Entity
                     </button>
                   </div>
@@ -402,27 +391,27 @@ export function MainGameRoute() {
             <div className="card bg-base-100 shadow-md hover:shadow-lg transition-all duration-200 border border-base-300 rounded-lg p-4 m-2">
               <div className="card-body space-y-6">
                 <h2 className="text-2xl font-bold mb-4 flex items-center gap-2">
-                  <IconBulb size={24} className="text-warning" />
+                  <ACTION_ICONS.bulb size={24} className="text-warning" />
                   Help & Instructions
                 </h2>
 
                 {/* Selecting Meeples */}
                 <div className="bg-base-200/50 rounded-lg p-4 space-y-3">
                   <div className="text-lg font-semibold text-base-content flex items-center gap-2">
-                    <IconUser size={20} className="text-primary" />
+                    <MAIN_TAB_ICONS.player size={20} className="text-primary" />
                     Selecting & Viewing Meeples
                   </div>
                   <div className="text-sm text-base-content/80 space-y-2">
                     <div className="flex items-start gap-2">
-                      <IconClick size={16} className="text-primary mt-0.5 shrink-0" />
+                      <ACTION_ICONS.click size={16} className="text-primary mt-0.5 shrink-0" />
                       <span><span className="font-semibold">Click on any meeple's name</span> in the entity card to zoom the camera to that meeple and follow it</span>
                     </div>
                     <div className="flex items-start gap-2">
-                      <IconUser size={16} className="text-secondary mt-0.5 shrink-0" />
+                      <MAIN_TAB_ICONS.player size={16} className="text-secondary mt-0.5 shrink-0" />
                       <span>The <span className="font-semibold">active meeple</span> (the one you're following) will have a highlighted border around its card</span>
                     </div>
                     <div className="flex items-start gap-2">
-                      <IconRocket size={16} className="text-info mt-0.5 shrink-0" />
+                      <OTHER_ICONS.rocket size={16} className="text-info mt-0.5 shrink-0" />
                       <span>Use the tabs at the top to filter entities by type (Traders, Miners, Stations, etc.)</span>
                     </div>
                   </div>
@@ -431,7 +420,7 @@ export function MainGameRoute() {
                 {/* Creating Rules */}
                 <div className="bg-base-200/50 rounded-lg p-4 space-y-3">
                   <div className="text-lg font-semibold text-base-content flex items-center gap-2">
-                    <IconBulb size={20} className="text-warning" />
+                    <ACTION_ICONS.bulb size={20} className="text-warning" />
                     How to Create Rules
                   </div>
                   <div className="text-sm text-base-content/80 space-y-2">
@@ -440,19 +429,19 @@ export function MainGameRoute() {
                     </p>
                     <div className="space-y-1.5 pl-2 border-l-2 border-primary/30">
                       <div className="flex items-start gap-2">
-                        <IconGripVertical size={14} className="text-base-content/50 mt-0.5 shrink-0" />
+                        <ACTION_ICONS.drag size={14} className="text-base-content/50 mt-0.5 shrink-0" />
                         <span>Drag the <span className="font-semibold">≡</span> icon to reorder rules (they run in order!)</span>
                       </div>
                       <div className="flex items-start gap-2">
-                        <IconPlus size={14} className="text-secondary mt-0.5 shrink-0" />
+                        <ACTION_ICONS.add size={14} className="text-secondary mt-0.5 shrink-0" />
                         <span>Click <span className="font-semibold">"Add New Rule"</span> to create more rules</span>
                       </div>
                       <div className="flex items-start gap-2">
-                        <IconTrash size={14} className="text-error mt-0.5 shrink-0" />
+                        <ACTION_ICONS.delete size={14} className="text-error mt-0.5 shrink-0" />
                         <span>Click <span className="font-semibold">"Delete"</span> on any rule to remove it</span>
                       </div>
                       <div className="flex items-start gap-2">
-                        <IconDeviceFloppy size={14} className="text-success mt-0.5 shrink-0" />
+                        <ACTION_ICONS.save size={14} className="text-success mt-0.5 shrink-0" />
                         <span>Don't forget to <span className="font-semibold">"Save Behaviors"</span> when you're done!</span>
                       </div>
                     </div>
@@ -462,7 +451,7 @@ export function MainGameRoute() {
                 {/* Creating Entities */}
                 <div className="bg-base-200/50 rounded-lg p-4 space-y-3">
                   <div className="text-lg font-semibold text-base-content flex items-center gap-2">
-                    <IconPlus size={20} className="text-info" />
+                    <ACTION_ICONS.add size={20} className="text-info" />
                     Creating New Entities
                   </div>
                   <div className="text-sm text-base-content/80 space-y-2">
@@ -492,7 +481,7 @@ export function MainGameRoute() {
         aria-label="Random ship"
         type="button"
       >
-        <IconArrowRight size={24} />
+        <ACTION_ICONS.forward size={24} />
       </button>
     </>
   );

@@ -62,13 +62,16 @@ export function DraggableRuleItem({
         validTypes = [MeepleType.SpaceStation];
         break;
       case LogicRuleActionType.SocializeAtBar:
-        validTypes = [MeepleType.SpaceBar, MeepleType.SpaceCafe, MeepleType.SpaceDance, MeepleType.SpaceFun];
+        validTypes = [MeepleType.SpaceBar];
         break;
       case LogicRuleActionType.WorkAtBar:
         validTypes = [MeepleType.SpaceBar];
         break;
       case LogicRuleActionType.RestAtApartments:
-        validTypes = [MeepleType.SpaceApartments];
+        validTypes = [MeepleType.SpaceApartments, MeepleType.PirateDen];
+        break;
+      case LogicRuleActionType.ChaseTarget:
+        validTypes = [MeepleType.Trader, MeepleType.Miner, MeepleType.Player];
         break;
       default:
         return [];
@@ -285,6 +288,7 @@ export function DraggableRuleItem({
                   LogicRuleActionType.BuyProductFromStation,
                   LogicRuleActionType.SellProductToStation,
                   LogicRuleActionType.RestAtApartments,
+                  LogicRuleActionType.ChaseTarget,
                 ];
                 if (!actionsWithDestinations.includes(newAction)) {
                   onDestinationTypeChange(rule.id, undefined);
@@ -316,6 +320,7 @@ export function DraggableRuleItem({
           LogicRuleActionType.BuyProductFromStation,
           LogicRuleActionType.SellProductToStation,
           LogicRuleActionType.RestAtApartments,
+          LogicRuleActionType.ChaseTarget,
         ].includes(rule.action) && (
           <div className="flex flex-col sm:flex-row gap-3 mt-2">
             <div className="flex-1">
@@ -343,16 +348,12 @@ export function DraggableRuleItem({
                     // Filter based on action type
                     (rule.action === LogicRuleActionType.MineOreFromAsteroid && type === MeepleType.Asteroid) ||
                     (rule.action === LogicRuleActionType.SellOreToStation && type === MeepleType.SpaceStation) ||
-                    (rule.action === LogicRuleActionType.SocializeAtBar && (
-                      type === MeepleType.SpaceBar ||
-                      type === MeepleType.SpaceCafe ||
-                      type === MeepleType.SpaceDance ||
-                      type === MeepleType.SpaceFun
-                    )) ||
+                    (rule.action === LogicRuleActionType.SocializeAtBar && type === MeepleType.SpaceBar) ||
                     (rule.action === LogicRuleActionType.WorkAtBar && type === MeepleType.SpaceBar) ||
                     (rule.action === LogicRuleActionType.BuyProductFromStation && type === MeepleType.SpaceStation) ||
                     (rule.action === LogicRuleActionType.SellProductToStation && type === MeepleType.SpaceStation) ||
-                    (rule.action === LogicRuleActionType.RestAtApartments && type === MeepleType.SpaceApartments)
+                    (rule.action === LogicRuleActionType.RestAtApartments && (type === MeepleType.SpaceApartments || type === MeepleType.PirateDen)) ||
+                    (rule.action === LogicRuleActionType.ChaseTarget && (type === MeepleType.Trader || type === MeepleType.Miner || type === MeepleType.Player))
                   )
                   .map((type) => (
                     <option key={type} value={type}>

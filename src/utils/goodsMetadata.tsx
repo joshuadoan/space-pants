@@ -1,14 +1,8 @@
 import type { ComponentType, ReactElement } from "react";
-import {
-  IconBeer,
-  IconBolt,
-  IconCurrencyDollar,
-  IconHeart,
-  IconPackage,
-  IconPick,
-} from "@tabler/icons-react";
+import { IconPackage } from "@tabler/icons-react";
 
 import { MeepleStats, Products, Resources, type GoodType } from "../entities/types";
+import { GOODS_ICONS } from "./iconMap";
 
 export type GoodMetadata = {
   value: GoodType;
@@ -20,47 +14,47 @@ const GOODS_METADATA_MAP: Record<GoodType, GoodMetadata> = {
   [Resources.Money]: {
     value: Resources.Money,
     label: "Money",
-    IconComponent: IconCurrencyDollar,
+    IconComponent: GOODS_ICONS[Resources.Money],
   },
   [Resources.Ore]: {
     value: Resources.Ore,
     label: "Ore",
-    IconComponent: IconPick,
+    IconComponent: GOODS_ICONS[Resources.Ore],
   },
   [Products.Gruffle]: {
     value: Products.Gruffle,
     label: "Gruffle",
-    IconComponent: IconPackage,
+    IconComponent: GOODS_ICONS[Products.Gruffle],
   },
   [Products.Druffle]: {
     value: Products.Druffle,
     label: "Druffle",
-    IconComponent: IconPackage,
+    IconComponent: GOODS_ICONS[Products.Druffle],
   },
   [Products.Klintzpaw]: {
     value: Products.Klintzpaw,
     label: "Klintzpaw",
-    IconComponent: IconPackage,
+    IconComponent: GOODS_ICONS[Products.Klintzpaw],
   },
   [Products.Grogin]: {
     value: Products.Grogin,
     label: "Grogin",
-    IconComponent: IconPackage,
+    IconComponent: GOODS_ICONS[Products.Grogin],
   },
   [Products.Fizz]: {
     value: Products.Fizz,
     label: "Fizz",
-    IconComponent: IconBeer,
+    IconComponent: GOODS_ICONS[Products.Fizz],
   },
   [MeepleStats.Health]: {
     value: MeepleStats.Health,
     label: "Health",
-    IconComponent: IconHeart,
+    IconComponent: GOODS_ICONS[MeepleStats.Health],
   },
   [MeepleStats.Energy]: {
     value: MeepleStats.Energy,
     label: "Energy",
-    IconComponent: IconBolt,
+    IconComponent: GOODS_ICONS[MeepleStats.Energy],
   },
 };
 

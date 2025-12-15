@@ -1,21 +1,9 @@
 import { useMemo } from "react";
-import {
-  IconCurrencyDollar,
-  IconExchange,
-  IconPick,
-  IconRefresh,
-  IconClock,
-  IconTrendingUp,
-  IconCoins,
-  IconRocket,
-  IconSword,
-  IconChartBar,
-  IconBolt,
-} from "@tabler/icons-react";
 import * as economyConfig from "../entities/economy-config";
 import { useGame } from "../hooks/useGame";
 import { Resources, Products, MeepleStats, MeepleStateType } from "../entities/types";
 import { formatGoodDisplay } from "../utils/goodsMetadata";
+import { ECONOMY_ICONS, GOODS_ICONS, OTHER_ICONS, ACTION_ICONS, IconComponent } from "../utils/iconMap";
 
 type ConfigSection = {
   title: string;
@@ -91,7 +79,7 @@ export function EconomyDisplay() {
   const sections: ConfigSection[] = [
     {
       title: "Trading & Exchange Rates",
-      icon: IconExchange,
+      icon: ECONOMY_ICONS.exchange,
       color: "text-primary",
       items: [
         {
@@ -128,7 +116,7 @@ export function EconomyDisplay() {
     },
     {
       title: "Production & Mining",
-      icon: IconPick,
+      icon: GOODS_ICONS[Resources.Ore],
       color: "text-secondary",
       items: [
         {
@@ -153,7 +141,7 @@ export function EconomyDisplay() {
     },
     {
       title: "Regeneration Systems",
-      icon: IconRefresh,
+      icon: ACTION_ICONS.refresh,
       color: "text-accent",
       items: [
         {
@@ -214,7 +202,7 @@ export function EconomyDisplay() {
     },
     {
       title: "Starting Resources",
-      icon: IconRocket,
+      icon: OTHER_ICONS.rocket,
       color: "text-success",
       items: [
         {
@@ -245,7 +233,7 @@ export function EconomyDisplay() {
     },
     {
       title: "Work & Earnings",
-      icon: IconCoins,
+      icon: ECONOMY_ICONS.coins,
       color: "text-warning",
       items: [
         {
@@ -258,7 +246,7 @@ export function EconomyDisplay() {
     },
     {
       title: "Action Timings",
-      icon: IconClock,
+      icon: OTHER_ICONS.clock,
       color: "text-info",
       items: [
         {
@@ -313,7 +301,7 @@ export function EconomyDisplay() {
     },
     {
       title: "Behavioral Thresholds",
-      icon: IconTrendingUp,
+      icon: ECONOMY_ICONS.trending,
       color: "text-primary",
       items: [
         {
@@ -350,7 +338,7 @@ export function EconomyDisplay() {
     },
     {
       title: "Pirate Parameters",
-      icon: IconSword,
+      icon: ECONOMY_ICONS.sword,
       color: "text-error",
       items: [
         {
@@ -414,7 +402,7 @@ export function EconomyDisplay() {
   return (
     <div className="w-full p-4 space-y-6 overflow-y-auto">
       <div className="flex items-center gap-3 mb-6">
-        <IconCurrencyDollar size={32} className="text-primary" />
+        <IconComponent icon={GOODS_ICONS[Resources.Money]} size={32} className="text-primary" />
         <div>
           <h2 className="text-3xl font-bold text-base-content">Economy Configuration</h2>
           <p className="text-sm text-base-content/70 mt-1">
@@ -427,7 +415,7 @@ export function EconomyDisplay() {
       <div className="card bg-base-200 shadow-lg border border-base-300">
         <div className="card-body">
           <div className="flex items-center gap-2 mb-4">
-            <IconChartBar size={24} className="text-info" />
+            <ECONOMY_ICONS.chart size={24} className="text-info" />
             <h3 className="text-xl font-bold text-base-content">Aggregate Game Statistics</h3>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -480,7 +468,7 @@ export function EconomyDisplay() {
               <div className="bg-base-100 rounded-lg p-4 border border-base-300">
                 <div className="text-xs text-base-content/60 mb-1">Average Energy</div>
                 <div className="text-2xl font-bold text-warning flex items-center gap-1">
-                  <IconBolt size={20} />
+                  <IconComponent icon={GOODS_ICONS[MeepleStats.Energy]} size={20} />
                   {Math.round(aggregateStats.averageEnergy)}
                 </div>
               </div>
@@ -618,7 +606,7 @@ export function EconomyDisplay() {
       <div className="card bg-base-200 shadow-lg border border-base-300 mt-6">
         <div className="card-body">
           <div className="flex items-center gap-2 mb-4">
-            <IconTrendingUp size={24} className="text-info" />
+            <ECONOMY_ICONS.trending size={24} className="text-info" />
             <h3 className="text-xl font-bold text-base-content">
               Economic Balance Presets
             </h3>

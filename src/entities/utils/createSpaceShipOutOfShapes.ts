@@ -11,9 +11,6 @@ export enum EntityGraphicStyle {
   Bartender = "bartender",
   SpaceStation = "space-station",
   SpaceBar = "space-bar",
-  SpaceCafe = "space-cafe",
-  SpaceDance = "space-dance",
-  SpaceFun = "space-fun",
   SpaceApartments = "space-apartments",
   Pirate = "pirate",
   Police = "police",
@@ -504,140 +501,6 @@ export function createSpaceBarGraphic(): GraphicsGroup {
   });
 }
 
-export function createSpaceCafeGraphic(): GraphicsGroup {
-  const primaryColor = Color.fromHex("#8B4513"); // Brown color
-  const secondaryColor = Color.fromHex("#D2691E"); // Chocolate color
-  const accentColor = Color.fromHex("#FFE4B5"); // Moccasin for highlights
-
-  const blocks: { rect: Rectangle; offset: Vector }[] = [];
-  
-  // Main cafe body (horizontal rectangle)
-  blocks.push({ 
-    rect: new Rectangle({ width: 24, height: 8, color: primaryColor }), 
-    offset: new Vector(0, 0) 
-  });
-  
-  // Left end cap
-  blocks.push({ 
-    rect: new Rectangle({ width: 4, height: 8, color: secondaryColor }), 
-    offset: new Vector(-14, 0) 
-  });
-  
-  // Right end cap
-  blocks.push({ 
-    rect: new Rectangle({ width: 4, height: 8, color: secondaryColor }), 
-    offset: new Vector(14, 0) 
-  });
-  
-  // Top highlight
-  blocks.push({ 
-    rect: new Rectangle({ width: 20, height: 2, color: accentColor }), 
-    offset: new Vector(0, -3) 
-  });
-  
-  // Bottom highlight
-  blocks.push({ 
-    rect: new Rectangle({ width: 20, height: 2, color: accentColor }), 
-    offset: new Vector(0, 3) 
-  });
-
-  return new GraphicsGroup({
-    members: blocks.map(block => ({
-      graphic: block.rect,
-      offset: block.offset,
-    })),
-  });
-}
-
-export function createSpaceDanceGraphic(): GraphicsGroup {
-  const primaryColor = Color.fromHex("#FF1493"); // Deep pink color
-  const secondaryColor = Color.fromHex("#FF69B4"); // Hot pink color
-  const accentColor = Color.fromHex("#FFB6C1"); // Light pink for highlights
-
-  const blocks: { rect: Rectangle; offset: Vector }[] = [];
-  
-  // Main dance body (horizontal rectangle)
-  blocks.push({ 
-    rect: new Rectangle({ width: 24, height: 8, color: primaryColor }), 
-    offset: new Vector(0, 0) 
-  });
-  
-  // Left end cap
-  blocks.push({ 
-    rect: new Rectangle({ width: 4, height: 8, color: secondaryColor }), 
-    offset: new Vector(-14, 0) 
-  });
-  
-  // Right end cap
-  blocks.push({ 
-    rect: new Rectangle({ width: 4, height: 8, color: secondaryColor }), 
-    offset: new Vector(14, 0) 
-  });
-  
-  // Top highlight
-  blocks.push({ 
-    rect: new Rectangle({ width: 20, height: 2, color: accentColor }), 
-    offset: new Vector(0, -3) 
-  });
-  
-  // Bottom highlight
-  blocks.push({ 
-    rect: new Rectangle({ width: 20, height: 2, color: accentColor }), 
-    offset: new Vector(0, 3) 
-  });
-
-  return new GraphicsGroup({
-    members: blocks.map(block => ({
-      graphic: block.rect,
-      offset: block.offset,
-    })),
-  });
-}
-
-export function createSpaceFunGraphic(): GraphicsGroup {
-  const primaryColor = Color.fromHex("#00CED1"); // Dark turquoise color
-  const secondaryColor = Color.fromHex("#40E0D0"); // Turquoise color
-  const accentColor = Color.fromHex("#AFEEEE"); // Pale turquoise for highlights
-
-  const blocks: { rect: Rectangle; offset: Vector }[] = [];
-  
-  // Main fun body (horizontal rectangle)
-  blocks.push({ 
-    rect: new Rectangle({ width: 24, height: 8, color: primaryColor }), 
-    offset: new Vector(0, 0) 
-  });
-  
-  // Left end cap
-  blocks.push({ 
-    rect: new Rectangle({ width: 4, height: 8, color: secondaryColor }), 
-    offset: new Vector(-14, 0) 
-  });
-  
-  // Right end cap
-  blocks.push({ 
-    rect: new Rectangle({ width: 4, height: 8, color: secondaryColor }), 
-    offset: new Vector(14, 0) 
-  });
-  
-  // Top highlight
-  blocks.push({ 
-    rect: new Rectangle({ width: 20, height: 2, color: accentColor }), 
-    offset: new Vector(0, -3) 
-  });
-  
-  // Bottom highlight
-  blocks.push({ 
-    rect: new Rectangle({ width: 20, height: 2, color: accentColor }), 
-    offset: new Vector(0, 3) 
-  });
-
-  return new GraphicsGroup({
-    members: blocks.map(block => ({
-      graphic: block.rect,
-      offset: block.offset,
-    })),
-  });
-}
 
 export function createSpaceApartmentsGraphic(): GraphicsGroup {
   const buildingColor = Color.fromHex("#4A5568"); // Dark gray-blue
@@ -1205,12 +1068,6 @@ export function createEntityGraphic(style: EntityGraphicStyle): GraphicsGroup {
       return createSpaceStationGraphic();
     case EntityGraphicStyle.SpaceBar:
       return createSpaceBarGraphic();
-    case EntityGraphicStyle.SpaceCafe:
-      return createSpaceCafeGraphic();
-    case EntityGraphicStyle.SpaceDance:
-      return createSpaceDanceGraphic();
-    case EntityGraphicStyle.SpaceFun:
-      return createSpaceFunGraphic();
     case EntityGraphicStyle.SpaceApartments:
       return createSpaceApartmentsGraphic();
     case EntityGraphicStyle.Pirate:

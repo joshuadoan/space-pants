@@ -1,4 +1,4 @@
-import { IconTrash, IconX } from "@tabler/icons-react";
+import { ACTION_ICONS } from "../../utils/iconMap";
 
 interface RuleFormActionsProps {
   saveStatus: "idle" | "saving" | "saved";
@@ -30,7 +30,7 @@ export function RuleFormActions({
             onClick={onDeleteBehavior}
             className="btn btn-error btn-outline w-full sm:w-auto"
           >
-            <IconTrash size={14} className="mr-1" />
+            <ACTION_ICONS.delete size={14} className="mr-1" />
             Delete Rules
           </button>
         )}
@@ -40,7 +40,7 @@ export function RuleFormActions({
           onClick={onCancel}
           className="btn btn-ghost w-full sm:w-auto"
         >
-          <IconX size={14} className="mr-1" />
+          <ACTION_ICONS.cancel size={14} className="mr-1" />
           Cancel
         </button>
       )}

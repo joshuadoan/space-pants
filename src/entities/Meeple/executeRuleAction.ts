@@ -1,11 +1,10 @@
-import { PIRATE_CHASE_DETECTION_DISTANCE } from "../game-config";
-import { LogicRuleActionType, MeepleType, type LogicRule } from "../types";
+import { LogicRuleActionType, MeepleStateType, type LogicRule } from "../types";
 import { executeChaseTarget } from "./executeChaseTarget";
+import { findChaseTarget } from "./meepleFinders";
 import { executeChillingAtHome } from "./executeChillingAtHome";
 import { executeFixBrokenMeeple } from "./executeFixBrokenMeeple";
 import { executeGoSelling } from "./executeGoSelling";
 import { executeGoShopping } from "./executeGoShopping";
-import { executeGoToPirateDen } from "./executeGoToPirateDen";
 import { executeMineOre } from "./executeMineOre";
 import { executePatrol } from "./executePatrol";
 import { executeSocialize } from "./executeSocialize";
@@ -24,7 +23,11 @@ export function executeRuleAction(meeple: Meeple, rule: LogicRule): boolean {
       executeMineOre(meeple, rule.destinationName, rule.destinationType);
       return true;
     case LogicRuleActionType.SellOreToStation:
-      executeTradeOreForMoney(meeple, rule.destinationName, rule.destinationType);
+      executeTradeOreForMoney(
+        meeple,
+        rule.destinationName,
+        rule.destinationType
+      );
       return true;
     case LogicRuleActionType.SocializeAtBar:
       executeSocialize(meeple, rule.destinationName, rule.destinationType);
@@ -33,10 +36,20 @@ export function executeRuleAction(meeple: Meeple, rule: LogicRule): boolean {
       executeWork(meeple, rule.destinationName, rule.destinationType);
       return true;
     case LogicRuleActionType.BuyProductFromStation:
-      executeGoShopping(meeple, rule.productType, rule.destinationName, rule.destinationType);
+      executeGoShopping(
+        meeple,
+        rule.productType,
+        rule.destinationName,
+        rule.destinationType
+      );
       return true;
     case LogicRuleActionType.SellProductToStation:
-      executeGoSelling(meeple, rule.productType, rule.destinationName, rule.destinationType);
+      executeGoSelling(
+        meeple,
+        rule.productType,
+        rule.destinationName,
+        rule.destinationType
+      );
       return true;
     case LogicRuleActionType.RestAtApartments:
       executeChillingAtHome(meeple, rule.destinationName, rule.destinationType);
@@ -44,43 +57,48 @@ export function executeRuleAction(meeple: Meeple, rule: LogicRule): boolean {
     case LogicRuleActionType.Patrol:
       executePatrol(meeple);
       return true;
-    case LogicRuleActionType.GoToPirateDen:
-      executeGoToPirateDen(meeple, rule.destinationName, rule.destinationType);
-      return true;
     case LogicRuleActionType.ChaseTarget:
-      // Find a nearby target (trader, miner, or player) to chase (only if not already chasing)
-      if (meeple.chaseTarget) {
+      // Find a target to chase (only if not already chasing)
+      if (meeple.state.type === MeepleStateType.Chasing || !meeple.scene) {
         // Already chasing, don't start a new chase - rule was not executed
         return false;
       }
-      const scene = meeple.scene;
-      if (scene) {
-        const allActors = scene.actors.filter(
-          (actor) => actor instanceof Meeple
-        ) as Meeple[];
-        // Find the nearest target (trader, miner, or player) within detection distance
-        const nearbyTarget = allActors.find((m) => {
-          if (m === meeple) return false;
-          // Pirates can chase traders, miners, and players
-          if (m.type !== MeepleType.Trader && 
-              m.type !== MeepleType.Miner && 
-              m.type !== MeepleType.Player) {
-            return false;
-          }
-          const distance = meeple.pos.distance(m.pos);
-          return distance <= PIRATE_CHASE_DETECTION_DISTANCE;
-        });
-        if (nearbyTarget) {
-          executeChaseTarget(meeple, nearbyTarget);
-          return true; // Chase was started
-        }
+      // Use helper function to find target by name, type, or proximity
+      const target = findChaseTarget(
+        meeple,
+        rule.destinationName,
+        rule.destinationType
+      );
+      if (target) {
+        executeChaseTarget(meeple, target);
+        return true; // Chase was started
       }
-      // No nearby target found - rule was not executed, should try next rule
+      // No target found - rule was not executed, should try next rule
       return false;
     case LogicRuleActionType.SetBroken:
-      // Set the meeple to broken state and stop movement
-      meeple.stopMovement();
-      meeple.dispatch({ type: "set-broken" });
+      // Set the meeple to broken state and handle all broken state setup
+      // Only set broken if not already broken
+      if (meeple.state.type !== MeepleStateType.Broken) {
+        // Cancel all actions immediately
+        meeple.actions.clearActions();
+        meeple.stopMovement();
+        
+        // Store original speed before breaking
+        if (meeple.originalSpeed === null) {
+          meeple.originalSpeed = meeple.speed;
+        }
+        // Set speed to zero when broken
+        meeple.speed = 0;
+        
+        // Stop any ongoing chase
+        if (meeple.chaseTarget) {
+          meeple.chaseTarget = null;
+          meeple.hasStolen = false;
+        }
+        
+        // Set broken state
+        meeple.dispatch({ type: "set-broken" });
+      }
       return true;
     case LogicRuleActionType.FixBrokenMeeple:
       // Find and fix a broken meeple
@@ -92,4 +110,3 @@ export function executeRuleAction(meeple: Meeple, rule: LogicRule): boolean {
       return false;
   }
 }
-

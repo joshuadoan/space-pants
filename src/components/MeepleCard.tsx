@@ -1,33 +1,16 @@
 import { useEffect, useReducer } from "react";
-import {
-  IconBeer,
-  IconBolt,
-  IconBuilding,
-  IconBulb,
-  IconCoffee,
-  IconCurrencyDollar,
-  IconEdit,
-  IconHeart,
-  IconHome,
-  IconInfoCircle,
-  IconMeteor,
-  IconMoodSmile,
-  IconMusic,
-  IconPick,
-  IconPlus,
-  IconRefresh,
-  IconRocket,
-  IconShip,
-  IconSatellite,
-  IconStar,
-  IconTarget,
-  IconTool,
-  IconUsers,
-} from "@tabler/icons-react";
 
 import type { Meeple } from "../entities/Meeple/Meeple";
 import { MeepleStateType, MeepleStats, MeepleType, type LogicRule } from "../entities/types";
 import { getGoodLabel } from "../utils/goodsMetadata";
+import { 
+  MEEPLE_TYPE_ICONS, 
+  STATE_ICONS, 
+  GOODS_ICONS, 
+  ACTION_ICONS, 
+  OTHER_ICONS,
+  IconComponent
+} from "../utils/iconMap";
 import { GoodsDisplay } from "./GoodsDisplay";
 import { RulesForm } from "./RulesForm";
 import { RulesReadOnly } from "./RulesReadOnly";
@@ -106,7 +89,7 @@ function MeepleTabsSection({
           }`}
           onClick={() => dispatchTab({ type: "set-tab", payload: "details" })}
         >
-          <IconInfoCircle size={18} />
+          <ACTION_ICONS.info size={18} />
           Details
         </a>
         <a
@@ -118,7 +101,7 @@ function MeepleTabsSection({
           }`}
           onClick={() => dispatchTab({ type: "set-tab", payload: "rules" })}
         >
-          <IconBulb size={18} />
+          <ACTION_ICONS.bulb size={18} />
           Behaviors
         </a>
         {isCustomType && (
@@ -131,7 +114,7 @@ function MeepleTabsSection({
             }`}
             onClick={() => dispatchTab({ type: "set-tab", payload: "create" })}
           >
-            <IconPlus size={18} />
+            <ACTION_ICONS.add size={18} />
             Create
           </a>
         )}
@@ -145,7 +128,7 @@ function MeepleTabsSection({
             }`}
             onClick={() => dispatchTab({ type: "set-tab", payload: "edit" })}
           >
-            <IconEdit size={18} />
+            <ACTION_ICONS.edit size={18} />
             Edit
           </a>
         )}
@@ -215,7 +198,8 @@ export function MeepleCard({
           </h3>
           <div className="flex items-center gap-1.5 shrink-0">
             <span className="flex items-center gap-0.5 text-xs" title="Health">
-              <IconHeart 
+              <IconComponent 
+                icon={GOODS_ICONS[MeepleStats.Health]}
                 size={14} 
                 className="text-error cursor-pointer" 
                 fill={(meeple.goods[MeepleStats.Health] ?? 0) > 50 ? "currentColor" : "none"}
@@ -225,7 +209,8 @@ export function MeepleCard({
               </span>
             </span>
             <span className="flex items-center gap-0.5 text-xs" title="Energy">
-              <IconBolt 
+              <IconComponent 
+                icon={GOODS_ICONS[MeepleStats.Energy]}
                 size={14} 
                 className="text-warning cursor-pointer" 
                 fill={(meeple.goods[MeepleStats.Energy] ?? 0) > 50 ? "currentColor" : "none"}
@@ -242,7 +227,7 @@ export function MeepleCard({
       </div>
       {meeple.home && (
         <div className="flex items-center gap-1.5 mb-2 text-xs text-base-content/70">
-          <IconHome size={14} className="text-accent" />
+          <OTHER_ICONS.home size={14} className="text-accent" />
           <span className="font-medium">Home:</span>
           <span className="text-accent font-semibold">{meeple.home.name}</span>
         </div>
@@ -256,7 +241,7 @@ export function MeepleCard({
                   <div className="text-sm font-semibold text-base-content">Trader</div>
                 </div>
                 <span className="badge badge-sm badge-primary badge-outline flex items-center gap-1">
-                  <IconShip size={14} className="cursor-pointer" />
+                  <IconComponent icon={MEEPLE_TYPE_ICONS[MeepleType.Trader]} size={14} className="cursor-pointer" />
                   Trader
                 </span>
               </div>
@@ -267,7 +252,7 @@ export function MeepleCard({
                   <div className="text-sm font-semibold text-base-content">Miner</div>
                 </div>
                 <span className="badge badge-sm badge-secondary badge-outline flex items-center gap-1">
-                  <IconPick size={14} className="cursor-pointer" />
+                  <IconComponent icon={MEEPLE_TYPE_ICONS[MeepleType.Miner]} size={14} className="cursor-pointer" />
                   Miner
                 </span>
               </div>
@@ -278,7 +263,7 @@ export function MeepleCard({
                   <div className="text-sm font-semibold text-base-content">Asteroid</div>
                 </div>
                 <span className="badge badge-sm badge-accent badge-outline flex items-center gap-1">
-                  <IconMeteor size={14} className="cursor-pointer" />
+                  <IconComponent icon={MEEPLE_TYPE_ICONS[MeepleType.Asteroid]} size={14} className="cursor-pointer" />
                   Asteroid
                 </span>
               </div>
@@ -289,7 +274,7 @@ export function MeepleCard({
                   <div className="text-sm font-semibold text-base-content">Space Station</div>
                 </div>
                 <span className="badge badge-sm badge-info badge-outline flex items-center gap-1">
-                  <IconSatellite size={14} className="cursor-pointer" />
+                  <IconComponent icon={MEEPLE_TYPE_ICONS[MeepleType.SpaceStation]} size={14} className="cursor-pointer" />
                   Space Station
                 </span>
               </div>
@@ -300,41 +285,8 @@ export function MeepleCard({
                   <div className="text-sm font-semibold text-base-content">Space Bar</div>
                 </div>
                 <span className="badge badge-sm badge-warning badge-outline flex items-center gap-1">
-                  <IconBeer size={14} className="cursor-pointer" />
+                  <IconComponent icon={MEEPLE_TYPE_ICONS[MeepleType.SpaceBar]} size={14} className="cursor-pointer" />
                   Space Bar
-                </span>
-              </div>
-            ),
-            [MeepleType.SpaceCafe]: (
-              <div className="tooltip">
-                <div className="tooltip-content">
-                  <div className="text-sm font-semibold text-base-content">Space Cafe</div>
-                </div>
-                <span className="badge badge-sm badge-warning badge-outline flex items-center gap-1">
-                  <IconCoffee size={14} className="cursor-pointer" />
-                  Space Cafe
-                </span>
-              </div>
-            ),
-            [MeepleType.SpaceDance]: (
-              <div className="tooltip">
-                <div className="tooltip-content">
-                  <div className="text-sm font-semibold text-base-content">Space Dance</div>
-                </div>
-                <span className="badge badge-sm badge-warning badge-outline flex items-center gap-1">
-                  <IconMusic size={14} className="cursor-pointer" />
-                  Space Dance
-                </span>
-              </div>
-            ),
-            [MeepleType.SpaceFun]: (
-              <div className="tooltip">
-                <div className="tooltip-content">
-                  <div className="text-sm font-semibold text-base-content">Space Fun</div>
-                </div>
-                <span className="badge badge-sm badge-warning badge-outline flex items-center gap-1">
-                  <IconStar size={14} className="cursor-pointer" />
-                  Space Fun
                 </span>
               </div>
             ),
@@ -344,7 +296,7 @@ export function MeepleCard({
                   <div className="text-sm font-semibold text-base-content">Space Apartments</div>
                 </div>
                 <span className="badge badge-sm badge-info badge-outline flex items-center gap-1">
-                  <IconBuilding size={14} className="cursor-pointer" />
+                  <IconComponent icon={MEEPLE_TYPE_ICONS[MeepleType.SpaceApartments]} size={14} className="cursor-pointer" />
                   Space Apartments
                 </span>
               </div>
@@ -355,7 +307,7 @@ export function MeepleCard({
                   <div className="text-sm font-semibold text-base-content">Bartender</div>
                 </div>
                 <span className="badge badge-sm badge-accent badge-outline flex items-center gap-1">
-                  <IconBeer size={14} className="cursor-pointer" />
+                  <IconComponent icon={MEEPLE_TYPE_ICONS[MeepleType.Bartender]} size={14} className="cursor-pointer" />
                   Bartender
                 </span>
               </div>
@@ -366,7 +318,7 @@ export function MeepleCard({
                   <div className="text-sm font-semibold text-base-content">Player</div>
                 </div>
                 <span className="badge badge-sm badge-primary badge-outline flex items-center gap-1">
-                  <IconRocket size={14} className="cursor-pointer" />
+                  <IconComponent icon={MEEPLE_TYPE_ICONS[MeepleType.Player]} size={14} className="cursor-pointer" />
                   Player
                 </span>
               </div>
@@ -377,7 +329,7 @@ export function MeepleCard({
                   <div className="text-sm font-semibold text-base-content">Pirate</div>
                 </div>
                 <span className="badge badge-sm badge-error badge-outline flex items-center gap-1">
-                  <IconShip size={14} className="cursor-pointer" />
+                  <IconComponent icon={MEEPLE_TYPE_ICONS[MeepleType.Pirate]} size={14} className="cursor-pointer" />
                   Pirate
                 </span>
               </div>
@@ -388,7 +340,7 @@ export function MeepleCard({
                   <div className="text-sm font-semibold text-base-content">Pirate Den</div>
                 </div>
                 <span className="badge badge-sm badge-error badge-outline flex items-center gap-1">
-                  <IconBuilding size={14} className="cursor-pointer" />
+                  <IconComponent icon={MEEPLE_TYPE_ICONS[MeepleType.PirateDen]} size={14} className="cursor-pointer" />
                   Pirate Den
                 </span>
               </div>
@@ -399,7 +351,7 @@ export function MeepleCard({
                   <div className="text-sm font-semibold text-base-content">Mechanic</div>
                 </div>
                 <span className="badge badge-sm badge-info badge-outline flex items-center gap-1">
-                  <IconTool size={14} className="cursor-pointer" />
+                  <IconComponent icon={MEEPLE_TYPE_ICONS[MeepleType.Mechanic]} size={14} className="cursor-pointer" />
                   Mechanic
                 </span>
               </div>
@@ -410,7 +362,7 @@ export function MeepleCard({
                   <div className="text-sm font-semibold text-base-content">Custom</div>
                 </div>
                 <span className="badge badge-sm badge-ghost badge-outline flex items-center gap-1">
-                  <IconShip size={14} className="cursor-pointer" />
+                  <IconComponent icon={MEEPLE_TYPE_ICONS[MeepleType.Custom]} size={14} className="cursor-pointer" />
                   Custom
                 </span>
               </div>
@@ -425,7 +377,7 @@ export function MeepleCard({
                   <div className="text-sm font-semibold text-base-content">Idle</div>
                 </div>
                 <span className="badge badge-sm badge-ghost badge-outline flex items-center gap-1">
-                  <IconMoodSmile size={14} className="cursor-pointer" />
+                  <IconComponent icon={STATE_ICONS[MeepleStateType.Idle]} size={14} className="cursor-pointer" />
                   Idle
                 </span>
               </div>
@@ -436,7 +388,7 @@ export function MeepleCard({
                   <div className="text-sm font-semibold text-base-content">Mining</div>
                 </div>
                 <span className="badge badge-sm badge-secondary badge-outline flex items-center gap-1">
-                  <IconPick size={14} className="cursor-pointer" />
+                  <IconComponent icon={STATE_ICONS[MeepleStateType.Mining]} size={14} className="cursor-pointer" />
                   Mining
                 </span>
               </div>
@@ -450,7 +402,7 @@ export function MeepleCard({
                   </div>
                 </div>
                 <span className="badge badge-sm badge-primary badge-outline flex items-center gap-1">
-                  <IconShip size={14} className="cursor-pointer" />
+                  <IconComponent icon={STATE_ICONS[MeepleStateType.Traveling]} size={14} className="cursor-pointer" />
                   Traveling to{" "}
                   {meeple.state.type === MeepleStateType.Traveling &&
                     meeple.state.target.type}
@@ -463,7 +415,7 @@ export function MeepleCard({
                   <div className="text-sm font-semibold text-base-content">Trading</div>
                 </div>
                 <span className="badge badge-sm badge-warning badge-outline flex items-center gap-1">
-                  <IconCurrencyDollar size={14} className="cursor-pointer" />
+                  <IconComponent icon={STATE_ICONS[MeepleStateType.Trading]} size={14} className="cursor-pointer" />
                   Trading
                 </span>
               </div>
@@ -474,7 +426,7 @@ export function MeepleCard({
                   <div className="text-sm font-semibold text-base-content">Socializing</div>
                 </div>
                 <span className="badge badge-sm badge-info badge-outline flex items-center gap-1">
-                  <IconUsers size={14} className="cursor-pointer" />
+                  <IconComponent icon={STATE_ICONS[MeepleStateType.Socializing]} size={14} className="cursor-pointer" />
                   Socializing
                 </span>
               </div>
@@ -485,7 +437,7 @@ export function MeepleCard({
                   <div className="text-sm font-semibold text-base-content">Working</div>
                 </div>
                 <span className="badge badge-sm badge-success badge-outline flex items-center gap-1">
-                  <IconBeer size={14} className="cursor-pointer" />
+                  <IconComponent icon={STATE_ICONS[MeepleStateType.Working]} size={14} className="cursor-pointer" />
                   Working
                 </span>
               </div>
@@ -496,7 +448,7 @@ export function MeepleCard({
                   <div className="text-sm font-semibold text-base-content">Transacting</div>
                 </div>
                 <span className="badge badge-sm badge-warning badge-outline flex items-center gap-1">
-                  <IconCurrencyDollar size={14} className="cursor-pointer" />
+                  <IconComponent icon={STATE_ICONS[MeepleStateType.Transacting]} size={14} className="cursor-pointer" />
                   Transacting
                 </span>
               </div>
@@ -507,7 +459,7 @@ export function MeepleCard({
                   <div className="text-sm font-semibold text-base-content">Chilling</div>
                 </div>
                 <span className="badge badge-sm badge-ghost badge-outline flex items-center gap-1">
-                  <IconMoodSmile size={14} className="cursor-pointer" />
+                  <IconComponent icon={STATE_ICONS[MeepleStateType.Chilling]} size={14} className="cursor-pointer" />
                   Chilling
                 </span>
               </div>
@@ -521,7 +473,7 @@ export function MeepleCard({
                   </div>
                 </div>
                 <span className="badge badge-sm badge-accent badge-outline flex items-center gap-1">
-                  <IconRefresh size={14} className="cursor-pointer" />
+                  <IconComponent icon={STATE_ICONS[MeepleStateType.Converting]} size={14} className="cursor-pointer" />
                   Converting to{" "}
                   {meeple.state.type === MeepleStateType.Converting &&
                     getGoodLabel(meeple.state.productType)}
@@ -534,7 +486,7 @@ export function MeepleCard({
                   <div className="text-sm font-semibold text-base-content">Patrolling</div>
                 </div>
                 <span className="badge badge-sm badge-error badge-outline flex items-center gap-1">
-                  <IconShip size={14} className="cursor-pointer" />
+                  <IconComponent icon={STATE_ICONS[MeepleStateType.Patrolling]} size={14} className="cursor-pointer" />
                   Patrolling
                 </span>
               </div>
@@ -548,7 +500,7 @@ export function MeepleCard({
                   </div>
                 </div>
                 <span className="badge badge-sm badge-error badge-outline flex items-center gap-1">
-                  <IconTarget size={14} className="cursor-pointer" />
+                  <OTHER_ICONS.target size={14} className="cursor-pointer" />
                   Chasing{" "}
                   {meeple.state.type === MeepleStateType.Chasing &&
                     meeple.state.target.name}
@@ -561,7 +513,7 @@ export function MeepleCard({
                   <div className="text-sm font-semibold text-base-content">Broken</div>
                 </div>
                 <span className="badge badge-sm badge-error badge-outline flex items-center gap-1">
-                  <IconBolt size={14} className="cursor-pointer" />
+                  <IconComponent icon={STATE_ICONS[MeepleStateType.Broken]} size={14} className="cursor-pointer" />
                   Broken
                 </span>
               </div>
@@ -576,9 +528,6 @@ export function MeepleCard({
       {(meeple.type === MeepleType.Asteroid ||
         meeple.type === MeepleType.SpaceStation ||
         meeple.type === MeepleType.SpaceBar ||
-        meeple.type === MeepleType.SpaceCafe ||
-        meeple.type === MeepleType.SpaceDance ||
-        meeple.type === MeepleType.SpaceFun ||
         meeple.type === MeepleType.SpaceApartments ||
         meeple.type === MeepleType.PirateDen) && (
         <>
@@ -586,7 +535,7 @@ export function MeepleCard({
           <div className="space-y-2">
             <div className="flex items-center gap-2">
               <span className="text-sm font-semibold text-base-content flex items-center gap-1">
-                <IconUsers size={16} className="cursor-pointer" />
+                <IconComponent icon={STATE_ICONS[MeepleStateType.Socializing]} size={16} className="cursor-pointer" />
                 Visitors
               </span>
               <span className="badge badge-sm badge-ghost">
@@ -602,25 +551,7 @@ export function MeepleCard({
                     onClick={onMeepleNameClick}
                     title={`Click to zoom to ${visitor.name}`}
                   >
-                    {
-                      {
-                        [MeepleType.Trader]: <IconShip size={14} className="cursor-pointer" />,
-                        [MeepleType.Miner]: <IconPick size={14} className="cursor-pointer" />,
-                        [MeepleType.Asteroid]: <IconMeteor size={14} className="cursor-pointer" />,
-                        [MeepleType.SpaceStation]: <IconSatellite size={14} className="cursor-pointer" />,
-                        [MeepleType.SpaceBar]: <IconBeer size={14} className="cursor-pointer" />,
-                        [MeepleType.SpaceCafe]: <IconCoffee size={14} className="cursor-pointer" />,
-                        [MeepleType.SpaceDance]: <IconMusic size={14} className="cursor-pointer" />,
-                        [MeepleType.SpaceFun]: <IconStar size={14} className="cursor-pointer" />,
-                        [MeepleType.SpaceApartments]: <IconBuilding size={14} className="cursor-pointer" />,
-                        [MeepleType.Bartender]: <IconBeer size={14} className="cursor-pointer" />,
-                        [MeepleType.Player]: <IconRocket size={14} className="cursor-pointer" />,
-                        [MeepleType.Pirate]: <IconShip size={14} className="cursor-pointer" />,
-                        [MeepleType.PirateDen]: <IconBuilding size={14} className="cursor-pointer" />,
-                        [MeepleType.Mechanic]: <IconTool size={14} className="cursor-pointer" />,
-                        [MeepleType.Custom]: <IconShip size={14} className="cursor-pointer" />,
-                      }[visitor.type]
-                    }{" "}
+                    <IconComponent icon={MEEPLE_TYPE_ICONS[visitor.type]} size={14} className="cursor-pointer" />{" "}
                     {visitor.name}
                   </div>
                 ))}

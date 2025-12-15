@@ -1,23 +1,9 @@
 import { useMemo } from "react";
 import { AnimatePresence, motion } from "motion/react";
-import {
-  IconBook,
-  IconClock,
-  IconMoodSmile,
-  IconPick,
-  IconShip,
-  IconCurrencyDollar,
-  IconUsers,
-  IconBeer,
-  IconRefresh,
-  IconBolt,
-  IconHome,
-  IconArrowUp,
-  IconArrowDown,
-} from "@tabler/icons-react";
 import type { DiaryEntry } from "../entities/types";
 import { MeepleStateType, LogicRuleActionType, Resources, MeepleStats, Products } from "../entities/types";
 import { formatGoodDisplay } from "../utils/goodsMetadata";
+import { STATE_ICONS, OTHER_ICONS, ACTION_ICONS } from "../utils/iconMap";
 
 type DiaryDisplayProps = {
   diary: DiaryEntry[];
@@ -44,30 +30,22 @@ function formatRelativeTime(timestamp: number): string {
  * Get icon for a state type
  */
 function getStateIcon(state: MeepleStateType) {
-  switch (state) {
-    case MeepleStateType.Idle:
-    case MeepleStateType.Chilling:
-      return <IconMoodSmile size={14} className="text-base-content/70" />;
-    case MeepleStateType.Mining:
-      return <IconPick size={14} className="text-secondary" />;
-    case MeepleStateType.Traveling:
-    case MeepleStateType.Patrolling:
-    case MeepleStateType.Chasing:
-      return <IconShip size={14} className="text-primary" />;
-    case MeepleStateType.Trading:
-    case MeepleStateType.Transacting:
-      return <IconCurrencyDollar size={14} className="text-warning" />;
-    case MeepleStateType.Socializing:
-      return <IconUsers size={14} className="text-info" />;
-    case MeepleStateType.Working:
-      return <IconBeer size={14} className="text-success" />;
-    case MeepleStateType.Converting:
-      return <IconRefresh size={14} className="text-accent" />;
-    case MeepleStateType.Broken:
-      return <IconBolt size={14} className="text-error" />;
-    default:
-      return <IconMoodSmile size={14} className="text-base-content/70" />;
-  }
+  const Icon = STATE_ICONS[state];
+  const classNameMap: Record<MeepleStateType, string> = {
+    [MeepleStateType.Idle]: "text-base-content/70",
+    [MeepleStateType.Chilling]: "text-base-content/70",
+    [MeepleStateType.Mining]: "text-secondary",
+    [MeepleStateType.Traveling]: "text-primary",
+    [MeepleStateType.Patrolling]: "text-primary",
+    [MeepleStateType.Chasing]: "text-primary",
+    [MeepleStateType.Trading]: "text-warning",
+    [MeepleStateType.Transacting]: "text-warning",
+    [MeepleStateType.Socializing]: "text-info",
+    [MeepleStateType.Working]: "text-success",
+    [MeepleStateType.Converting]: "text-accent",
+    [MeepleStateType.Broken]: "text-error",
+  };
+  return <Icon size={14} className={classNameMap[state] || "text-base-content/70"} />;
 }
 
 /**
@@ -196,9 +174,6 @@ function generateNarrative(entry: DiaryEntry, previousEntry: DiaryEntry | null):
       case LogicRuleActionType.ChaseTarget:
         return `Chasing ${targetName || "a target"} through space`;
         
-      case LogicRuleActionType.GoToPirateDen:
-        return `Returning to ${targetName || "the pirate den"}`;
-        
       case LogicRuleActionType.SetBroken:
         return "System failure! Needs repairs";
         
@@ -243,7 +218,7 @@ export function DiaryDisplay({ diary }: DiaryDisplayProps) {
   if (diary.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-8 text-base-content/50">
-        <IconBook size={32} className="mb-2 opacity-50" />
+        <OTHER_ICONS.book size={32} className="mb-2 opacity-50" />
         <p className="text-sm italic">No diary entries yet</p>
         <p className="text-xs mt-1">Start doing things to see your story!</p>
       </div>
@@ -253,7 +228,7 @@ export function DiaryDisplay({ diary }: DiaryDisplayProps) {
   return (
     <div className="w-full">
       <div className="flex items-center gap-2 mb-3">
-        <IconBook size={18} className="text-primary" />
+        <OTHER_ICONS.book size={18} className="text-primary" />
         <h4 className="text-sm font-semibold text-base-content">Diary</h4>
       </div>
       <div className="space-y-2 max-h-96 overflow-y-auto pr-2">
@@ -314,7 +289,7 @@ export function DiaryDisplay({ diary }: DiaryDisplayProps) {
                   </span>
                 </div>
                 <div className="flex items-center gap-1 text-xs text-base-content/50 shrink-0">
-                  <IconClock size={12} />
+                  <OTHER_ICONS.clock size={12} />
                   <span>{formatRelativeTime(entry.timestamp)}</span>
                 </div>
               </div>
@@ -327,7 +302,7 @@ export function DiaryDisplay({ diary }: DiaryDisplayProps) {
                       key={`gain-${change.good}`}
                       className="flex items-center gap-1 text-success font-medium"
                     >
-                      <IconArrowUp size={10} />
+                      <ACTION_ICONS.up size={10} />
                       <span>+{formatGoodDisplay(change.good as any, change.change)}</span>
                     </span>
                   ))}
@@ -336,7 +311,7 @@ export function DiaryDisplay({ diary }: DiaryDisplayProps) {
                       key={`loss-${change.good}`}
                       className="flex items-center gap-1 text-error font-medium"
                     >
-                      <IconArrowDown size={10} />
+                      <ACTION_ICONS.down size={10} />
                       <span>-{formatGoodDisplay(change.good as any, change.change)}</span>
                     </span>
                   ))}
@@ -345,7 +320,7 @@ export function DiaryDisplay({ diary }: DiaryDisplayProps) {
               
               {/* Show current inventory */}
               <div className="text-xs text-base-content/60 pl-5 flex items-center gap-1">
-                <IconHome size={12} className="opacity-50" />
+                <OTHER_ICONS.home size={12} className="opacity-50" />
                 <span className="italic">Inventory: {formatGoodsSnapshot(entry.goods)}</span>
               </div>
               </motion.div>

@@ -3,30 +3,41 @@ import type { ReactNode } from "react";
 import type { Actor } from "excalibur";
 import { Vector } from "excalibur";
 
-import { Asteroid } from "../entities/Asteroid";
-import { Bartender } from "../entities/Bartender";
+import { Color, Polygon } from "excalibur";
 import { Game } from "../entities/Game";
-import { Mechanic } from "../entities/Mechanic";
 import {
+  ASTEROID_MIN_ORE_THRESHOLD,
+  ASTEROID_REGENERATION_AMOUNT,
+  ASTEROID_REGENERATION_RATE_MS,
   ASTEROID_SIZE_RANGE,
+  ASTEROID_STARTING_ORE,
   CAMERA_ZOOM,
   CANVAS_WAIT_CONFIG,
   DEFAULT_SHIP_SPEED,
   ENTITY_COUNTS,
+  FIZZ_PRICE,
   MEEPLE_LIST_UPDATE_INTERVAL_MS,
+  ORE_PER_PRODUCT,
+  PIRATE_DEN_SIZE,
+  SPACE_APARTMENTS_MAX_CAPACITY,
+  SPACE_APARTMENTS_SIZE,
+  SPACE_BAR_FIZZ_REGENERATION_AMOUNT,
+  SPACE_BAR_FIZZ_REGENERATION_RATE_MS,
+  SPACE_BAR_MIN_FIZZ_THRESHOLD,
+  SPACE_BAR_SIZE,
+  SPACE_BAR_STARTING_FIZZ,
+  SPACE_STATION_MIN_ORE_THRESHOLD,
+  SPACE_STATION_MIN_PRODUCT_THRESHOLD,
+  SPACE_STATION_ORE_REGENERATION_AMOUNT,
+  SPACE_STATION_REGENERATION_RATE_MS,
+  SPACE_STATION_SIZE,
+  SPACE_STATION_STARTING_MONEY,
   TRADER_STARTING_MONEY,
   WORLD_HEIGHT,
   WORLD_WIDTH,
 } from "../entities/game-config";
 import { Meeple } from "../entities/Meeple/Meeple";
-import { PirateDen } from "../entities/PirateDen";
-import { MINER_RULES, PIRATE_RULES, TRADER_RULES, mergeRulesWithDefaults, DEFAULT_RULES } from "../entities/ruleTemplates";
-import { SpaceApartments } from "../entities/SpaceApartments";
-import { SpaceBar } from "../entities/SpaceBar";
-import { SpaceCafe } from "../entities/SpaceCafe";
-import { SpaceDance } from "../entities/SpaceDance";
-import { SpaceFun } from "../entities/SpaceFun";
-import { SpaceStation } from "../entities/SpaceStation";
+import { BARTENDER_RULES, MECHANIC_RULES, MINER_RULES, PIRATE_RULES, TRADER_RULES, mergeRulesWithDefaults, DEFAULT_RULES } from "../entities/ruleTemplates";
 import { type GoodType, type Goods, MeepleStats, MeepleType, Products, Resources, type RuleBehavior } from "../entities/types";
 import { createEntityGraphic, EntityGraphicStyle } from "../entities/utils/createSpaceShipOutOfShapes";
 import { generateSpaceName } from "../entities/utils/generateSpaceName";
@@ -74,9 +85,6 @@ type CategorizedMeeples = {
   traders: Meeple[];
   miners: Meeple[];
   spacebars: Meeple[];
-  spacecafes: Meeple[];
-  spacedances: Meeple[];
-  spacefuns: Meeple[];
   stations: Meeple[];
   asteroids: Meeple[];
   spaceapartments: Meeple[];
@@ -94,9 +102,6 @@ type MeepleCounts = {
   asteroids: number;
   stations: number;
   spacebars: number;
-  spacecafes: number;
-  spacedances: number;
-  spacefuns: number;
   spaceapartments: number;
   bartenders: number;
   pirates: number;
@@ -124,9 +129,6 @@ const emptyCategorizedMeeples: CategorizedMeeples = {
   traders: [],
   miners: [],
   spacebars: [],
-  spacecafes: [],
-  spacedances: [],
-  spacefuns: [],
   stations: [],
   asteroids: [],
   spaceapartments: [],
@@ -143,9 +145,6 @@ const emptyMeepleCounts: MeepleCounts = {
   asteroids: 0,
   stations: 0,
   spacebars: 0,
-  spacecafes: 0,
-  spacedances: 0,
-  spacefuns: 0,
   spaceapartments: 0,
   bartenders: 0,
   pirates: 0,
@@ -231,9 +230,6 @@ const MEEPLE_TYPE_TO_CATEGORY: Record<MeepleType, keyof CategorizedMeeples | nul
   [MeepleType.Trader]: "traders",
   [MeepleType.Miner]: "miners",
   [MeepleType.SpaceBar]: "spacebars",
-  [MeepleType.SpaceCafe]: "spacecafes",
-  [MeepleType.SpaceDance]: "spacedances",
-  [MeepleType.SpaceFun]: "spacefuns",
   [MeepleType.SpaceStation]: "stations",
   [MeepleType.Asteroid]: "asteroids",
   [MeepleType.SpaceApartments]: "spaceapartments",
@@ -254,9 +250,6 @@ function categorizeMeeples(meeples: Meeple[]): CategorizedMeeples {
     traders: [],
     miners: [],
     spacebars: [],
-    spacecafes: [],
-    spacedances: [],
-    spacefuns: [],
     stations: [],
     asteroids: [],
     spaceapartments: [],
@@ -287,9 +280,6 @@ function calculateMeepleCounts(categorized: CategorizedMeeples): MeepleCounts {
     asteroids: categorized.asteroids.length,
     stations: categorized.stations.length,
     spacebars: categorized.spacebars.length,
-    spacecafes: categorized.spacecafes.length,
-    spacedances: categorized.spacedances.length,
-    spacefuns: categorized.spacefuns.length,
     spaceapartments: categorized.spaceapartments.length,
     bartenders: categorized.bartenders.length,
     mechanics: categorized.mechanics.length,
@@ -387,13 +377,26 @@ function createSpaceStations(game: Game): void {
   
   // Create one station per product type
   for (const productType of productTypes) {
-    const spaceStation = new SpaceStation(
+    const spaceStation = new Meeple(
       getRandomPosition(),
+      0, // Speed 0 for stationary stations
       generateSpaceName(),
-      productType
+      productType,
+      SPACE_STATION_SIZE.WIDTH,
+      SPACE_STATION_SIZE.HEIGHT
     );
-    // Destinations get themselves as their home
+    spaceStation.type = MeepleType.SpaceStation;
+    spaceStation.goods[Resources.Money] = SPACE_STATION_STARTING_MONEY;
     spaceStation.home = spaceStation;
+    
+    // Initialize regeneration config for product
+    spaceStation.initializeRegeneration({
+      goodType: productType,
+      minThreshold: SPACE_STATION_MIN_PRODUCT_THRESHOLD,
+      maxThreshold: SPACE_STATION_MIN_PRODUCT_THRESHOLD,
+      amountPerCycle: SPACE_STATION_ORE_REGENERATION_AMOUNT,
+      rateMs: SPACE_STATION_REGENERATION_RATE_MS,
+    });
     
     const stationDesign = createEntityGraphic(EntityGraphicStyle.SpaceStation);
     spaceStation.graphics.use(stationDesign);
@@ -407,13 +410,87 @@ function createSpaceStations(game: Game): void {
  * Asteroids are sources of ore that miners can extract.
  */
 function createAsteroids(game: Game): void {
+  // Color palette for asteroids (various shades of gray and brown)
+  const ASTEROID_COLORS = [
+    Color.fromHex("#8B7355"), // Brown gray
+    Color.fromHex("#696969"), // Dim gray
+    Color.fromHex("#708090"), // Slate gray
+    Color.fromHex("#556B2F"), // Dark olive
+    Color.fromHex("#5F4F3F"), // Dark brown
+    Color.fromHex("#6B6B6B"), // Medium gray
+    Color.fromHex("#7A7A7A"), // Light gray
+    Color.fromHex("#4A4A4A"), // Dark gray
+  ];
+
+  /**
+   * Creates random points for an irregular asteroid shape
+   */
+  function createAsteroidPoints(size: number, points: number = 8): Vector[] {
+    const asteroidPoints: Vector[] = [];
+    const angleStep = (Math.PI * 2) / points;
+
+    for (let i = 0; i < points; i++) {
+      // Add some randomness to the radius to make it irregular
+      const radiusVariation = 0.7 + Math.random() * 0.3; // 70% to 100% of base size
+      const radius = size * radiusVariation;
+      const angle = i * angleStep;
+
+      asteroidPoints.push(
+        new Vector(Math.cos(angle) * radius, Math.sin(angle) * radius)
+      );
+    }
+
+    return asteroidPoints;
+  }
+
   for (let i = 0; i < ENTITY_COUNTS.ASTEROIDS; i++) {
-    const asteroid = new Asteroid(
-      getRandomPosition(),
-      getRandomAsteroidSize()
+    const size = getRandomAsteroidSize();
+    // Randomize size slightly
+    const actualSize = size * (0.8 + Math.random() * 0.4); // 80% to 120% of base size
+
+    // Generate a simple name if not provided
+    const position = getRandomPosition();
+    const asteroidName = `Asteroid ${Math.floor(position.x)}-${Math.floor(position.y)}`;
+
+    // Assign random product type
+    const randomProductType = Object.values(Products)[Math.floor(Math.random() * Object.values(Products).length)];
+
+    const asteroid = new Meeple(
+      position,
+      0, // Speed 0 for stationary asteroids
+      asteroidName,
+      randomProductType,
+      actualSize * 2,
+      actualSize * 2
     );
-    // Destinations get themselves as their home
+    asteroid.type = MeepleType.Asteroid;
+    asteroid.goods[Resources.Ore] = ASTEROID_STARTING_ORE;
     asteroid.home = asteroid;
+
+    // Initialize regeneration config for ore
+    asteroid.initializeRegeneration({
+      goodType: Resources.Ore,
+      minThreshold: ASTEROID_MIN_ORE_THRESHOLD,
+      maxThreshold: ASTEROID_MIN_ORE_THRESHOLD,
+      amountPerCycle: ASTEROID_REGENERATION_AMOUNT,
+      rateMs: ASTEROID_REGENERATION_RATE_MS,
+    });
+
+    // Create irregular asteroid shape
+    const asteroidPoints = createAsteroidPoints(
+      actualSize,
+      6 + Math.floor(Math.random() * 4)
+    ); // 6-9 points
+    const asteroidColor =
+      ASTEROID_COLORS[Math.floor(Math.random() * ASTEROID_COLORS.length)];
+
+    const asteroidGraphic = new Polygon({
+      points: asteroidPoints,
+      color: asteroidColor,
+    });
+
+    asteroid.graphics.add(asteroidGraphic);
+    
     game.currentScene.add(asteroid);
   }
 }
@@ -471,10 +548,31 @@ function createTraders(game: Game): void {
  */
 function createSpaceBars(game: Game): void {
   for (let i = 0; i < ENTITY_COUNTS.SPACE_BARS; i++) {
-    const spaceBar = new SpaceBar(getRandomPosition(), generateSpaceName());
-    spaceBar.name = generateSpaceName();
-    // Destinations get themselves as their home
+    const randomProductType = Object.values(Products)[Math.floor(Math.random() * Object.values(Products).length)];
+    const spaceBar = new Meeple(
+      getRandomPosition(),
+      0, // Speed 0 for stationary bars
+      generateSpaceName(),
+      randomProductType,
+      SPACE_BAR_SIZE.WIDTH,
+      SPACE_BAR_SIZE.HEIGHT
+    );
+    spaceBar.type = MeepleType.SpaceBar;
+    spaceBar.goods = {
+      [Products.Fizz]: SPACE_BAR_STARTING_FIZZ,
+      [Resources.Money]: 0,
+    };
+    spaceBar.prices.set(Products.Fizz, FIZZ_PRICE);
     spaceBar.home = spaceBar;
+
+    // Initialize regeneration config for fizz
+    spaceBar.initializeRegeneration({
+      goodType: Products.Fizz,
+      minThreshold: SPACE_BAR_MIN_FIZZ_THRESHOLD,
+      maxThreshold: SPACE_BAR_MIN_FIZZ_THRESHOLD,
+      amountPerCycle: SPACE_BAR_FIZZ_REGENERATION_AMOUNT,
+      rateMs: SPACE_BAR_FIZZ_REGENERATION_RATE_MS,
+    });
     
     const barDesign = createEntityGraphic(EntityGraphicStyle.SpaceBar);
     spaceBar.graphics.use(barDesign);
@@ -483,68 +581,23 @@ function createSpaceBars(game: Game): void {
   }
 }
 
-/**
- * Creates space cafes where entities can socialize and spend money.
- */
-function createSpaceCafes(game: Game): void {
-  for (let i = 0; i < ENTITY_COUNTS.SPACE_CAFES; i++) {
-    const spaceCafe = new SpaceCafe(getRandomPosition(), generateSpaceName());
-    spaceCafe.name = generateSpaceName();
-    // Destinations get themselves as their home
-    spaceCafe.home = spaceCafe;
-    
-    const cafeDesign = createEntityGraphic(EntityGraphicStyle.SpaceCafe);
-    spaceCafe.graphics.use(cafeDesign);
-    
-    game.currentScene.add(spaceCafe);
-  }
-}
-
-/**
- * Creates space dance venues where entities can socialize and spend money.
- */
-function createSpaceDances(game: Game): void {
-  for (let i = 0; i < ENTITY_COUNTS.SPACE_DANCES; i++) {
-    const spaceDance = new SpaceDance(getRandomPosition(), generateSpaceName());
-    spaceDance.name = generateSpaceName();
-    // Destinations get themselves as their home
-    spaceDance.home = spaceDance;
-    
-    const danceDesign = createEntityGraphic(EntityGraphicStyle.SpaceDance);
-    spaceDance.graphics.use(danceDesign);
-    
-    game.currentScene.add(spaceDance);
-  }
-}
-
-/**
- * Creates space fun venues where entities can socialize and spend money.
- */
-function createSpaceFuns(game: Game): void {
-  for (let i = 0; i < ENTITY_COUNTS.SPACE_FUNS; i++) {
-    const spaceFun = new SpaceFun(getRandomPosition(), generateSpaceName());
-    spaceFun.name = generateSpaceName();
-    // Destinations get themselves as their home
-    spaceFun.home = spaceFun;
-    
-    const funDesign = createEntityGraphic(EntityGraphicStyle.SpaceFun);
-    spaceFun.graphics.use(funDesign);
-    
-    game.currentScene.add(spaceFun);
-  }
-}
 
 /**
  * Creates space apartments in the game world.
  */
 function createSpaceApartments(game: Game): void {
   for (let i = 0; i < ENTITY_COUNTS.SPACE_APARTMENTS; i++) {
-    const spaceApartment = new SpaceApartments(
+    const randomProductType = Object.values(Products)[Math.floor(Math.random() * Object.values(Products).length)];
+    const spaceApartment = new Meeple(
       getRandomPosition(),
-      generateSpaceName()
+      0, // Speed 0 for stationary apartments
+      generateSpaceName(),
+      randomProductType,
+      SPACE_APARTMENTS_SIZE.WIDTH,
+      SPACE_APARTMENTS_SIZE.HEIGHT
     );
-    spaceApartment.name = generateSpaceName();
-    // Destinations get themselves as their home
+    spaceApartment.type = MeepleType.SpaceApartments;
+    spaceApartment.maxCapacity = SPACE_APARTMENTS_MAX_CAPACITY;
     spaceApartment.home = spaceApartment;
     
     const apartmentDesign = createEntityGraphic(EntityGraphicStyle.SpaceApartments);
@@ -559,8 +612,8 @@ function createSpaceApartments(game: Game): void {
  */
 function getRandomSpaceApartment(game: Game): Meeple | null {
   const apartments = game.currentScene.actors.filter(
-    (actor: Actor) => actor instanceof SpaceApartments
-  ) as SpaceApartments[];
+    (actor: Actor) => actor instanceof Meeple && actor.type === MeepleType.SpaceApartments
+  ) as Meeple[];
   if (apartments.length === 0) return null;
   return apartments[Math.floor(Math.random() * apartments.length)];
 }
@@ -570,8 +623,8 @@ function getRandomSpaceApartment(game: Game): Meeple | null {
  */
 function getRandomPirateDen(game: Game): Meeple | null {
   const pirateDens = game.currentScene.actors.filter(
-    (actor: Actor) => actor instanceof PirateDen
-  ) as PirateDen[];
+    (actor: Actor) => actor instanceof Meeple && actor.type === MeepleType.PirateDen
+  ) as Meeple[];
   if (pirateDens.length === 0) return null;
   return pirateDens[Math.floor(Math.random() * pirateDens.length)];
 }
@@ -581,12 +634,16 @@ function getRandomPirateDen(game: Game): Meeple | null {
  */
 function createPirateDens(game: Game): void {
   for (let i = 0; i < ENTITY_COUNTS.PIRATE_DENS; i++) {
-    const pirateDen = new PirateDen(
+    const randomProductType = Object.values(Products)[Math.floor(Math.random() * Object.values(Products).length)];
+    const pirateDen = new Meeple(
       getRandomPosition(),
-      generateSpaceName()
+      0, // Speed 0 for stationary dens
+      generateSpaceName(),
+      randomProductType,
+      PIRATE_DEN_SIZE.WIDTH,
+      PIRATE_DEN_SIZE.HEIGHT
     );
-    pirateDen.name = generateSpaceName();
-    // Destinations get themselves as their home
+    pirateDen.type = MeepleType.PirateDen;
     pirateDen.home = pirateDen;
     
     const denDesign = createEntityGraphic(EntityGraphicStyle.SpaceApartments); // Using SpaceApartments style for now
@@ -629,8 +686,8 @@ function createPirates(game: Game): void {
 function createBartenders(game: Game): void {
   // Find all space bars in the scene
   const spaceBars = game.currentScene.actors.filter(
-    (actor: Actor) => actor instanceof SpaceBar
-  ) as SpaceBar[];
+    (actor: Actor) => actor instanceof Meeple && actor.type === MeepleType.SpaceBar
+  ) as Meeple[];
 
   // Create configured number of bartenders for each space bar
   for (const spaceBar of spaceBars) {
@@ -643,12 +700,18 @@ function createBartenders(game: Game): void {
         spaceBar.pos.y + offsetY
       );
 
-      const bartender = new Bartender(
+      const randomProductType = Object.values(Products)[Math.floor(Math.random() * Object.values(Products).length)];
+      const bartender = new Meeple(
         bartenderPosition,
         DEFAULT_SHIP_SPEED,
-        generateSpaceName()
+        generateSpaceName(),
+        randomProductType
       );
-      bartender.name = generateSpaceName();
+      bartender.type = MeepleType.Bartender;
+      bartender.speed = DEFAULT_SHIP_SPEED;
+      bartender.goods[Resources.Ore] = 0;
+      bartender.goods[Resources.Money] = 0;
+      bartender.rules = mergeRulesWithDefaults(BARTENDER_RULES);
       // Ships get a random apartment as their home
       bartender.home = getRandomSpaceApartment(game);
       
@@ -667,12 +730,18 @@ function createBartenders(game: Game): void {
  */
 function createMechanics(game: Game): void {
   for (let i = 0; i < ENTITY_COUNTS.MECHANICS; i++) {
-    const mechanic = new Mechanic(
+    const randomProductType = Object.values(Products)[Math.floor(Math.random() * Object.values(Products).length)];
+    const mechanic = new Meeple(
       getRandomPosition(),
       DEFAULT_SHIP_SPEED,
-      generateSpaceName()
+      generateSpaceName(),
+      randomProductType
     );
-    mechanic.name = generateSpaceName();
+    mechanic.type = MeepleType.Mechanic;
+    mechanic.speed = DEFAULT_SHIP_SPEED;
+    mechanic.goods[Resources.Ore] = 0;
+    mechanic.goods[Resources.Money] = 0;
+    mechanic.rules = mergeRulesWithDefaults(MECHANIC_RULES);
     // Mechanics get a random apartment as their home
     mechanic.home = getRandomSpaceApartment(game);
     
@@ -693,9 +762,6 @@ function initializeGameEntities(game: Game): void {
   createSpaceStations(game);
   createAsteroids(game);
   createSpaceBars(game);
-  createSpaceCafes(game);
-  createSpaceDances(game);
-  createSpaceFuns(game);
   createSpaceApartments(game); // Create apartments before ships so they can be assigned as homes
   createPirateDens(game); // Create pirate dens before pirates so they can be assigned as homes
   createMiners(game);
@@ -783,9 +849,6 @@ export type TabType =
   | "stations"
   | "asteroids"
   | "spacebars"
-  | "spacecafes"
-  | "spacedances"
-  | "spacefuns"
   | "spaceapartments"
   | "bartenders"
   | "pirates"

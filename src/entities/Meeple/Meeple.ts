@@ -13,6 +13,7 @@ import {
   PIRATE_STEAL_AMOUNT,
   PIRATE_STEAL_DISTANCE,
   PIRATE_STEAL_ENERGY_COST_PERCENT,
+  SPACE_APARTMENTS_MAX_CAPACITY,
 } from "../game-config";
 import {
   MeepleStateType,
@@ -28,6 +29,10 @@ import {
   type DiaryEntry,
 } from "../types";
 import { evaluateRule } from "../../utils/ruleUtils";
+import { getRandomVisitor } from "./meepleFinders";
+import {
+  type RegenerationConfig,
+} from "../utils/regenerationUtils";
 
 import { executePatrol } from "./executePatrol";
 import { executeRuleAction } from "./executeRuleAction";
@@ -54,11 +59,16 @@ export class Meeple extends Actor {
   lastLaserFireTime: number = 0; // When the last laser was fired
   diary: DiaryEntry[] = []; // Stores the last 20 actions/rules for storytelling
 
+  // Special properties for different meeple types
+  public prices: Map<GoodType, number> = new Map(); // For SpaceBar
+  public maxCapacity: number = SPACE_APARTMENTS_MAX_CAPACITY; // For SpaceApartments
+  private regenerationConfig: RegenerationConfig | null = null; // Regeneration configuration
+
   private lastUpdateTime: number = 0;
   private isRecordingRuleExecution: boolean = false; // Flag to prevent duplicate diary entries
   private isBrokenVisualApplied: boolean = false; // Track if broken visual effect is applied
   private originalColors: Map<Rectangle, import("excalibur").Color> = new Map(); // Store original colors for restoration
-  private originalSpeed: number | null = null; // Store original speed before breaking
+  originalSpeed: number | null = null; // Store original speed before breaking (public for executeRuleAction)
   private previousStateType: MeepleStateType | null = null; // Track previous state to detect transitions
 
   /**
@@ -85,6 +95,8 @@ export class Meeple extends Actor {
    */
   dispatch(action: MeepleAction): void {
     const previousState = this.state;
+    const previousWasBroken = previousState.type === MeepleStateType.Broken;
+    
     const newState = meepleReducer(
       {
         goods: this.goods,
@@ -94,6 +106,17 @@ export class Meeple extends Actor {
     );
     this.goods = newState.goods;
     this.state = newState.state;
+    
+    // Handle speed restoration when transitioning from broken to idle
+    const isNowBroken = newState.state.type === MeepleStateType.Broken;
+    if (previousWasBroken && !isNowBroken && this.originalSpeed !== null) {
+      // Restore original speed when fixed
+      this.speed = this.originalSpeed;
+      this.originalSpeed = null;
+    }
+    
+    // Update previous state type for visual transitions
+    this.previousStateType = previousState.type;
     
     // Record state change in diary if state actually changed
     // Skip if we're in the middle of recording a rule execution (to avoid duplicates)
@@ -190,281 +213,421 @@ export class Meeple extends Actor {
     this.followers.clear();
   }
 
-  onPreUpdate(_engine: Game): void {
-    // Check if health is 0 or below and set broken state
-    const currentHealth = this.goods[MeepleStats.Health] ?? DEFAULT_HEALTH;
-    if (currentHealth <= 0 && this.state.type !== MeepleStateType.Broken) {
-      // Cancel all actions immediately
-      this.actions.clearActions();
-      this.stopMovement();
-      // Store original speed before breaking
-      if (this.originalSpeed === null) {
-        this.originalSpeed = this.speed;
-      }
-      // Set speed to zero when broken
-      this.speed = 0;
-      // Stop any ongoing chase
-      if (this.chaseTarget) {
-        this.chaseTarget = null;
-        this.hasStolen = false;
-      }
-      this.dispatch({ type: "set-broken" });
-    }
+  onPreUpdate(engine: Game): void {
+    // Update visual appearance based on broken state transitions
+    this.updateBrokenVisuals();
     
-    // Check if health is above 0 and clear broken state if needed
-    // This handles cases where health is restored through other means
-    if (currentHealth > 0 && this.state.type === MeepleStateType.Broken) {
-      this.dispatch({ type: "set-idle" });
+    // If broken, stop all movement and prevent any actions
+    if (this.state.type === MeepleStateType.Broken) {
+      this.stopAllMovement();
+      return; // Don't process any further updates when broken
     }
 
-    // Check if state transitioned from Broken to non-Broken
-    const previousWasBroken = this.previousStateType === MeepleStateType.Broken;
-    const isNowBroken = this.state.type === MeepleStateType.Broken;
-    
-    // If transitioning to broken state (via rule action or health check)
-    if (!previousWasBroken && isNowBroken) {
-      // Store original speed before breaking if not already stored
-      if (this.originalSpeed === null) {
-        this.originalSpeed = this.speed;
+    this.enforceBoundaries();
+    this.updateFollowers();
+
+    // Handle special logic for different meeple types
+    this.handleSpecialTypeLogic(engine);
+
+    // Handle chasing behavior for pirates
+    if (this.type === MeepleType.Pirate && this.chaseTarget) {
+      if (this.updatePirateChase()) {
+        return; // Don't evaluate rules while chasing
       }
-      // Set speed to zero when broken
-      this.speed = 0;
-    }
-    
-    // If transitioning from broken to fixed (state changed from Broken to non-Broken)
-    if (previousWasBroken && !isNowBroken && this.originalSpeed !== null) {
-      // Restore original speed
-      this.speed = this.originalSpeed;
-      this.originalSpeed = null;
     }
 
-    // Update previous state type for next frame
-    this.previousStateType = this.state.type;
+    if (!this.canEvaluateRules()) return;
+    if (!this.shouldEvaluateRules()) return;
 
-    // Update visual appearance based on broken state
+    this.evaluateRules();
+  }
+
+  /**
+   * Handles special update logic for different meeple types
+   */
+  private handleSpecialTypeLogic(_engine: Game): void {
+    // SpaceStation: production and conversion logic
+    if (this.type === MeepleType.SpaceStation) {
+      this.handleSpaceStationLogic();
+      return;
+    }
+
+    // Asteroid: regeneration logic
+    if (this.type === MeepleType.Asteroid) {
+      this.handleAsteroidLogic();
+      return;
+    }
+
+    // SpaceBar: regeneration and visitor state
+    if (this.type === MeepleType.SpaceBar) {
+      this.handleSocializingDestinationLogic();
+      return;
+    }
+  }
+
+  /**
+   * Handles SpaceStation production and conversion logic
+   */
+  private handleSpaceStationLogic(): void {
+    // Keep minimum product: if product is below minimum threshold, regenerate it
+    if (this.regenerationConfig) {
+      const currentProduct = this.goods[this.productType] || 0;
+      if (currentProduct < this.regenerationConfig.minThreshold) {
+        this.goods[this.productType] = this.regenerationConfig.minThreshold;
+      }
+    }
+  }
+
+  /**
+   * Handles Asteroid regeneration logic
+   */
+  private handleAsteroidLogic(): void {
+    // Keep minimum ore: if ore is below minimum threshold, regenerate it
+    if (this.regenerationConfig) {
+      const currentAmount = this.goods[this.regenerationConfig.goodType] || 0;
+      if (currentAmount < this.regenerationConfig.minThreshold) {
+        this.goods[this.regenerationConfig.goodType] = this.regenerationConfig.minThreshold;
+      }
+    }
+
+    if (this.visitors.size > 1) {
+      const randomVisitor = getRandomVisitor(this);
+      if (randomVisitor) {
+        this.state = {
+          type: MeepleStateType.Transacting,
+          target: randomVisitor,
+        };
+      } else {
+        this.state = {
+          type: MeepleStateType.Idle,
+        };
+      }
+    }
+  }
+
+  /**
+   * Handles socializing destination logic (SpaceBar)
+   */
+  private handleSocializingDestinationLogic(): void {
+    // Keep minimum fizz: if fizz is below minimum threshold, regenerate it
+    if (this.regenerationConfig) {
+      const currentAmount = this.goods[this.regenerationConfig.goodType] || 0;
+      if (currentAmount < this.regenerationConfig.minThreshold) {
+        this.goods[this.regenerationConfig.goodType] = this.regenerationConfig.minThreshold;
+      }
+    }
+
+    if (this.visitors.size > 1) {
+      const randomVisitor = getRandomVisitor(this);
+      if (randomVisitor) {
+        this.state = {
+          type: MeepleStateType.Transacting,
+          target: randomVisitor,
+        };
+      } else {
+        this.state = {
+          type: MeepleStateType.Idle,
+        };
+      }
+    }
+  }
+
+  /**
+   * Transaction method for SpaceBar
+   */
+  transaction(good: GoodType, quantity: number, transactionType: "add" | "remove"): void {
+    switch (transactionType) {
+      case "add":
+        // Buy goods (adds to inventory) - not typically used
+        this.goods[good] = (this.goods[good] ?? 0) + quantity;
+        break;
+      case "remove":
+        // Sell goods (subtracts from inventory)
+        const currentGood = this.goods[good] ?? 0;
+        if (currentGood >= quantity) {
+          this.goods[good] = currentGood - quantity;
+        }
+        break;
+    }
+  }
+
+  /**
+   * Check if the apartments have room for more visitors (for SpaceApartments)
+   */
+  hasCapacity(): boolean {
+    return this.visitors.size < this.maxCapacity;
+  }
+
+  /**
+   * Initialize regeneration config for types that need it
+   */
+  initializeRegeneration(config: RegenerationConfig): void {
+    this.regenerationConfig = config;
+  }
+
+  /**
+   * Stops all movement and clears chase state
+   */
+  private stopAllMovement(): void {
+    this.actions.clearActions();
+    this.speed = 0;
+    this.stopMovement();
+    if (this.chaseTarget) {
+      this.chaseTarget = null;
+      this.hasStolen = false;
+    }
+  }
+
+  /**
+   * Updates visual appearance based on broken state transitions
+   */
+  private updateBrokenVisuals(): void {
     const isBroken = this.state.type === MeepleStateType.Broken;
+    const previousWasBroken = this.previousStateType === MeepleStateType.Broken;
+    
+    // Apply broken visual when transitioning to broken state
     if (isBroken && !this.isBrokenVisualApplied) {
-      // Apply broken visual: reduce opacity and darken
       this.graphics.opacity = 0.75;
-      // Apply a dark gray tint by modifying the graphics group colors
       this.applyBrokenVisual();
       this.isBrokenVisualApplied = true;
-    } else if (!isBroken && this.isBrokenVisualApplied) {
-      // Restore normal visual
+    } 
+    // Restore normal visual when transitioning from broken state
+    else if (!isBroken && previousWasBroken && this.isBrokenVisualApplied) {
       this.graphics.opacity = 1.0;
       this.restoreNormalVisual();
       this.isBrokenVisualApplied = false;
     }
+  }
 
-    // If broken, stop all movement and prevent any actions
-    if (this.state.type === MeepleStateType.Broken) {
-      // Cancel all actions to ensure meeple stays stopped
-      this.actions.clearActions();
-      // Ensure speed is zero
-      this.speed = 0;
-      this.stopMovement();
-      // Ensure chase is stopped
-      if (this.chaseTarget) {
-        this.chaseTarget = null;
-        this.hasStolen = false;
-      }
-      return; // Don't process any further updates when broken
-    }
-
-    // Handle boundary checking for velocity-based movement
+  /**
+   * Enforces world boundaries for velocity-based movement
+   */
+  private enforceBoundaries(): void {
     const scene = this.scene as Scene;
-    if (scene && scene.engine) {
-      const game = scene.engine as Game;
+    if (!scene?.engine) return;
 
-      // Clamp position to world bounds and stop velocity at boundaries
-      if (this.pos.x < 0) {
-        this.pos.x = 0;
-        if (this.vel.x < 0) this.vel.x = 0;
-      }
-      if (this.pos.x > game.worldWidth - this.width) {
-        this.pos.x = game.worldWidth - this.width;
-        if (this.vel.x > 0) this.vel.x = 0;
-      }
-      if (this.pos.y < 0) {
-        this.pos.y = 0;
-        if (this.vel.y < 0) this.vel.y = 0;
-      }
-      if (this.pos.y > game.worldHeight - this.height) {
-        this.pos.y = game.worldHeight - this.height;
-        if (this.vel.y > 0) this.vel.y = 0;
-      }
+    const game = scene.engine as Game;
+
+    // Clamp position to world bounds and stop velocity at boundaries
+    if (this.pos.x < 0) {
+      this.pos.x = 0;
+      if (this.vel.x < 0) this.vel.x = 0;
     }
+    if (this.pos.x > game.worldWidth - this.width) {
+      this.pos.x = game.worldWidth - this.width;
+      if (this.vel.x > 0) this.vel.x = 0;
+    }
+    if (this.pos.y < 0) {
+      this.pos.y = 0;
+      if (this.vel.y < 0) this.vel.y = 0;
+    }
+    if (this.pos.y > game.worldHeight - this.height) {
+      this.pos.y = game.worldHeight - this.height;
+      if (this.vel.y > 0) this.vel.y = 0;
+    }
+  }
 
-    // Manage followers based on goods (excluding money)
+  /**
+   * Updates followers for miner and trader meeples
+   */
+  private updateFollowers(): void {
     if (this.type === MeepleType.Miner || this.type === MeepleType.Trader) {
       updateFollowers(this);
     }
+  }
 
-    // Handle chasing behavior for pirates
-    if (this.type === MeepleType.Pirate && this.chaseTarget) {
-      const elapsed = Date.now() - this.chaseStartTime;
+  /**
+   * Updates pirate chase behavior. Returns true if chase is active, false otherwise.
+   */
+  private updatePirateChase(): boolean {
+    if (!this.chaseTarget) return false;
 
-      // Check if chase duration has elapsed
-      if (elapsed >= PIRATE_CHASE_DURATION_MS) {
-        this.stopMovement();
-        this.chaseTarget = null;
-        this.hasStolen = false;
-        this.dispatch({ type: "set-idle" });
-        // Only patrol if we have energy, otherwise let rule evaluation send us to recharge
-        const currentEnergy = this.goods[MeepleStats.Energy] ?? DEFAULT_ENERGY;
-        if (currentEnergy > 0) {
-          executePatrol(this);
-        }
-        return;
-      }
+    const elapsed = Date.now() - this.chaseStartTime;
 
-      // Check if target is still valid (check if it's in the scene)
-      if (!this.chaseTarget.scene || this.chaseTarget.scene !== this.scene) {
-        this.stopMovement();
-        this.chaseTarget = null;
-        this.hasStolen = false;
-        this.dispatch({ type: "set-idle" });
-        // Only patrol if we have energy, otherwise let rule evaluation send us to recharge
-        const currentEnergy = this.goods[MeepleStats.Energy] ?? DEFAULT_ENERGY;
-        if (currentEnergy > 0) {
-          executePatrol(this);
-        }
-        return;
-      }
+    // Check if chase duration has elapsed
+    if (elapsed >= PIRATE_CHASE_DURATION_MS) {
+      this.abandonChase();
+      return false;
+    }
 
-      // Check if pirate is close to any destination (asteroid, station, bar, apartments, pirate den)
-      // If so, abandon chase to avoid getting stuck
-      const scene = this.scene;
-      if (scene) {
-        const allActors = scene.actors.filter(
-          (actor) => actor instanceof Meeple
-        ) as Meeple[];
-        const nearbyDestination = allActors.find((m) => {
-          if (m === this) return false;
-          // Check if it's a destination type
-          if (
-            m.type === MeepleType.Asteroid ||
-            m.type === MeepleType.SpaceStation ||
-            m.type === MeepleType.SpaceBar ||
-            m.type === MeepleType.SpaceCafe ||
-            m.type === MeepleType.SpaceDance ||
-            m.type === MeepleType.SpaceFun ||
-            m.type === MeepleType.SpaceApartments ||
-            m.type === MeepleType.PirateDen
-          ) {
-            const distanceToDestination = this.pos.distance(m.pos);
-            return distanceToDestination <= PIRATE_CHASE_ABANDON_DISTANCE;
-          }
-          return false;
-        });
-        if (nearbyDestination) {
-          // Abandon chase when close to a destination
-          this.stopMovement();
-          this.chaseTarget = null;
-          this.hasStolen = false;
-          this.dispatch({ type: "set-idle" });
-          // Only patrol if we have energy, otherwise let rule evaluation send us to recharge
-          const currentEnergy = this.goods[MeepleStats.Energy] ?? DEFAULT_ENERGY;
-          if (currentEnergy > 0) {
-            executePatrol(this);
-          }
-          return;
-        }
-      }
+    // Check if target is still valid
+    if (!this.chaseTarget.scene || this.chaseTarget.scene !== this.scene) {
+      this.abandonChase();
+      return false;
+    }
 
-      // Calculate distance to target
-      const distance = this.pos.distance(this.chaseTarget.pos);
+    // Check if pirate is close to any destination
+    if (this.isNearDestination()) {
+      this.abandonChase();
+      return false;
+    }
 
-      // Define minimum distance to maintain from target
-      const MIN_CHASE_DISTANCE = 150;
+    // Execute chase behavior
+    this.executeChase();
+    return true;
+  }
 
-      // If close enough and haven't stolen yet, steal money
-      if (distance <= PIRATE_STEAL_DISTANCE && !this.hasStolen) {
-        const targetMoney = this.chaseTarget.goods[Resources.Money] ?? 0;
-        if (targetMoney > 0) {
-          // Pirate gains money (configurable amount)
-          this.dispatch({
-            type: "add-good",
-            payload: { good: Resources.Money, quantity: PIRATE_STEAL_AMOUNT },
-          });
-          // Target loses money (same amount)
-          this.chaseTarget.dispatch({
-            type: "remove-good",
-            payload: { good: Resources.Money, quantity: PIRATE_STEAL_AMOUNT },
-          });
-          // Pirate loses percentage of current energy when stealing
-          const currentEnergy = this.goods[MeepleStats.Energy] ?? DEFAULT_ENERGY;
-          const energyCost = Math.max(1, Math.floor(currentEnergy * PIRATE_STEAL_ENERGY_COST_PERCENT));
-          this.dispatch({
-            type: "remove-good",
-            payload: { good: MeepleStats.Energy, quantity: energyCost },
-          });
-          this.hasStolen = true;
-        }
-      }
+  /**
+   * Abandons the current chase and optionally starts patrolling
+   */
+  private abandonChase(): void {
+    this.stopMovement();
+    this.chaseTarget = null;
+    this.hasStolen = false;
+    this.dispatch({ type: "set-idle" });
+    
+    // Only patrol if we have energy, otherwise let rule evaluation send us to recharge
+    const currentEnergy = this.goods[MeepleStats.Energy] ?? DEFAULT_ENERGY;
+    if (currentEnergy > 0) {
+      executePatrol(this);
+    }
+  }
 
-      // Move towards target using velocity with refined chasing behavior
-      const direction = this.chaseTarget.pos.sub(this.pos);
-      const dist = direction.size;
+  /**
+   * Checks if pirate is close to any destination that would cause chase abandonment
+   */
+  private isNearDestination(): boolean {
+    const scene = this.scene;
+    if (!scene) return false;
 
-      if (dist > 0) {
-        const normalized = direction.normalize();
+    const allActors = scene.actors.filter(
+      (actor) => actor instanceof Meeple
+    ) as Meeple[];
+    
+    const destinationTypes = [
+      MeepleType.Asteroid,
+      MeepleType.SpaceStation,
+      MeepleType.SpaceBar,
+      MeepleType.SpaceApartments,
+      MeepleType.PirateDen,
+    ];
 
-        // Refined chasing logic: maintain distance and match speed when close
-        if (distance > MIN_CHASE_DISTANCE) {
-          // Approach target at full speed when far away
-          this.vel.x = normalized.x * this.speed;
-          this.vel.y = normalized.y * this.speed;
-        } else {
-          // When within minimum distance, slow down and match target's speed
-          // Calculate a reduced speed based on distance (closer = slower)
-          const distanceFactor = Math.max(0.1, distance / MIN_CHASE_DISTANCE);
-          const adjustedSpeed = this.speed * distanceFactor;
+    return allActors.some((m) => {
+      if (m === this) return false;
+      if (!destinationTypes.includes(m.type)) return false;
+      const distanceToDestination = this.pos.distance(m.pos);
+      return distanceToDestination <= PIRATE_CHASE_ABANDON_DISTANCE;
+    });
+  }
 
-          // Match target's velocity direction but at adjusted speed
-          this.vel.x = normalized.x * adjustedSpeed;
-          this.vel.y = normalized.y * adjustedSpeed;
-        }
+  /**
+   * Executes the chase behavior: stealing, movement, and laser firing
+   */
+  private executeChase(): void {
+    if (!this.chaseTarget) return;
 
-        // Fire lasers periodically during chase
-        const timeSinceLastLaser = Date.now() - this.lastLaserFireTime;
-        if (timeSinceLastLaser >= PIRATE_LASER_FIRE_INTERVAL_MS) {
-          // Create a laser fired from the pirate toward the target
-          const laser = new Laser(
-            this.pos.clone(),
-            direction,
-            this, // Owner of the laser
-            200 // Laser speed
-          );
-          this.scene?.add(laser);
-          this.lastLaserFireTime = Date.now();
-        }
+    const distance = this.pos.distance(this.chaseTarget.pos);
+    const MIN_CHASE_DISTANCE = 150;
+
+    // Steal money if close enough
+    if (distance <= PIRATE_STEAL_DISTANCE && !this.hasStolen) {
+      this.attemptSteal();
+    }
+
+    // Move towards target
+    const direction = this.chaseTarget.pos.sub(this.pos);
+    const dist = direction.size;
+
+    if (dist > 0) {
+      const normalized = direction.normalize();
+
+      // Refined chasing logic: maintain distance and match speed when close
+      if (distance > MIN_CHASE_DISTANCE) {
+        this.vel.x = normalized.x * this.speed;
+        this.vel.y = normalized.y * this.speed;
       } else {
-        this.stopMovement();
+        const distanceFactor = Math.max(0.1, distance / MIN_CHASE_DISTANCE);
+        const adjustedSpeed = this.speed * distanceFactor;
+        this.vel.x = normalized.x * adjustedSpeed;
+        this.vel.y = normalized.y * adjustedSpeed;
       }
 
-      return; // Don't evaluate rules while chasing
+      // Fire lasers periodically
+      this.fireLaserIfReady(direction);
+    } else {
+      this.stopMovement();
     }
+  }
 
-    // Only evaluate rules if action queue is complete (no active movement/actions)
-    // This ensures meeples don't start new actions while already performing one
+  /**
+   * Attempts to steal money from the chase target
+   */
+  private attemptSteal(): void {
+    if (!this.chaseTarget || this.hasStolen) return;
+
+    const targetMoney = this.chaseTarget.goods[Resources.Money] ?? 0;
+    if (targetMoney > 0) {
+      // Pirate gains money
+      this.dispatch({
+        type: "add-good",
+        payload: { good: Resources.Money, quantity: PIRATE_STEAL_AMOUNT },
+      });
+      // Target loses money
+      this.chaseTarget.dispatch({
+        type: "remove-good",
+        payload: { good: Resources.Money, quantity: PIRATE_STEAL_AMOUNT },
+      });
+      // Pirate loses percentage of current energy when stealing
+      const currentEnergy = this.goods[MeepleStats.Energy] ?? DEFAULT_ENERGY;
+      const energyCost = Math.max(1, Math.floor(currentEnergy * PIRATE_STEAL_ENERGY_COST_PERCENT));
+      this.dispatch({
+        type: "remove-good",
+        payload: { good: MeepleStats.Energy, quantity: energyCost },
+      });
+      this.hasStolen = true;
+    }
+  }
+
+  /**
+   * Fires a laser if enough time has passed since the last one
+   */
+  private fireLaserIfReady(direction: Vector): void {
+    const timeSinceLastLaser = Date.now() - this.lastLaserFireTime;
+    if (timeSinceLastLaser >= PIRATE_LASER_FIRE_INTERVAL_MS) {
+      const laser = new Laser(
+        this.pos.clone(),
+        direction,
+        this,
+        200 // Laser speed
+      );
+      this.scene?.add(laser);
+      this.lastLaserFireTime = Date.now();
+    }
+  }
+
+  /**
+   * Checks if rules can be evaluated (action queue is complete)
+   */
+  private canEvaluateRules(): boolean {
     try {
-      if (!this.actions.getQueue().isComplete()) return;
+      return this.actions.getQueue().isComplete();
     } catch (error) {
-      // If action queue check fails (shouldn't happen, but be defensive in production),
-      // log error and continue to allow rule evaluation
       console.warn("Action queue check failed for", this.name, error);
+      return true; // Allow rule evaluation on error
     }
+  }
 
+  /**
+   * Checks if enough time has passed to evaluate rules
+   */
+  private shouldEvaluateRules(): boolean {
     const currentTime = Date.now();
-    // Ensure lastUpdateTime is initialized (defensive check for production builds)
     if (this.lastUpdateTime === 0) {
       this.lastUpdateTime = currentTime;
     }
-    if (currentTime - this.lastUpdateTime < MEEPLE_UPDATE_INTERVAL_MS) return;
+    if (currentTime - this.lastUpdateTime < MEEPLE_UPDATE_INTERVAL_MS) {
+      return false;
+    }
     this.lastUpdateTime = currentTime;
+    return true;
+  }
 
+  /**
+   * Evaluates rules and executes the first matching rule
+   */
+  private evaluateRules(): void {
     let ruleMatched = false;
+    
     for (const rule of this.rules) {
       // For product-type goods, use rule's productType or fall back to meeple's productType
       const isProductGood = Object.values(Products).includes(
@@ -479,14 +642,12 @@ export class Meeple extends Actor {
 
       if (evaluateRule(rule, this.goods[goodToCheck] ?? 0)) {
         this.activeRuleId = rule.id;
-        // Set flag to prevent duplicate state change entries
         this.isRecordingRuleExecution = true;
         const actionExecuted = executeRuleAction(this, rule);
         this.isRecordingRuleExecution = false;
+        
         if (actionExecuted) {
-          // Record rule execution in diary (state change already happened in executeRuleAction)
           const targetName = "target" in this.state ? this.state.target?.name ?? null : null;
-          // Create a snapshot of goods at this moment
           const goodsSnapshot = { ...this.goods };
           this.addDiaryEntry({
             ruleId: rule.id,
@@ -498,10 +659,9 @@ export class Meeple extends Actor {
           ruleMatched = true;
           break; // Only execute one rule per update cycle
         }
-        // If action wasn't executed (e.g., no nearby trader for ChaseTarget),
-        // continue to next rule
       }
     }
+    
     // Clear active rule if no rule matched and meeple is idle
     if (!ruleMatched && this.state.type === MeepleStateType.Idle) {
       this.activeRuleId = null;

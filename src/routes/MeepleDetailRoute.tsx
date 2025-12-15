@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { IconArrowLeft } from "@tabler/icons-react";
+import { ACTION_ICONS } from "../utils/iconMap";
 import { useGame } from "../hooks/useGame";
 import { MeepleCard } from "../components/MeepleCard";
 
@@ -38,7 +38,7 @@ export function MeepleDetailRoute() {
             onClick={handleBack}
             className="btn btn-primary"
           >
-            <IconArrowLeft size={16} />
+            <ACTION_ICONS.back size={16} />
             Back to Game
           </button>
         </div>
@@ -54,7 +54,7 @@ export function MeepleDetailRoute() {
             onClick={handleBack}
             className="btn btn-outline btn-sm"
           >
-            <IconArrowLeft size={16} />
+            <ACTION_ICONS.back size={16} />
             Back to Game
           </button>
         </div>

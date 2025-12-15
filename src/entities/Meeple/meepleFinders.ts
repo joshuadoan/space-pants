@@ -1,5 +1,6 @@
 import { Actor } from "excalibur";
 
+import { PIRATE_CHASE_DETECTION_DISTANCE } from "../game-config";
 import { MeepleType, Products, Resources } from "../types";
 import { Meeple } from "./Meeple";
 
@@ -95,7 +96,7 @@ export function getRandomSpaceBar(meeple: Meeple): Meeple | undefined {
 }
 
 /**
- * Gets a random socializing destination (SpaceBar, SpaceCafe, SpaceDance, or SpaceFun) from the scene.
+ * Gets a random socializing destination (SpaceBar) from the scene.
  */
 export function getRandomSocializingDestination(
   meeple: Meeple,
@@ -105,23 +106,20 @@ export function getRandomSocializingDestination(
     (a: Actor) => a instanceof Meeple
   ) as Meeple[];
   
-  // If a specific type is provided, use it
+  // If a specific type is provided, use it (must be SpaceBar)
   if (destinationType) {
+    if (destinationType !== MeepleType.SpaceBar) {
+      return undefined;
+    }
     const destinations = meeples.filter(
-      (m: Meeple) => m.type === destinationType && m !== meeple
+      (m: Meeple) => m.type === MeepleType.SpaceBar && m !== meeple
     );
     return destinations?.[Math.floor(Math.random() * destinations.length)] ?? undefined;
   }
   
-  // Otherwise, get a random destination from any socializing type
-  const socializingTypes = [
-    MeepleType.SpaceBar,
-    MeepleType.SpaceCafe,
-    MeepleType.SpaceDance,
-    MeepleType.SpaceFun,
-  ];
+  // Otherwise, get a random SpaceBar
   const destinations = meeples.filter(
-    (m: Meeple) => socializingTypes.includes(m.type) && m !== meeple
+    (m: Meeple) => m.type === MeepleType.SpaceBar && m !== meeple
   );
   return destinations?.[Math.floor(Math.random() * destinations.length)] ?? undefined;
 }
@@ -288,3 +286,72 @@ export function findStation(
   return undefined;
 }
 
+/**
+ * Finds a chase target (trader, miner, or player) by name, type, or proximity.
+ * If destinationName is provided, finds exact match.
+ * If destinationType is provided, finds random from that type.
+ * Otherwise, finds nearest target within detection distance.
+ * @param meeple - The meeple looking for a target
+ * @param destinationName - Optional specific target name
+ * @param destinationType - Optional target type (Trader, Miner, or Player)
+ * @param maxDistance - Maximum distance to search for nearby targets (defaults to PIRATE_CHASE_DETECTION_DISTANCE)
+ * @returns The found target, or undefined if none found
+ */
+export function findChaseTarget(
+  meeple: Meeple,
+  destinationName?: string,
+  destinationType?: MeepleType,
+  maxDistance?: number
+): Meeple | undefined {
+  if (!meeple.scene) return undefined;
+
+  const allActors = meeple.scene.actors.filter(
+    (actor) => actor instanceof Meeple
+  ) as Meeple[];
+
+  // Valid chase target types
+  const validChaseTypes = [
+    MeepleType.Trader,
+    MeepleType.Miner,
+    MeepleType.Player,
+  ];
+
+  // If destinationName is specified, find exact match
+  if (destinationName) {
+    const found = allActors.find(
+      (m: Meeple) =>
+        m.name === destinationName &&
+        m !== meeple &&
+        validChaseTypes.includes(m.type)
+    );
+    if (found) return found;
+  }
+
+  // If destinationType is specified, find random from that type
+  if (destinationType && validChaseTypes.includes(destinationType)) {
+    const filtered = allActors.filter(
+      (m: Meeple) => m.type === destinationType && m !== meeple
+    );
+    if (filtered.length > 0) {
+      return filtered[Math.floor(Math.random() * filtered.length)];
+    }
+  }
+
+  // Otherwise, find nearest target within detection distance
+  const detectionDistance = maxDistance ?? PIRATE_CHASE_DETECTION_DISTANCE;
+  const nearbyTargets = allActors
+    .filter((m) => {
+      if (m === meeple) return false;
+      if (!validChaseTypes.includes(m.type)) return false;
+      const distance = meeple.pos.distance(m.pos);
+      return distance <= detectionDistance;
+    })
+    .sort((a, b) => {
+      // Sort by distance, closest first
+      const distA = meeple.pos.distance(a.pos);
+      const distB = meeple.pos.distance(b.pos);
+      return distA - distB;
+    });
+
+  return nearbyTargets[0]; // Return closest target
+}

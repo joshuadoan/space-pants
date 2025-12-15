@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Outlet, useNavigate } from "react-router-dom";
-import { IconRocket } from "@tabler/icons-react";
+import { OTHER_ICONS } from "../utils/iconMap";
 import { useGame, type TabType } from "../hooks/useGame";
 import { Tabs } from "../components/Tabs";
 import { MeepleType } from "../entities/types";
@@ -43,7 +43,7 @@ export function Layout() {
               }}
               className="flex items-center gap-2 hover:opacity-80 transition-opacity cursor-pointer"
             >
-              <IconRocket size={28} className="text-primary" />
+              <OTHER_ICONS.rocket size={28} className="text-primary" />
               <h1 className="text-2xl font-bold text-base-content">
                 Space Pants
               </h1>
