@@ -61,16 +61,20 @@ export class Meeple extends Actor {
 
   /**
    * Add an entry to the diary, maintaining a maximum of 20 entries
+   * Creates a new array to ensure React detects the change
    */
   addDiaryEntry(entry: Omit<DiaryEntry, "timestamp">): void {
     const fullEntry: DiaryEntry = {
       ...entry,
       timestamp: Date.now(),
     };
-    this.diary.push(fullEntry);
+    // Create a new array instead of mutating to ensure React detects changes
+    const newDiary = [...this.diary, fullEntry];
     // Keep only the last 20 entries
-    if (this.diary.length > 20) {
-      this.diary.shift();
+    if (newDiary.length > 20) {
+      this.diary = newDiary.slice(-20);
+    } else {
+      this.diary = newDiary;
     }
   }
 
@@ -188,6 +192,8 @@ export class Meeple extends Actor {
     // Check if health is 0 or below and set broken state
     const currentHealth = this.goods[MeepleStats.Health] ?? DEFAULT_HEALTH;
     if (currentHealth <= 0 && this.state.type !== MeepleStateType.Broken) {
+      // Cancel all actions immediately
+      this.actions.clearActions();
       this.stopMovement();
       // Store original speed before breaking
       if (this.originalSpeed === null) {
@@ -237,7 +243,7 @@ export class Meeple extends Actor {
     const isBroken = this.state.type === MeepleStateType.Broken;
     if (isBroken && !this.isBrokenVisualApplied) {
       // Apply broken visual: reduce opacity and darken
-      this.graphics.opacity = 0.5;
+      this.graphics.opacity = 0.75;
       // Apply a dark gray tint by modifying the graphics group colors
       this.applyBrokenVisual();
       this.isBrokenVisualApplied = true;
@@ -250,6 +256,8 @@ export class Meeple extends Actor {
 
     // If broken, stop all movement and prevent any actions
     if (this.state.type === MeepleStateType.Broken) {
+      // Cancel all actions to ensure meeple stays stopped
+      this.actions.clearActions();
       // Ensure speed is zero
       this.speed = 0;
       this.stopMovement();

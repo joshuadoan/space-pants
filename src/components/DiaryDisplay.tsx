@@ -1,4 +1,5 @@
 import { useMemo } from "react";
+import { AnimatePresence, motion } from "motion/react";
 import {
   IconBook,
   IconClock,
@@ -15,7 +16,7 @@ import {
   IconArrowDown,
 } from "@tabler/icons-react";
 import type { DiaryEntry } from "../entities/types";
-import { MeepleStateType, LogicRuleActionType, Resources, MeepleStats } from "../entities/types";
+import { MeepleStateType, LogicRuleActionType, Resources, MeepleStats, Products } from "../entities/types";
 import { formatGoodDisplay } from "../utils/goodsMetadata";
 
 type DiaryDisplayProps = {
@@ -144,23 +145,32 @@ function generateNarrative(entry: DiaryEntry, previousEntry: DiaryEntry | null):
         return `Started mining at ${targetName || "an asteroid"}`;
         
       case LogicRuleActionType.SellOreToStation:
-        if (gainedGoods.some(g => g.good === Resources.Money)) {
-          const moneyGained = gainedGoods.find(g => g.good === Resources.Money)?.change ?? 0;
-          return `Sold ore to ${targetName || "a station"} for $${moneyGained}`;
+        const oreSold = lostGoods.find(g => g.good === Resources.Ore);
+        const moneyGainedFromOre = gainedGoods.find(g => g.good === Resources.Money);
+        if (oreSold && moneyGainedFromOre) {
+          return `Sold ${formatGoodDisplay(Resources.Ore, oreSold.change)} to ${targetName || "a station"} for ${formatGoodDisplay(Resources.Money, moneyGainedFromOre.change)}`;
+        } else if (moneyGainedFromOre) {
+          return `Sold ore to ${targetName || "a station"} for ${formatGoodDisplay(Resources.Money, moneyGainedFromOre.change)}`;
         }
         return `Trading ore with ${targetName || "a station"}`;
         
       case LogicRuleActionType.BuyProductFromStation:
-        if (lostGoods.some(g => g.good === Resources.Money)) {
-          const moneySpent = lostGoods.find(g => g.good === Resources.Money)?.change ?? 0;
-          return `Bought products from ${targetName || "a station"} for $${moneySpent}`;
+        const productBought = gainedGoods.find(g => Object.values(Products).includes(g.good as Products));
+        const moneySpent = lostGoods.find(g => g.good === Resources.Money);
+        if (productBought && moneySpent) {
+          return `Bought ${formatGoodDisplay(productBought.good as any, productBought.change)} from ${targetName || "a station"} for ${formatGoodDisplay(Resources.Money, moneySpent.change)}`;
+        } else if (moneySpent) {
+          return `Bought products from ${targetName || "a station"} for ${formatGoodDisplay(Resources.Money, moneySpent.change)}`;
         }
         return `Shopping at ${targetName || "a station"}`;
         
       case LogicRuleActionType.SellProductToStation:
-        if (gainedGoods.some(g => g.good === Resources.Money)) {
-          const moneyGained = gainedGoods.find(g => g.good === Resources.Money)?.change ?? 0;
-          return `Sold products to ${targetName || "a station"} for $${moneyGained}`;
+        const productSold = lostGoods.find(g => Object.values(Products).includes(g.good as Products));
+        const moneyGainedFromProduct = gainedGoods.find(g => g.good === Resources.Money);
+        if (productSold && moneyGainedFromProduct) {
+          return `Sold ${formatGoodDisplay(productSold.good as any, productSold.change)} to ${targetName || "a station"} for ${formatGoodDisplay(Resources.Money, moneyGainedFromProduct.change)}`;
+        } else if (moneyGainedFromProduct) {
+          return `Sold products to ${targetName || "a station"} for ${formatGoodDisplay(Resources.Money, moneyGainedFromProduct.change)}`;
         }
         return `Selling products to ${targetName || "a station"}`;
         
@@ -227,8 +237,8 @@ function generateNarrative(entry: DiaryEntry, previousEntry: DiaryEntry | null):
 }
 
 export function DiaryDisplay({ diary }: DiaryDisplayProps) {
-  // Reverse diary to show newest first
-  const reversedDiary = useMemo(() => [...diary].reverse(), [diary]);
+  // Reverse diary to show newest first, limit to 3 entries
+  const reversedDiary = useMemo(() => [...diary].reverse().slice(0, 3), [diary]);
 
   if (diary.length === 0) {
     return (
@@ -245,28 +255,62 @@ export function DiaryDisplay({ diary }: DiaryDisplayProps) {
       <div className="flex items-center gap-2 mb-3">
         <IconBook size={18} className="text-primary" />
         <h4 className="text-sm font-semibold text-base-content">Diary</h4>
-        <span className="badge badge-sm badge-ghost">{diary.length} entries</span>
       </div>
       <div className="space-y-2 max-h-96 overflow-y-auto pr-2">
-        {reversedDiary.map((entry, index) => {
-          const previousEntry = index > 0 ? reversedDiary[index - 1] : null;
-          const narrative = generateNarrative(entry, previousEntry);
-          const goodsChanges = previousEntry 
-            ? calculateGoodsChanges(entry.goods, previousEntry.goods)
-            : [];
-          const gainedGoods = goodsChanges.filter(c => c.isPositive);
-          const lostGoods = goodsChanges.filter(c => !c.isPositive);
-          
-          return (
-            <div
-              key={index}
-              className="bg-base-200/70 rounded-lg p-3 border-l-4 border-primary/50 hover:bg-base-200 transition-colors shadow-sm"
-            >
+        <AnimatePresence mode="popLayout">
+          {reversedDiary.map((entry, index) => {
+            const previousEntry = index > 0 ? reversedDiary[index - 1] : null;
+            const narrative = generateNarrative(entry, previousEntry);
+            const goodsChanges = previousEntry 
+              ? calculateGoodsChanges(entry.goods, previousEntry.goods)
+              : [];
+            const gainedGoods = goodsChanges.filter(c => c.isPositive);
+            const lostGoods = goodsChanges.filter(c => !c.isPositive);
+            
+            return (
+              <motion.div
+                key={`${entry.timestamp}-${entry.ruleId || 'state'}-${entry.state}`}
+                initial={{ opacity: 0, y: -20, scale: 0.95 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, y: 20, scale: 0.95 }}
+                transition={{ 
+                  duration: 0.3,
+                  ease: [0.4, 0, 0.2, 1]
+                }}
+                layout
+                className="bg-base-200/70 rounded-lg p-3 border-l-4 border-primary/50 hover:bg-base-200 transition-colors shadow-sm"
+              >
               <div className="flex items-start justify-between gap-2 mb-2">
                 <div className="flex items-center gap-2 flex-1 min-w-0">
                   {getStateIcon(entry.state)}
                   <span className="text-sm font-semibold text-base-content">
-                    {narrative}
+                    {(entry.action === LogicRuleActionType.SellProductToStation || entry.action === LogicRuleActionType.SellOreToStation) && gainedGoods.length > 0 && lostGoods.length > 0 ? (
+                      <>
+                        Sold{" "}
+                        {lostGoods
+                          .filter(g => g.good === Resources.Ore || Object.values(Products).includes(g.good as Products))
+                          .map((change, idx, arr) => (
+                            <span key={idx}>
+                              <span className="text-error">
+                                {formatGoodDisplay(change.good as any, change.change)}
+                              </span>
+                              {idx < arr.length - 1 && ", "}
+                            </span>
+                          ))}
+                        {" to "}
+                        {entry.targetName || "a station"}
+                        {" for "}
+                        {gainedGoods
+                          .filter(g => g.good === Resources.Money)
+                          .map((change, idx) => (
+                            <span key={idx} className="text-success">
+                              ${change.change}
+                            </span>
+                          ))}
+                      </>
+                    ) : (
+                      narrative
+                    )}
                   </span>
                 </div>
                 <div className="flex items-center gap-1 text-xs text-base-content/50 shrink-0">
@@ -304,9 +348,10 @@ export function DiaryDisplay({ diary }: DiaryDisplayProps) {
                 <IconHome size={12} className="opacity-50" />
                 <span className="italic">Inventory: {formatGoodsSnapshot(entry.goods)}</span>
               </div>
-            </div>
-          );
-        })}
+              </motion.div>
+            );
+          })}
+        </AnimatePresence>
       </div>
     </div>
   );

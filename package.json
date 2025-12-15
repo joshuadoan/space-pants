@@ -15,6 +15,7 @@
     "@tanstack/react-virtual": "^3.13.13",
     "daisyui": "^5.5.5",
     "excalibur": "^0.31.0",
+    "motion": "^12.23.26",
     "react": "^19.2.0",
     "react-compiler-runtime": "19.0.0-beta-af1b7da-20250417",
     "react-dnd": "^16.0.1",

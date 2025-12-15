@@ -18,8 +18,9 @@ import { MeepleCard } from "./components/MeepleCard";
 import { Tabs } from "./components/Tabs";
 import { WORLD_HEIGHT, WORLD_WIDTH } from "./entities/game-config";
 import { MeepleStats, Resources, type GoodType, MeepleType } from "./entities/types";
-import { BUILT_IN_BEHAVIORS } from "./entities/ruleTemplates";
+import { BUILT_IN_BEHAVIORS, MINER_BEHAVIOR } from "./entities/ruleTemplates";
 import { EntityGraphicStyle } from "./entities/utils/createSpaceShipOutOfShapes";
+import { generateSpaceName } from "./entities/utils/generateSpaceName";
 import { useGame, type TabType } from "./hooks/useGame";
 import { getGoodIcon, getGoodLabel, getGoodMetadata } from "./utils/goodsMetadata";
 
@@ -111,9 +112,9 @@ function App() {
           return { ...state, positionY: action.payload };
         case "reset":
           return {
-            name: "",
-            graphicStyle: EntityGraphicStyle.Default,
-            templateId: "",
+            name: generateSpaceName(),
+            graphicStyle: EntityGraphicStyle.Miner,
+            templateId: MINER_BEHAVIOR.id,
             useRandomPosition: true,
             positionX: WORLD_WIDTH / 2,
             positionY: WORLD_HEIGHT / 2,
@@ -123,9 +124,9 @@ function App() {
       }
     },
     {
-      name: "",
-      graphicStyle: EntityGraphicStyle.Default,
-      templateId: "",
+      name: generateSpaceName(),
+      graphicStyle: EntityGraphicStyle.Miner,
+      templateId: MINER_BEHAVIOR.id,
       useRandomPosition: true,
       positionX: WORLD_WIDTH / 2,
       positionY: WORLD_HEIGHT / 2,
@@ -175,6 +176,13 @@ function App() {
     dispatchForm({
       type: "set-position-y",
       payload: Math.random() * WORLD_HEIGHT,
+    });
+  };
+
+  const handleRandomizeName = () => {
+    dispatchForm({
+      type: "set-name",
+      payload: generateSpaceName(),
     });
   };
 
@@ -334,16 +342,26 @@ function App() {
                     <label className="label">
                       <span className="label-text font-semibold">Name</span>
                     </label>
-                    <input
-                      type="text"
-                      placeholder="Enter entity name"
-                      className="input input-bordered w-full"
-                      value={formState.name}
-                      onChange={(e) =>
-                        dispatchForm({ type: "set-name", payload: e.target.value })
-                      }
-                      required
-                    />
+                    <div className="flex gap-2">
+                      <input
+                        type="text"
+                        placeholder="Enter entity name"
+                        className="input input-bordered flex-1"
+                        value={formState.name}
+                        onChange={(e) =>
+                          dispatchForm({ type: "set-name", payload: e.target.value })
+                        }
+                        required
+                      />
+                      <button
+                        type="button"
+                        className="btn btn-outline"
+                        onClick={handleRandomizeName}
+                        title="Generate random name"
+                      >
+                        <IconDice size={16} />
+                      </button>
+                    </div>
                   </div>
 
                   {/* Graphic Style Selector */}
