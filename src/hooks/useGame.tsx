@@ -20,7 +20,7 @@ import {
 } from "../entities/game-config";
 import { Meeple } from "../entities/Meeple/Meeple";
 import { PirateDen } from "../entities/PirateDen";
-import { MINER_RULES, PIRATE_RULES, TRADER_RULES, MECHANIC_RULES, mergeRulesWithDefaults, DEFAULT_RULES } from "../entities/ruleTemplates";
+import { MINER_RULES, PIRATE_RULES, TRADER_RULES, mergeRulesWithDefaults, DEFAULT_RULES } from "../entities/ruleTemplates";
 import { SpaceApartments } from "../entities/SpaceApartments";
 import { SpaceBar } from "../entities/SpaceBar";
 import { SpaceCafe } from "../entities/SpaceCafe";

@@ -21,6 +21,7 @@ import {
   IconSatellite,
   IconStar,
   IconTarget,
+  IconTool,
   IconUsers,
 } from "@tabler/icons-react";
 
@@ -392,6 +393,17 @@ export function MeepleCard({
                 </span>
               </div>
             ),
+            [MeepleType.Mechanic]: (
+              <div className="tooltip">
+                <div className="tooltip-content">
+                  <div className="text-sm font-semibold text-base-content">Mechanic</div>
+                </div>
+                <span className="badge badge-sm badge-info badge-outline flex items-center gap-1">
+                  <IconTool size={14} className="cursor-pointer" />
+                  Mechanic
+                </span>
+              </div>
+            ),
             [MeepleType.Custom]: (
               <div className="tooltip">
                 <div className="tooltip-content">
@@ -605,6 +617,7 @@ export function MeepleCard({
                         [MeepleType.Player]: <IconRocket size={14} className="cursor-pointer" />,
                         [MeepleType.Pirate]: <IconShip size={14} className="cursor-pointer" />,
                         [MeepleType.PirateDen]: <IconBuilding size={14} className="cursor-pointer" />,
+                        [MeepleType.Mechanic]: <IconTool size={14} className="cursor-pointer" />,
                         [MeepleType.Custom]: <IconShip size={14} className="cursor-pointer" />,
                       }[visitor.type]
                     }{" "}

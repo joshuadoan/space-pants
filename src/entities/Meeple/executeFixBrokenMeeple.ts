@@ -1,7 +1,7 @@
 import { Actor } from "excalibur";
 
 import { DEFAULT_HEALTH, DEFAULT_TRANSACTION_TIME_MS } from "../game-config";
-import { MeepleStateType, MeepleStats, MeepleType, Resources } from "../types";
+import { MeepleStateType, MeepleStats, Resources } from "../types";
 import { visitTarget } from "./visitTarget";
 import { Meeple } from "./Meeple";
 
