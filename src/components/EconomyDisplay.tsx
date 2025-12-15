@@ -1,3 +1,4 @@
+import { useMemo } from "react";
 import {
   IconCurrencyDollar,
   IconExchange,
@@ -8,8 +9,13 @@ import {
   IconCoins,
   IconRocket,
   IconSword,
+  IconChartBar,
+  IconBolt,
 } from "@tabler/icons-react";
 import * as economyConfig from "../entities/economy-config";
+import { useGame } from "../hooks/useGame";
+import { Resources, Products, MeepleStats, MeepleStateType } from "../entities/types";
+import { formatGoodDisplay } from "../utils/goodsMetadata";
 
 type ConfigSection = {
   title: string;
@@ -24,6 +30,64 @@ type ConfigSection = {
 };
 
 export function EconomyDisplay() {
+  const { meeples, meepleCounts } = useGame();
+
+  // Calculate aggregate game statistics
+  const aggregateStats = useMemo(() => {
+    let totalMoney = 0;
+    let totalOre = 0;
+    const totalProducts: Record<Products, number> = {
+      [Products.Gruffle]: 0,
+      [Products.Druffle]: 0,
+      [Products.Klintzpaw]: 0,
+      [Products.Grogin]: 0,
+      [Products.Fizz]: 0,
+    };
+    let totalHealth = 0;
+    let totalEnergy = 0;
+    let entitiesWithHealth = 0;
+    let entitiesWithEnergy = 0;
+    let brokenCount = 0;
+
+    for (const meeple of meeples) {
+      // Sum resources
+      totalMoney += meeple.goods[Resources.Money] ?? 0;
+      totalOre += meeple.goods[Resources.Ore] ?? 0;
+
+      // Sum products
+      for (const product of Object.values(Products)) {
+        totalProducts[product] += meeple.goods[product] ?? 0;
+      }
+
+      // Sum stats (only for entities that have them)
+      const health = meeple.goods[MeepleStats.Health];
+      const energy = meeple.goods[MeepleStats.Energy];
+      if (health !== undefined) {
+        totalHealth += health;
+        entitiesWithHealth++;
+      }
+      if (energy !== undefined) {
+        totalEnergy += energy;
+        entitiesWithEnergy++;
+      }
+
+      // Count broken entities
+      if (meeple.state.type === MeepleStateType.Broken) {
+        brokenCount++;
+      }
+    }
+
+    return {
+      totalMoney,
+      totalOre,
+      totalProducts,
+      averageHealth: entitiesWithHealth > 0 ? totalHealth / entitiesWithHealth : 0,
+      averageEnergy: entitiesWithEnergy > 0 ? totalEnergy / entitiesWithEnergy : 0,
+      brokenCount,
+      totalEntities: meeples.length,
+    };
+  }, [meeples]);
+
   const sections: ConfigSection[] = [
     {
       title: "Trading & Exchange Rates",
@@ -356,6 +420,143 @@ export function EconomyDisplay() {
           <p className="text-sm text-base-content/70 mt-1">
             All economic parameters that control resource flows, pricing, and production
           </p>
+        </div>
+      </div>
+
+      {/* Aggregate Game Stats */}
+      <div className="card bg-base-200 shadow-lg border border-base-300">
+        <div className="card-body">
+          <div className="flex items-center gap-2 mb-4">
+            <IconChartBar size={24} className="text-info" />
+            <h3 className="text-xl font-bold text-base-content">Aggregate Game Statistics</h3>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {/* Total Entities */}
+            <div className="bg-base-100 rounded-lg p-4 border border-base-300">
+              <div className="text-xs text-base-content/60 mb-1">Total Entities</div>
+              <div className="text-2xl font-bold text-base-content">
+                {aggregateStats.totalEntities.toLocaleString()}
+              </div>
+            </div>
+
+            {/* Total Money */}
+            <div className="bg-base-100 rounded-lg p-4 border border-base-300">
+              <div className="text-xs text-base-content/60 mb-1">Total Money</div>
+              <div className="text-2xl font-bold text-success">
+                {formatGoodDisplay(Resources.Money, aggregateStats.totalMoney)}
+              </div>
+            </div>
+
+            {/* Total Ore */}
+            <div className="bg-base-100 rounded-lg p-4 border border-base-300">
+              <div className="text-xs text-base-content/60 mb-1">Total Ore</div>
+              <div className="text-2xl font-bold text-secondary">
+                {formatGoodDisplay(Resources.Ore, aggregateStats.totalOre)}
+              </div>
+            </div>
+
+            {/* Products */}
+            {Object.entries(aggregateStats.totalProducts).map(([product, count]) => (
+              <div key={product} className="bg-base-100 rounded-lg p-4 border border-base-300">
+                <div className="text-xs text-base-content/60 mb-1">Total {product.charAt(0).toUpperCase() + product.slice(1)}</div>
+                <div className="text-2xl font-bold text-accent">
+                  {formatGoodDisplay(product as Products, count)}
+                </div>
+              </div>
+            ))}
+
+            {/* Average Health */}
+            {aggregateStats.averageHealth > 0 && (
+              <div className="bg-base-100 rounded-lg p-4 border border-base-300">
+                <div className="text-xs text-base-content/60 mb-1">Average Health</div>
+                <div className="text-2xl font-bold text-error">
+                  {Math.round(aggregateStats.averageHealth)}
+                </div>
+              </div>
+            )}
+
+            {/* Average Energy */}
+            {aggregateStats.averageEnergy > 0 && (
+              <div className="bg-base-100 rounded-lg p-4 border border-base-300">
+                <div className="text-xs text-base-content/60 mb-1">Average Energy</div>
+                <div className="text-2xl font-bold text-warning flex items-center gap-1">
+                  <IconBolt size={20} />
+                  {Math.round(aggregateStats.averageEnergy)}
+                </div>
+              </div>
+            )}
+
+            {/* Broken Entities */}
+            {aggregateStats.brokenCount > 0 && (
+              <div className="bg-base-100 rounded-lg p-4 border border-error/50">
+                <div className="text-xs text-base-content/60 mb-1">Broken Entities</div>
+                <div className="text-2xl font-bold text-error">
+                  {aggregateStats.brokenCount}
+                </div>
+              </div>
+            )}
+
+            {/* Entity Counts by Type */}
+            <div className="bg-base-100 rounded-lg p-4 border border-base-300 md:col-span-2 lg:col-span-3">
+              <div className="text-xs text-base-content/60 mb-2">Entity Breakdown</div>
+              <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-2 text-xs">
+                {meepleCounts.traders > 0 && (
+                  <div className="flex justify-between">
+                    <span className="text-base-content/70">Traders:</span>
+                    <span className="font-semibold text-base-content">{meepleCounts.traders}</span>
+                  </div>
+                )}
+                {meepleCounts.miners > 0 && (
+                  <div className="flex justify-between">
+                    <span className="text-base-content/70">Miners:</span>
+                    <span className="font-semibold text-base-content">{meepleCounts.miners}</span>
+                  </div>
+                )}
+                {meepleCounts.stations > 0 && (
+                  <div className="flex justify-between">
+                    <span className="text-base-content/70">Stations:</span>
+                    <span className="font-semibold text-base-content">{meepleCounts.stations}</span>
+                  </div>
+                )}
+                {meepleCounts.asteroids > 0 && (
+                  <div className="flex justify-between">
+                    <span className="text-base-content/70">Asteroids:</span>
+                    <span className="font-semibold text-base-content">{meepleCounts.asteroids}</span>
+                  </div>
+                )}
+                {meepleCounts.spacebars > 0 && (
+                  <div className="flex justify-between">
+                    <span className="text-base-content/70">Bars:</span>
+                    <span className="font-semibold text-base-content">{meepleCounts.spacebars}</span>
+                  </div>
+                )}
+                {meepleCounts.bartenders > 0 && (
+                  <div className="flex justify-between">
+                    <span className="text-base-content/70">Bartenders:</span>
+                    <span className="font-semibold text-base-content">{meepleCounts.bartenders}</span>
+                  </div>
+                )}
+                {meepleCounts.mechanics > 0 && (
+                  <div className="flex justify-between">
+                    <span className="text-base-content/70">Mechanics:</span>
+                    <span className="font-semibold text-base-content">{meepleCounts.mechanics}</span>
+                  </div>
+                )}
+                {meepleCounts.pirates > 0 && (
+                  <div className="flex justify-between">
+                    <span className="text-base-content/70">Pirates:</span>
+                    <span className="font-semibold text-base-content">{meepleCounts.pirates}</span>
+                  </div>
+                )}
+                {meepleCounts.spaceapartments > 0 && (
+                  <div className="flex justify-between">
+                    <span className="text-base-content/70">Apartments:</span>
+                    <span className="font-semibold text-base-content">{meepleCounts.spaceapartments}</span>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 

@@ -375,6 +375,9 @@ export class Meeple extends Actor {
       // Calculate distance to target
       const distance = this.pos.distance(this.chaseTarget.pos);
 
+      // Define minimum distance to maintain from target
+      const MIN_CHASE_DISTANCE = 150;
+
       // If close enough and haven't stolen yet, steal money
       if (distance <= PIRATE_STEAL_DISTANCE && !this.hasStolen) {
         const targetMoney = this.chaseTarget.goods[Resources.Money] ?? 0;
@@ -400,14 +403,28 @@ export class Meeple extends Actor {
         }
       }
 
-      // Move towards target using velocity
+      // Move towards target using velocity with refined chasing behavior
       const direction = this.chaseTarget.pos.sub(this.pos);
       const dist = direction.size;
-      
+
       if (dist > 0) {
         const normalized = direction.normalize();
-        this.vel.x = normalized.x * this.speed;
-        this.vel.y = normalized.y * this.speed;
+
+        // Refined chasing logic: maintain distance and match speed when close
+        if (distance > MIN_CHASE_DISTANCE) {
+          // Approach target at full speed when far away
+          this.vel.x = normalized.x * this.speed;
+          this.vel.y = normalized.y * this.speed;
+        } else {
+          // When within minimum distance, slow down and match target's speed
+          // Calculate a reduced speed based on distance (closer = slower)
+          const distanceFactor = Math.max(0.1, distance / MIN_CHASE_DISTANCE);
+          const adjustedSpeed = this.speed * distanceFactor;
+
+          // Match target's velocity direction but at adjusted speed
+          this.vel.x = normalized.x * adjustedSpeed;
+          this.vel.y = normalized.y * adjustedSpeed;
+        }
 
         // Fire lasers periodically during chase
         const timeSinceLastLaser = Date.now() - this.lastLaserFireTime;
@@ -593,4 +610,3 @@ export class Meeple extends Actor {
     this.originalColors.clear();
   }
 }
-
