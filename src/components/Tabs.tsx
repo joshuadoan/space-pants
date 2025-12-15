@@ -14,11 +14,12 @@ import {
   IconCoffee,
   IconMusic,
   IconStar,
+  IconCurrencyDollar,
 } from "@tabler/icons-react";
 
-type TabType = "traders" | "miners" | "stations" | "asteroids" | "spacebars" | "spacecafes" | "spacedances" | "spacefuns" | "spaceapartments" | "bartenders" | "pirates" | "piratedens" | "mechanics" | "all" | "player" | "my-meeples" | "create" | "help";
+type TabType = "traders" | "miners" | "stations" | "asteroids" | "spacebars" | "spacecafes" | "spacedances" | "spacefuns" | "spaceapartments" | "bartenders" | "pirates" | "piratedens" | "mechanics" | "all" | "player" | "my-meeples" | "create" | "help" | "economy";
 
-type MainTabType = "ships" | "destinations" | "player" | "help";
+type MainTabType = "ships" | "destinations" | "player" | "help" | "economy";
 
 type MeepleCounts = {
   traders: number;
@@ -47,6 +48,9 @@ type TabsProps = {
 function getMainTabFromTabType(tab: TabType): MainTabType {
   if (tab === "help") {
     return "help";
+  }
+  if (tab === "economy") {
+    return "economy";
   }
   if (tab === "player" || tab === "my-meeples" || tab === "create") {
     return "player";
@@ -86,6 +90,7 @@ const MAIN_TABS: { value: MainTabType; label: string; icon?: React.ComponentType
   { value: "player", label: "Player", icon: IconUser, badgeColor: "badge-success" },
   { value: "ships", label: "Ships", icon: IconShip, badgeColor: "badge-primary" },
   { value: "destinations", label: "Destinations", icon: IconMapPin, badgeColor: "badge-info" },
+  { value: "economy", label: "Economy", icon: IconCurrencyDollar, badgeColor: "badge-warning" },
   { value: "help", label: "Help", icon: IconHelp, badgeColor: "badge-accent" },
 ];
 
@@ -125,6 +130,8 @@ export function Tabs({ activeTab, onTabChange, meepleCounts, customMeeplesCount 
     // Update parent component with the appropriate tab
     if (mainTab === "help") {
       onTabChange("help");
+    } else if (mainTab === "economy") {
+      onTabChange("economy");
     } else if (mainTab === "player") {
       // If no custom meeples, default to create tab, otherwise my-meeples
       onTabChange(customMeeplesCount === 0 ? "create" : "my-meeples");

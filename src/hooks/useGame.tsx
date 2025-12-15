@@ -795,7 +795,8 @@ export type TabType =
   | "player"
   | "my-meeples"
   | "create"
-  | "help";
+  | "help"
+  | "economy";
 
  export type Player = {
   name: string;
@@ -913,7 +914,7 @@ function useGameInternal(): GameContextValue {
    */
   const getFilteredEntities = useCallback(
     (tab: TabType): Meeple[] => {
-      if (tab === "create" || tab === "player" || tab === "help") {
+      if (tab === "create" || tab === "player" || tab === "help" || tab === "economy") {
         return [];
       }
       if (tab === "my-meeples") {

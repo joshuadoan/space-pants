@@ -3,6 +3,7 @@ import { Color, Polygon, Vector } from "excalibur";
 import type { Game } from "./Game";
 import {
   ASTEROID_MIN_ORE_THRESHOLD,
+  ASTEROID_REGENERATION_AMOUNT,
   ASTEROID_REGENERATION_RATE_MS,
   ASTEROID_STARTING_ORE,
 } from "./game-config";
@@ -54,7 +55,7 @@ export class Asteroid extends Meeple {
     goodType: Resources.Ore,
     minThreshold: ASTEROID_MIN_ORE_THRESHOLD,
     maxThreshold: ASTEROID_MIN_ORE_THRESHOLD,
-    amountPerCycle: 1,
+    amountPerCycle: ASTEROID_REGENERATION_AMOUNT,
     rateMs: ASTEROID_REGENERATION_RATE_MS,
   };
 

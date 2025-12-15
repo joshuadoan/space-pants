@@ -1,4 +1,11 @@
 import {
+  BUY_PRODUCT_MONEY_THRESHOLD,
+  MECHANIC_FIX_MONEY_THRESHOLD,
+  MECHANIC_SOCIALIZE_MONEY_THRESHOLD,
+  MINER_SELL_ORE_THRESHOLD,
+  SOCIALIZE_MONEY_THRESHOLD,
+} from "./economy-config";
+import {
   ComparisonOperator,
   LogicRuleActionType,
   MeepleStats,
@@ -36,13 +43,14 @@ export const DEFAULT_RULES: LogicRule[] = [
 ];
 
 const TRADER_RULES_ARRAY = [
-  // Priority 2: If money is greater than or equal to 50, go to space bar to socialize
+  // Priority 2: If money is greater than or equal to threshold, go to a random social place (SpaceBar, SpaceCafe, SpaceDance, or SpaceFun) to socialize
   {
     id: createRuleId("go-to-space-bar"),
     good: Resources.Money,
     operator: ComparisonOperator.GreaterThanOrEqual,
-    value: 50,
+    value: SOCIALIZE_MONEY_THRESHOLD,
     action: LogicRuleActionType.SocializeAtBar,
+    // destinationType not specified, so it will randomly select from all social places
   },
   // Priority 3: If trader has products of their type, sell them to stations
   // productType not specified, so it defaults to meeple's productType
@@ -59,45 +67,46 @@ const TRADER_RULES_ARRAY = [
     id: createRuleId("buy-product"),
     good: Resources.Money,
     operator: ComparisonOperator.GreaterThanOrEqual,
-    value: 1, // Minimum to buy one product (PRODUCT_BUY_PRICE)
+    value: BUY_PRODUCT_MONEY_THRESHOLD, // Minimum to buy one product
     action: LogicRuleActionType.BuyProductFromStation,
   },
 ] satisfies LogicRule[];
 
 const MINER_RULES_ARRAY = [
-  // if money is greater than or equal to 50 go to space bar
+  // if money is greater than or equal to threshold go to a random social place (SpaceBar, SpaceCafe, SpaceDance, or SpaceFun)
   {
     id: createRuleId("go-to-space-bar"),
     good: Resources.Money,
     operator: ComparisonOperator.GreaterThanOrEqual,
-    value: 50,
+    value: SOCIALIZE_MONEY_THRESHOLD,
     action: LogicRuleActionType.SocializeAtBar,
+    // destinationType not specified, so it will randomly select from all social places
   },
-  // if ore is greater than or equal to 10, trade it for money
+  // if ore is greater than or equal to threshold, trade it for money
   {
     id: createRuleId("trade-ore-for-money"),
     good: Resources.Ore,
     operator: ComparisonOperator.GreaterThanOrEqual,
-    value: 10,
+    value: MINER_SELL_ORE_THRESHOLD,
     action: LogicRuleActionType.SellOreToStation,
   },
-  // if ore is less than 10, continue mining
+  // if ore is less than threshold, continue mining
   {
     id: createRuleId("mine-ore"),
     good: Resources.Ore,
     operator: ComparisonOperator.LessThan,
-    value: 10,
+    value: MINER_SELL_ORE_THRESHOLD,
     action: LogicRuleActionType.MineOreFromAsteroid,
   },
 ] satisfies LogicRule[];
 
 const BARTENDER_RULES_ARRAY = [
-  // Priority 2: If money is 50+, go shopping for products
+  // Priority 2: If money is at threshold or above, go shopping for products
   {
     id: createRuleId("go-shopping"),
     good: Resources.Money,
     operator: ComparisonOperator.GreaterThanOrEqual,
-    value: 50,
+    value: SOCIALIZE_MONEY_THRESHOLD,
     action: LogicRuleActionType.BuyProductFromStation,
   },
   // Priority 3: If energy is above 0, go to space bar to work (make money)
@@ -130,20 +139,21 @@ const PIRATE_RULES_ARRAY = [
 ] satisfies LogicRule[];
 
 const MECHANIC_RULES_ARRAY = [
-  // Priority 2: If money is greater than or equal to 20, go to space bar to socialize
+  // Priority 2: If money is greater than or equal to threshold, go to a random social place (SpaceBar, SpaceCafe, SpaceDance, or SpaceFun) to socialize
   {
     id: createRuleId("go-to-space-bar"),
     good: Resources.Money,
     operator: ComparisonOperator.GreaterThanOrEqual,
-    value: 20,
+    value: MECHANIC_SOCIALIZE_MONEY_THRESHOLD,
     action: LogicRuleActionType.SocializeAtBar,
+    // destinationType not specified, so it will randomly select from all social places
   },
-  // Priority 3: If money is less than 20, look for and fix broken meeples
+  // Priority 3: If money is less than threshold, look for and fix broken meeples
   {
     id: createRuleId("fix-broken-meeple"),
     good: Resources.Money,
     operator: ComparisonOperator.LessThan,
-    value: 20,
+    value: MECHANIC_FIX_MONEY_THRESHOLD,
     action: LogicRuleActionType.FixBrokenMeeple,
   },
 ] satisfies LogicRule[];

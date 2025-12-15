@@ -9,12 +9,11 @@ export function executeSocialize(
   destinationName?: string,
   destinationType?: MeepleType
 ): void {
-  // If a specific destination type is provided, use it; otherwise default to SpaceBar for backward compatibility
-  const defaultType = destinationType ?? MeepleType.SpaceBar;
-  
+  // If destinationName is provided, try to find exact match first
+  // If destinationType is provided, use it; otherwise use random social destination
   const destination =
-    findDestination(meeple, destinationName, defaultType) ??
-    getRandomSocializingDestination(meeple, defaultType);
+    findDestination(meeple, destinationName, destinationType) ??
+    getRandomSocializingDestination(meeple, destinationType);
   if (!destination) return;
 
   const moneyAmount = meeple.goods[Resources.Money] ?? 0;

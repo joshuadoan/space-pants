@@ -10,7 +10,9 @@ import {
   PIRATE_CHASE_ABANDON_DISTANCE,
   PIRATE_CHASE_DURATION_MS,
   PIRATE_LASER_FIRE_INTERVAL_MS,
+  PIRATE_STEAL_AMOUNT,
   PIRATE_STEAL_DISTANCE,
+  PIRATE_STEAL_ENERGY_COST_PERCENT,
 } from "../game-config";
 import {
   MeepleStateType,
@@ -377,19 +379,19 @@ export class Meeple extends Actor {
       if (distance <= PIRATE_STEAL_DISTANCE && !this.hasStolen) {
         const targetMoney = this.chaseTarget.goods[Resources.Money] ?? 0;
         if (targetMoney > 0) {
-          // Pirate gains 1 money
+          // Pirate gains money (configurable amount)
           this.dispatch({
             type: "add-good",
-            payload: { good: Resources.Money, quantity: 1 },
+            payload: { good: Resources.Money, quantity: PIRATE_STEAL_AMOUNT },
           });
-          // Target loses 1 money
+          // Target loses money (same amount)
           this.chaseTarget.dispatch({
             type: "remove-good",
-            payload: { good: Resources.Money, quantity: 1 },
+            payload: { good: Resources.Money, quantity: PIRATE_STEAL_AMOUNT },
           });
-          // Pirate loses 25% of current energy when stealing
+          // Pirate loses percentage of current energy when stealing
           const currentEnergy = this.goods[MeepleStats.Energy] ?? DEFAULT_ENERGY;
-          const energyCost = Math.max(1, Math.floor(currentEnergy * 0.25));
+          const energyCost = Math.max(1, Math.floor(currentEnergy * PIRATE_STEAL_ENERGY_COST_PERCENT));
           this.dispatch({
             type: "remove-good",
             payload: { good: MeepleStats.Energy, quantity: energyCost },

@@ -1,6 +1,7 @@
 import { useMemo, useReducer, useRef } from "react";
 import { useFps } from "react-fps";
 import {
+  IconArrowRight,
   IconBulb,
   IconClick,
   IconDice,
@@ -16,6 +17,7 @@ import { Vector } from "excalibur";
 import { cloneElement, isValidElement } from "react";
 import { MeepleCard } from "./components/MeepleCard";
 import { Tabs } from "./components/Tabs";
+import { EconomyDisplay } from "./components/EconomyDisplay";
 import { WORLD_HEIGHT, WORLD_WIDTH } from "./entities/game-config";
 import { MeepleStats, Resources, type GoodType, MeepleType } from "./entities/types";
 import { BUILT_IN_BEHAVIORS, MINER_BEHAVIOR } from "./entities/ruleTemplates";
@@ -184,6 +186,28 @@ function App() {
       type: "set-name",
       payload: generateSpaceName(),
     });
+  };
+
+  const handleRandomShip = () => {
+    // Ship types (not destinations): Trader, Miner, Bartender, Pirate, Mechanic, Custom, Player
+    const shipTypes = [
+      MeepleType.Trader,
+      MeepleType.Miner,
+      MeepleType.Bartender,
+      MeepleType.Pirate,
+      MeepleType.Mechanic,
+      MeepleType.Custom,
+      MeepleType.Player,
+    ];
+    
+    // Filter meeples to only include ships (not destinations)
+    const shipMeeples = meeples.filter((meeple) => shipTypes.includes(meeple.type));
+    
+    if (shipMeeples.length > 0) {
+      // Randomly select a ship
+      const randomShip = shipMeeples[Math.floor(Math.random() * shipMeeples.length)];
+      zoomToEntity(randomShip);
+    }
   };
 
   // Compact goods display for header
@@ -517,6 +541,11 @@ function App() {
               </div>
             </div>
           )}
+          {state.activeTab === "economy" && (
+            <div className="w-full">
+              <EconomyDisplay />
+            </div>
+          )}
           {state.activeTab === "help" && (
             <div className="card bg-base-100 shadow-md hover:shadow-lg transition-all duration-200 border border-base-300 rounded-lg p-4 m-2">
               <div className="card-body space-y-6">
@@ -607,6 +636,16 @@ function App() {
       <div className="absolute bottom-2 right-2 text-sm text-white">
         {`FPS: ${currentFps} Avg: ${avgFps} Max: ${maxFps}`}
       </div>
+      {/* Mobile floating next button */}
+      <button
+        onClick={handleRandomShip}
+        className="md:hidden fixed bottom-4 right-4 btn btn-primary btn-circle shadow-lg z-[100]"
+        title="Random ship"
+        aria-label="Random ship"
+        type="button"
+      >
+        <IconArrowRight size={24} />
+      </button>
     </main>
   );
 }
