@@ -813,7 +813,7 @@ type GameContextValue = {
   meepleCounts: MeepleCounts;
   players: Player;
   getFilteredEntities: (tab: TabType) => Meeple[];
-  zoomToEntity: (meeple: Meeple) => void;
+  zoomToEntity: (meeple: Meeple | null) => void;
   createMeeple: (graphicStyle: EntityGraphicStyle, name: string, position?: Vector, template?: RuleBehavior) => Meeple | null;
   zoom: number;
   setZoom: (zoom: number) => void;
@@ -986,9 +986,9 @@ function useGameInternal(): GameContextValue {
     getFilteredEntities,
     /**
      * Sets the active meeple entity.
-     * @param meeple - The meeple entity to set as active
+     * @param meeple - The meeple entity to set as active, or null to clear
      */
-    zoomToEntity: (meeple: Meeple) => {
+    zoomToEntity: (meeple: Meeple | null) => {
       dispatch({ type: "zoom-to-entity", payload: meeple });
     },
     createMeeple,

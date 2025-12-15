@@ -23,6 +23,8 @@
     "react-dom": "^19.2.0",
     "react-fps": "^1.0.6",
     "react-markdown": "^10.1.0",
+    "react-router": "^7.10.1",
+    "react-router-dom": "^7.10.1",
     "tailwindcss": "^4.1.17",
     "xstate": "^5.24.0"
   },
