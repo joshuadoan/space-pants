@@ -36,12 +36,18 @@ export function Layout() {
       <div className="navbar bg-base-100 shadow-lg sticky md:top-0 top-10 z-40">
         <div className="flex-1 flex flex-col items-start">
           <div className="flex items-center gap-2 mb-2 px-2 w-full">
-            <div className="flex items-center gap-2">
+            <button
+              onClick={() => {
+                navigate("/");
+                zoomToEntity(null);
+              }}
+              className="flex items-center gap-2 hover:opacity-80 transition-opacity cursor-pointer"
+            >
               <IconRocket size={28} className="text-primary" />
               <h1 className="text-2xl font-bold text-base-content">
                 Space Pants
               </h1>
-            </div>
+            </button>
             <div className="flex-1" />
             <div className="flex items-center gap-3">
               <div className="flex flex-col items-end gap-1">

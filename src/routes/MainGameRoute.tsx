@@ -131,7 +131,6 @@ export function MainGameRoute() {
     );
     
     if (newMeeple) {
-      zoomToEntity(newMeeple);
       // Switch to my-meeples tab to see the newly created entity
       setActiveTab("my-meeples");
       // Reset form

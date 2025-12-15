@@ -856,17 +856,6 @@ function useGameInternal(): GameContextValue {
         gameRef.current = game;
         dispatch({ type: "set-game", payload: game });
         dispatch({ type: "set-is-loading", payload: false });
-        
-        // Find and select the first trader as active once the game is loaded
-        const traders = game.currentScene.actors.filter(
-          (actor: Actor) => actor instanceof Meeple && actor.type === MeepleType.Trader
-        ) as Meeple[];
-        
-        if (traders.length > 0) {
-          dispatch({ type: "zoom-to-entity", payload: traders[0] });
-        }
-        
-        console.log("Game initialized successfully");
       })
       .catch((error) => {
         console.error("Failed to initialize game:", error);
@@ -878,13 +867,10 @@ function useGameInternal(): GameContextValue {
   // This allows React to re-render when entities are added/removed
   useEffect(() => {
     const interval = setInterval(() => {
-      console.log("Updating meeple list");
       if (gameRef.current) {
-        console.log("Game ref current", gameRef.current);
         const meeples = gameRef.current.currentScene.actors.filter(
           (actor: Actor) => actor instanceof Meeple
         ) as Meeple[];
-        console.log("Meeples", meeples);
         dispatch({ type: "set-meeples", payload: meeples });
       }
     }, MEEPLE_LIST_UPDATE_INTERVAL_MS);

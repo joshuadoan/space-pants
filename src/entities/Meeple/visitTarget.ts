@@ -13,7 +13,6 @@ export function visitTarget(
 ): void {
   meeple.actions
     .callMethod(() => {
-      console.log("Traveling to", target.name);
       meeple.dispatch({
         type: "set-traveling",
         payload: { target },
