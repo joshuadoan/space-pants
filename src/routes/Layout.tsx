@@ -77,7 +77,7 @@ export function Layout() {
 
       {/* Main content area with outlet and canvas */}
       <div className="flex flex-1 overflow-hidden">
-        <div className="flex-1">
+        <div className="w-md">
           <Outlet context={{ activeTab, setActiveTab }} />
         </div>
         <div className="flex-1">
