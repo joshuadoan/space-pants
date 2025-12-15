@@ -148,12 +148,13 @@ const MECHANIC_RULES_ARRAY = [
     action: LogicRuleActionType.SocializeAtBar,
     // destinationType not specified, so it will randomly select from all social places
   },
-  // Priority 3: If money is less than threshold, look for and fix broken meeples
+  // Priority 3: Look for and fix broken meeples (always active when energy >= 0)
+  // This allows mechanics to work and earn money, then socialize when they have enough
   {
     id: createRuleId("fix-broken-meeple"),
-    good: Resources.Money,
-    operator: ComparisonOperator.LessThan,
-    value: MECHANIC_FIX_MONEY_THRESHOLD,
+    good: MeepleStats.Energy,
+    operator: ComparisonOperator.GreaterThanOrEqual,
+    value: 0,
     action: LogicRuleActionType.FixBrokenMeeple,
   },
 ] satisfies LogicRule[];

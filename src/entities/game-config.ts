@@ -168,7 +168,7 @@ export const SPACE_STATION_CONVERSION_DELAY_MS = 3000;
 // Note: Pirate economic parameters are exported from economy-config.ts
 
 /** Default transaction time in milliseconds */
-export const DEFAULT_TRANSACTION_TIME_MS = 1000;
+export const DEFAULT_TRANSACTION_TIME_MS = 3000;
 
 /** Meeple rule evaluation interval in milliseconds */
 export const MEEPLE_UPDATE_INTERVAL_MS = 1000;
