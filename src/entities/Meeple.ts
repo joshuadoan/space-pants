@@ -20,7 +20,12 @@ export type MeepleStateIdle = {
   type: "idle";
 };
 
-export type MeepleState = MeepleStateIdle;
+export type MeepleStateTraveling = {
+  type: "traveling",
+  target: Meeple
+}
+
+export type MeepleState = MeepleStateIdle | MeepleStateTraveling;
 
 export type MeepleActionFinish = {
   type: "finish";
@@ -128,16 +133,17 @@ export class Meeple extends Actor {
   dispatch(action: MeepleAction): void {
     switch (action.type) {
       case "finish":
-        this.state = {
-          type: "idle",
-        };
+        this.state = action.payload.state
         break;
       case "travel-to":
-        this.actions.callMethod(() => {
-          if (action.payload.target) {
-            this.actions.moveTo(action.payload.target.pos, this.speed);
-          }
-        });
+        if (!action.payload.target) {
+          return;
+        }
+        this.state = {
+          type: "traveling",
+          target: action.payload.target
+        }
+        this.actions.moveTo(action.payload.target.pos, this.speed)
         break;
       case "transact":
         this.transact(action.payload);
