@@ -78,6 +78,30 @@ Space Pants is a real-time space economy simulation game built with React, TypeS
   <IconRocket size={28} className="text-primary" />
   ```
 
+## Type Definitions: Always Use Centralized Types
+
+- **Always import types from `src/entities/types.ts`** instead of defining your own types
+- **Available types to import:**
+  - `RoleId` - enum for entity roles (Asteroid, Miner, etc.)
+  - `Rule` - type for behavior rules with conditions and actions
+  - `RuleTemplate` - type for rule templates grouped by role
+  - `Condition` - type for rule conditions with good/vitals, operator, and value
+  - `Operator` - enum for comparison operators (=, <, >, <=, >=, !=)
+- **Never redefine these types** - always import them from the centralized location
+- **Example usage:**
+  ```typescript
+  import { Rule, Condition, Operator, RoleId } from "../entities/types";
+  
+  const myRule: Rule = {
+    id: "rule-1",
+    name: "Mine when ore is low",
+    conditions: [
+      { good: "ore", operator: Operator.LessThan, value: 10 }
+    ],
+    actions: ["mine-ore"]
+  };
+  ```
+
 ## Code Style
 
 - Use TypeScript for all files

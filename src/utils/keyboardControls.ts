@@ -1,7 +1,7 @@
 import { KeyEvent, Keys } from "excalibur";
 
 import type { Game } from "../entities/Game";
-import type { Meeple } from "../entities/Meeple/Meeple";
+import type { Meeple } from "../entities/Meeple";
 
 export function keyboardControls(game: Game, player: Meeple) {
     const playerHalfWidth = player.width / 2;

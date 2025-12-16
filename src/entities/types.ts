@@ -1,53 +1,23 @@
-import type { Meeple } from "./Meeple";
+import type { GoodType, MeepleAction, VitalsType } from "./Meeple";
 
-export type GoodType = "ore";
+export enum RoleId {
+  Asteroid = "Asteroid",
+  Miner = "Miner",
+}
 
-export type MeepleInventory = {
-  [key in GoodType]: number;
+export type Rule = {
+  id: string;
+  name: string;
+  conditions: Condition[];
+  actions: MeepleAction[];
 };
 
-export type Vitals = "health" | "energy" | "happiness";
-
-export type VitalsInventory = {
-  [key in Vitals]: number;
-};
-
-export type MeepleStateIdle = {
-  type: "idle";
-};
-
-export type MeepleState = MeepleStateIdle;
-
-export type MeepleActionFinish = {
-  type: "finish";
-  payload: {
-    state: MeepleState;
-  };
-};
-
-export type MeepleActionTravelTo = {
-  type: "travel-to";
-  payload: {
-    target: Meeple;
-  };
-};
-
-export type MeepleActionTransact = {
-  type: "transact";
-  payload: {
-    good: GoodType;
-    quantity: number;
-    transactionType: "add" | "remove";
-  };
-};
-
-export type MeepleAction =
-  | MeepleActionFinish
-  | MeepleActionTravelTo
-  | MeepleActionTransact;
-
-
-export enum ComparisonOperator {
+export type RuleTemplate = {
+  id: RoleId
+  name: string;
+  rules: Rule[];
+}
+export enum Operator {
   Equal = "=",
   LessThan = "<",
   GreaterThan = ">",
@@ -55,3 +25,9 @@ export enum ComparisonOperator {
   GreaterThanOrEqual = ">=",
   NotEqual = "!=",
 }
+
+export type Condition = {
+  good: GoodType | VitalsType;
+  operator: Operator;
+  value: number;
+};

@@ -45,7 +45,7 @@ const Layout = () => {
 };
 
 const MainGameRoute = () => {
-  const { game, isLoading } = useGame();
+  const { game, isLoading, meeples } = useGame();
 
   if (isLoading) {
     return <div>Loading...</div>;
@@ -55,6 +55,14 @@ const MainGameRoute = () => {
     <div>
       <h1>MainGameRoute</h1>
       <div>{game?.currentScene.actors.length}</div>
+      <ul>
+        {meeples.map((meeple) => (
+          <li key={meeple.id}>
+            <div> {meeple.name}</div>
+            <div> ORE: {Math.floor(meeple.inventory.ore)}</div>
+          </li>
+        ))}
+      </ul>
     </div>
   );
 };

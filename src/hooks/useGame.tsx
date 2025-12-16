@@ -1,13 +1,26 @@
-import { createContext, useContext, useEffect, useReducer, useRef, type ReactNode } from "react";
+import {
+  createContext,
+  useContext,
+  useEffect,
+  useReducer,
+  useRef,
+  type ReactNode,
+} from "react";
 import { Game } from "../entities/Game";
 import { createStarTilemap } from "../utils/createStarTilemap";
-import { Meeple } from "../entities/Meeple";
-import { createSpaceShipOutOfShapes } from "../utils/createSpaceShipOutOfShapes";
+import { GoodType, Meeple, VitalsType } from "../entities/Meeple";
+import { createEntityGraphic, EntityGraphicStyle } from "../utils/graphics";
 import { Vector } from "excalibur";
+import { Operator, RoleId, type RuleTemplate } from "../entities/types";
+import { createRuleTemple } from "../utils/rules";
 
 export const GAME_WIDTH = 1000;
 export const GAME_HEIGHT = 1000;
-export const MEEPLE_COUNT = 42;
+
+const COUNTS = {
+  MINER: 10,
+  ASTEROID: 10,
+};
 
 // ============================================================================
 // Types
@@ -25,12 +38,19 @@ type SetGameAction = {
   payload: Game;
 };
 
+/** Action to update the meeples list */
+type SetMeeplesAction = {
+  type: "set-meeples";
+  payload: Meeple[];
+};
+
 /** Union type of all possible game actions */
-type GameAction = SetIsLoadingAction | SetGameAction;
+type GameAction = SetIsLoadingAction | SetGameAction | SetMeeplesAction;
 
 /** State shape for the game context */
 type GameState = {
   game: Game | null;
+  meeples: Meeple[];
   isLoading: boolean;
 };
 
@@ -38,6 +58,7 @@ type GameState = {
 type GameContextValue = {
   game: Game | null;
   isLoading: boolean;
+  meeples: Meeple[];
 };
 
 // ============================================================================
@@ -46,6 +67,7 @@ type GameContextValue = {
 
 const initialState: GameState = {
   game: null,
+  meeples: [],
   isLoading: true,
 };
 
@@ -69,6 +91,11 @@ function gameReducer(state: GameState, action: GameAction): GameState {
         ...state,
         game: action.payload,
       };
+    case "set-meeples":
+      return {
+        ...state,
+        meeples: action.payload,
+      };
     default:
       return state;
   }
@@ -91,7 +118,7 @@ const GameContext = createContext<GameContextValue | undefined>(undefined);
 /**
  * Provider component that makes game state available to all child components.
  * Wrap your app with this component to enable game context access.
- * 
+ *
  * @param children - React children components
  */
 export function GameProvider({ children }: { children: ReactNode }) {
@@ -106,33 +133,87 @@ export function GameProvider({ children }: { children: ReactNode }) {
     gameRef.current = game;
     game.start();
 
-    for (let i = 0; i < MEEPLE_COUNT; i++) {
-      const meeple = new Meeple({
-        position: new Vector(Math.random() * GAME_WIDTH, Math.random() * GAME_HEIGHT),
-        graphic: createSpaceShipOutOfShapes(),
-        name: `Meeple ${i}`,
+    for (let j = 0; j < COUNTS.ASTEROID; j++) {
+      const asteroid = new Meeple({
+        position: new Vector(
+          Math.random() * GAME_WIDTH,
+          Math.random() * GAME_HEIGHT
+        ),
+        graphic: createEntityGraphic(EntityGraphicStyle.Asteroid),
+        name: `Asteroid ${j}`,
         state: { type: "idle" },
-        inventory: { ore: 0 },
-        vitals: { health: 100, energy: 100, happiness: 100 },
+        inventory: {
+          [GoodType.Ore]: 0,
+          [VitalsType.Health]: 100,
+          [VitalsType.Energy]: 100,
+          [VitalsType.Happiness]: 100,
+        },
+        speed: 0,
+        inventoryGenerators: [
+          {
+            good: GoodType.Ore,
+            minimum: 1,
+            maximum: 100,
+            perSecond: 1,
+          },
+        ],
+        ruleTemplate: {
+          id: RoleId.Asteroid,
+          name: "Asteroid",
+          rules: [],
+        },
       });
-      game.currentScene.add(meeple);
+
+      game.currentScene.add(asteroid);
+    }
+
+    for (let i = 0; i < COUNTS.MINER; i++) {
+      const miner = new Meeple({
+        position: new Vector(
+          Math.random() * GAME_WIDTH,
+          Math.random() * GAME_HEIGHT
+        ),
+        graphic: createEntityGraphic(EntityGraphicStyle.Miner),
+        name: `Miner ${i}`,
+        state: { type: "idle" },
+        inventory: {
+          [GoodType.Ore]: 0,
+          [VitalsType.Health]: 100,
+          [VitalsType.Energy]: 100,
+          [VitalsType.Happiness]: 100,
+        },
+        inventoryGenerators: [],
+        speed: 100,
+        ruleTemplate: createRuleTemple(game, RoleId.Miner),
+      });
+
+      game.currentScene.add(miner);
     }
 
     dispatch({ type: "set-game", payload: game });
+    dispatch({
+      type: "set-meeples",
+      payload: game.currentScene.actors.filter(
+        (actor): actor is Meeple => actor instanceof Meeple
+      ),
+    });
     dispatch({ type: "set-is-loading", payload: false });
 
-    // const interval = setInterval(() => {
-    //   if (gameRef.current) {
-    //     dispatch({ type: "set-game", payload: gameRef.current });
-    //   }
-    // }, 1000);
-    // return () => clearInterval(interval);
+    const interval = setInterval(() => {
+      if (gameRef.current) {
+        dispatch({
+          type: "set-meeples",
+          payload: game.currentScene.actors.filter(
+            (actor): actor is Meeple => actor instanceof Meeple
+          ),
+        });
+      }
+    }, 1000);
+    return () => clearInterval(interval);
   }, []);
 
   return (
-    <GameContext.Provider value={gameState}>
-      {children}
-    </GameContext.Provider>
+    <GameContext.Provider value={gameState}>{children}</GameContext.Provider>
   );
 }
 
@@ -142,14 +223,14 @@ export function GameProvider({ children }: { children: ReactNode }) {
 
 /**
  * Custom React hook to access the game context.
- * 
+ *
  * This hook provides access to:
  * - `game`: The Excalibur Game instance (null while loading)
  * - `isLoading`: Whether the game is still initializing
- * 
+ *
  * @returns Game state
  * @throws {Error} If used outside of GameProvider
- * 
+ *
  * @example
  * ```tsx
  * function MyComponent() {
@@ -166,4 +247,3 @@ export function useGame(): GameContextValue {
   }
   return context;
 }
-

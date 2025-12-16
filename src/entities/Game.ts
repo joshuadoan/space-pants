@@ -1,4 +1,6 @@
 import { Color, DisplayMode, Engine } from "excalibur";
+import type { RoleId } from "./types";
+import { Meeple } from "./Meeple";
 
 /**
  * Custom Excalibur Engine wrapper for the Space Pants game.
@@ -40,6 +42,13 @@ export class Game extends Engine {
 
     this.worldWidth = worldWidth;
     this.worldHeight = worldHeight;
+  }
+
+  findRabdomMeepleByRoleId(roleId: RoleId): Meeple | undefined {
+    const meeples = this.currentScene.actors.filter(
+      (actor) => actor instanceof Meeple && actor.ruleTemplate.id === roleId
+    );
+    return meeples[Math.floor(Math.random() * meeples.length)] as Meeple;
   }
 }
   
