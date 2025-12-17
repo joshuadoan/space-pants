@@ -19,8 +19,6 @@ export function createRuleTemple(game: Game, ruleId: RoleId): RuleTemplate {
       };
     }
     case RoleId.Miner: {
-      const asteroid = game.findRabdomMeepleByRoleId(RoleId.Asteroid);
-      const spaceStore = game.findRabdomMeepleByRoleId(RoleId.SpaceStore);
       return {
         id: RoleId.Miner,
         name: "Miner",
@@ -31,16 +29,23 @@ export function createRuleTemple(game: Game, ruleId: RoleId): RuleTemplate {
             conditions: [
               {
                 good: GoodType.Ore,
-                operator: Operator.LessThanOrEqual,
+                operator: Operator.LessThan,
+                value: 14,
+              },
+              // Check that asteroid has ore available before mining
+              {
+                good: GoodType.Ore,
+                operator: Operator.GreaterThan,
                 value: 0,
+                targetRoleId: RoleId.Asteroid,
               },
             ],
             actions: [
-              // travel to asteroid
+              // travel to asteroid (target will be resolved dynamically)
               {
                 type: "travel-to",
                 payload: {
-                  target: asteroid,
+                  targetRoleId: RoleId.Asteroid,
                 },
               },
               // add ore to miner
@@ -59,7 +64,7 @@ export function createRuleTemple(game: Game, ruleId: RoleId): RuleTemplate {
                   good: GoodType.Ore,
                   quantity: 1,
                   transactionType: "remove",
-                  target: asteroid,
+                  targetRoleId: RoleId.Asteroid,
                 },
               },
               // finish
@@ -87,7 +92,7 @@ export function createRuleTemple(game: Game, ruleId: RoleId): RuleTemplate {
                 good: GoodType.Money,
                 operator: Operator.GreaterThanOrEqual,
                 value: 14,
-                target: spaceStore, // Check SpaceStore's money, not miner's
+                targetRoleId: RoleId.SpaceStore, // Check SpaceStore's money, not miner's
               },
             ],
             actions: [
@@ -95,7 +100,7 @@ export function createRuleTemple(game: Game, ruleId: RoleId): RuleTemplate {
               {
                 type: "travel-to",
                 payload: {
-                  target: spaceStore,
+                  targetRoleId: RoleId.SpaceStore,
                 },
               },
               // transfer ore from miner to space store
@@ -113,7 +118,7 @@ export function createRuleTemple(game: Game, ruleId: RoleId): RuleTemplate {
                   good: GoodType.Ore,
                   quantity: 14,
                   transactionType: "add",
-                  target: spaceStore,
+                  targetRoleId: RoleId.SpaceStore,
                 },
               },
               // transfer money from space store to miner (14 ore * 1 money/ore = 14 money)
@@ -123,7 +128,7 @@ export function createRuleTemple(game: Game, ruleId: RoleId): RuleTemplate {
                   good: GoodType.Money,
                   quantity: 14,
                   transactionType: "remove",
-                  target: spaceStore,
+                  targetRoleId: RoleId.SpaceStore,
                 },
               },
               {

@@ -39,7 +39,7 @@ export const MeeplesList = () => {
                 {meeple.inventory[VitalsType.Happiness]}
               </div>
             </div>
-            Pos: {meeple.pos.x}, {meeple.pos.y}
+            Pos: {Math.round(meeple.pos.x)}°, {Math.round(meeple.pos.y)}°
           </div>
           <ul>
             {Object.entries(meeple.inventory)

@@ -1,6 +1,6 @@
 import { Actor, Vector, Graphic, Timer } from "excalibur";
 import type { Game } from "./Game";
-import type { Condition, RuleTemplate, Rule } from "./types";
+import type { Condition, RuleTemplate, Rule, RoleId } from "./types";
 import { Operator } from "./types";
 
 export enum GoodType {
@@ -27,7 +27,13 @@ export type MeepleStateTraveling = {
   target: Meeple
 }
 
-export type MeepleState = MeepleStateIdle | MeepleStateTraveling;
+export type MeepleStateTransacting = {
+  type: "transacting";
+  good: GoodType | VitalsType;
+  quantity: number;
+}
+
+export type MeepleState = MeepleStateIdle | MeepleStateTraveling | MeepleStateTransacting;
 
 export type MeepleActionFinish = {
   type: "finish";
@@ -40,6 +46,7 @@ export type MeepleActionTravelTo = {
   type: "travel-to";
   payload: {
     target?: Meeple;
+    targetRoleId?: RoleId;
   };
 };
 
@@ -48,6 +55,7 @@ export type Transaction = {
   quantity: number;
   transactionType: "add" | "remove";
   target?: Meeple;
+  targetRoleId?: RoleId;
 };
 
 export type IventoryGenerator = {
@@ -134,26 +142,48 @@ export class Meeple extends Actor {
     }
   }
 
+  /**
+   * Resolves a target meeple from a RoleId if needed
+   */
+  private resolveTarget(target?: Meeple, targetRoleId?: RoleId): Meeple | undefined {
+    if (target) return target;
+    if (targetRoleId && this.scene?.engine) {
+      const game = this.scene.engine as Game;
+      return game.findRabdomMeepleByRoleId(targetRoleId);
+    }
+    return undefined;
+  }
+
   dispatch(action: MeepleAction): void {
     switch (action.type) {
       case "finish":
         this.state = action.payload.state
         break;
-      case "travel-to":
-        if (!action.payload.target) {
+      case "travel-to": {
+        const target = this.resolveTarget(action.payload.target, action.payload.targetRoleId);
+        if (!target) {
           return;
         }
         this.state = {
           type: "traveling",
-          target: action.payload.target
+          target: target
         }
-        this.actions.moveTo(action.payload.target.pos, this.speed)
+        this.actions.moveTo(target.pos, this.speed)
         break;
-      case "transact":
+      }
+      case "transact": {
+        // Always set state to transacting when executing a transaction
+        // (even if we were traveling, we're now at the destination and transacting)
+        this.state = {
+          type: "transacting",
+          good: action.payload.good,
+          quantity: action.payload.quantity,
+        };
         // If target is specified, transact on the target, otherwise transact on self
-        const targetMeeple = action.payload.target || this;
+        const targetMeeple = this.resolveTarget(action.payload.target, action.payload.targetRoleId) || this;
         targetMeeple.transact(action.payload);
         break;
+      }
       default:
         break;
     }
@@ -165,16 +195,17 @@ export class Meeple extends Actor {
    * @param onComplete Callback to execute when travel is complete
    */
   private executeTravelAction(action: MeepleActionTravelTo, onComplete: () => void): void {
-    if (!action.payload.target) {
+    const target = this.resolveTarget(action.payload.target, action.payload.targetRoleId);
+    if (!target) {
       onComplete();
       return;
     }
     this.state = {
       type: "traveling",
-      target: action.payload.target
+      target: target
     }
     this.actions
-      .moveTo(action.payload.target.pos, this.speed)
+      .moveTo(target.pos, this.speed)
       .callMethod(() => {
         onComplete();
       });
@@ -221,8 +252,19 @@ export class Meeple extends Actor {
    * @returns True if the condition is met, false otherwise
    */
   private evaluateCondition(condition: Condition): boolean {
+    // Resolve target dynamically if targetRoleId is specified
+    let target: Meeple | undefined = condition.target;
+    if (condition.targetRoleId && !target && this.scene?.engine) {
+      const game = this.scene.engine as Game;
+      target = game.findRabdomMeepleByRoleId(condition.targetRoleId);
+    }
+    
     // Check the target's inventory if specified, otherwise check this meeple's inventory
-    const inventoryToCheck = condition.target ? condition.target.inventory : this.inventory;
+    // If target is required (target or targetRoleId specified) but undefined, the condition fails
+    if ((condition.target !== undefined || condition.targetRoleId !== undefined) && !target) {
+      return false;
+    }
+    const inventoryToCheck = target ? target.inventory : this.inventory;
     const currentValue = inventoryToCheck[condition.good];
     const targetValue = condition.value;
 
@@ -281,9 +323,14 @@ export class Meeple extends Actor {
     if (firstAction.type === "travel-to") {
       this.executeTravelAction(firstAction, () => {
         // After travel completes, execute remaining actions
+        // Transactions will set state to transacting when they execute
         if (remainingActions.length > 0) {
           this.runActions(remainingActions);
         } else {
+          // If no more actions after travel, return to idle
+          if (this.state.type === "traveling") {
+            this.state = { type: "idle" };
+          }
           this.isExecutingActions = false;
         }
       });
@@ -307,6 +354,10 @@ export class Meeple extends Actor {
         this.scene?.engine.addTimer(actionTimer);
         actionTimer.start();
       } else {
+        // If no more actions and we were transacting, return to idle
+        if (this.state.type === "transacting") {
+          this.state = { type: "idle" };
+        }
         this.isExecutingActions = false;
       }
     }
@@ -336,7 +387,7 @@ export class Meeple extends Actor {
     // Create a timer that evaluates rules every 2 seconds
     const ruleEvaluationTimer = new Timer({
       fcn: () => {
-        // Only evaluate rules if the meeple is idle (not currently traveling)
+        // Only evaluate rules if the meeple is idle (not currently traveling or transacting)
         if (this.state.type === "idle") {
           this.evaluateAndRunActions();
         }
