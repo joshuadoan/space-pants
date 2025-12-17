@@ -1,8 +1,9 @@
-import type { GoodType, MeepleAction, VitalsType } from "./Meeple";
+import type { GoodType, Meeple, MeepleAction, VitalsType } from "./Meeple";
 
 export enum RoleId {
   Asteroid = "Asteroid",
   Miner = "Miner",
+  SpaceStore = "SpaceStore",
 }
 
 export type Rule = {
@@ -30,4 +31,5 @@ export type Condition = {
   good: GoodType | VitalsType;
   operator: Operator;
   value: number;
+  target?: Meeple; // Optional target to check another entity's inventory
 };

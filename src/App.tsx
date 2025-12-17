@@ -1,12 +1,12 @@
 import { Routes, Route, Outlet, Link } from "react-router-dom";
-import { useGame } from "./hooks/useGame";
+import { MeeplesList } from "./components/MeeplesList";
 
 function App() {
   return (
     <Routes>
       <Route path="/" element={<Layout />}>
-        <Route index element={<MainGameRoute />} />
-        <Route path="meeple/:id" element={<Foo />} />
+        <Route index element={<MeeplesList />} />
+        <Route path="meeple/:id" element={<MeeplesList />} />
       </Route>
     </Routes>
   );
@@ -14,55 +14,24 @@ function App() {
 
 export default App;
 
-const Foo = () => {
-  return (
-    <div>
-      <h1>Foo</h1>
-    </div>
-  );
-};
-
 const Layout = () => {
   return (
     <div className="w-screen h-screen flex flex-col">
-      <nav>
+      <nav className="h-10 bg-green-400">
         <ul>
           <li>
             <Link to="/">Home</Link>
           </li>
         </ul>
       </nav>
-      <main className="flex-1 flex">
-        <div className="w-sm">
+      <main className="flex-1 flex h-full">
+        <div className="w-sm h-full">
           <Outlet />
         </div>
-        <div className="flex-1 bg-blue-500">
+        <div className="flex-1 h-full bg-blue-500">
           <canvas id="game-canvas" className="w-full h-full" />
         </div>
       </main>
-    </div>
-  );
-};
-
-const MainGameRoute = () => {
-  const { game, isLoading, meeples } = useGame();
-
-  if (isLoading) {
-    return <div>Loading...</div>;
-  }
-
-  return (
-    <div>
-      <h1>MainGameRoute</h1>
-      <div>{game?.currentScene.actors.length}</div>
-      <ul>
-        {meeples.map((meeple) => (
-          <li key={meeple.id}>
-            <div> {meeple.name}</div>
-            <div> ORE: {Math.floor(meeple.inventory.ore)}</div>
-          </li>
-        ))}
-      </ul>
     </div>
   );
 };

@@ -11,15 +11,16 @@ import { createStarTilemap } from "../utils/createStarTilemap";
 import { GoodType, Meeple, VitalsType } from "../entities/Meeple";
 import { createEntityGraphic, EntityGraphicStyle } from "../utils/graphics";
 import { Vector } from "excalibur";
-import { Operator, RoleId, type RuleTemplate } from "../entities/types";
-import { createRuleTemple } from "../utils/rules";
+import { RoleId } from "../entities/types";
+import { createRuleTemple, createSpaceStoreInventory } from "../utils/rules";
 
 export const GAME_WIDTH = 1000;
 export const GAME_HEIGHT = 1000;
 
 const COUNTS = {
-  MINER: 10,
-  ASTEROID: 10,
+  MINER: 1,
+  ASTEROID: 1,
+  SPACE_STORE: 1,
 };
 
 // ============================================================================
@@ -44,14 +45,20 @@ type SetMeeplesAction = {
   payload: Meeple[];
 };
 
+type ZoomToEntityAction = {
+  type: "zoom-to-entity";
+  payload: Meeple;
+};
+
 /** Union type of all possible game actions */
-type GameAction = SetIsLoadingAction | SetGameAction | SetMeeplesAction;
+type GameAction = SetIsLoadingAction | SetGameAction | SetMeeplesAction | ZoomToEntityAction;
 
 /** State shape for the game context */
 type GameState = {
   game: Game | null;
   meeples: Meeple[];
   isLoading: boolean;
+  activeMeeple: Meeple | null;
 };
 
 /** Type for the game context value */
@@ -59,6 +66,7 @@ type GameContextValue = {
   game: Game | null;
   isLoading: boolean;
   meeples: Meeple[];
+  zoomToEntity: (meeple: Meeple) => void;
 };
 
 // ============================================================================
@@ -69,6 +77,7 @@ const initialState: GameState = {
   game: null,
   meeples: [],
   isLoading: true,
+  activeMeeple: null,
 };
 
 // ============================================================================
@@ -95,6 +104,11 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       return {
         ...state,
         meeples: action.payload,
+      };
+    case "zoom-to-entity":
+      return {
+        ...state,
+        activeMeeple: action.payload,
       };
     default:
       return state;
@@ -125,6 +139,15 @@ export function GameProvider({ children }: { children: ReactNode }) {
   const [gameState, dispatch] = useReducer(gameReducer, initialState);
   const gameRef = useRef<Game | null>(null);
 
+
+useEffect(() => {
+  if (gameState.activeMeeple) {
+    gameState.game?.currentScene.camera.strategy.lockToActor(
+      gameState.activeMeeple
+    );
+  }
+}, [gameState.activeMeeple]);
+
   useEffect(() => {
     const game = new Game(1000, 1000);
     const tilemap = createStarTilemap(game);
@@ -144,6 +167,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
         state: { type: "idle" },
         inventory: {
           [GoodType.Ore]: 0,
+          [GoodType.Money]: 0,
           [VitalsType.Health]: 100,
           [VitalsType.Energy]: 100,
           [VitalsType.Happiness]: 100,
@@ -178,6 +202,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
         state: { type: "idle" },
         inventory: {
           [GoodType.Ore]: 0,
+          [GoodType.Money]: 0,
           [VitalsType.Health]: 100,
           [VitalsType.Energy]: 100,
           [VitalsType.Happiness]: 100,
@@ -188,6 +213,25 @@ export function GameProvider({ children }: { children: ReactNode }) {
       });
 
       game.currentScene.add(miner);
+    }
+
+    // Create SpaceStores
+    for (let k = 0; k < COUNTS.SPACE_STORE; k++) {
+      const spaceStore = new Meeple({
+        position: new Vector(
+          Math.random() * GAME_WIDTH,
+          Math.random() * GAME_HEIGHT
+        ),
+        graphic: createEntityGraphic(EntityGraphicStyle.SpaceStation),
+        name: `SpaceStore ${k}`,
+        state: { type: "idle" },
+        inventory: createSpaceStoreInventory(),
+        inventoryGenerators: [],
+        speed: 0,
+        ruleTemplate: createRuleTemple(game, RoleId.SpaceStore),
+      });
+
+      game.currentScene.add(spaceStore);
     }
 
     dispatch({ type: "set-game", payload: game });
@@ -212,8 +256,19 @@ export function GameProvider({ children }: { children: ReactNode }) {
     return () => clearInterval(interval);
   }, []);
 
+  const zoomToEntity = (meeple: Meeple) => {
+    dispatch({ type: "zoom-to-entity", payload: meeple });
+  };
+
   return (
-    <GameContext.Provider value={gameState}>{children}</GameContext.Provider>
+    <GameContext.Provider
+      value={{
+        ...gameState,
+        zoomToEntity,
+      }}
+    >
+      {children}
+    </GameContext.Provider>
   );
 }
 

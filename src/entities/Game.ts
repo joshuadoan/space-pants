@@ -50,5 +50,15 @@ export class Game extends Engine {
     );
     return meeples[Math.floor(Math.random() * meeples.length)] as Meeple;
   }
+
+  /**
+   * Finds all meeples with the specified role ID
+   * @param roleId The role ID to search for
+   * @returns Array of meeples with the specified role
+   */
+  findAllMeeplesByRoleId(roleId: RoleId): Meeple[] {
+    return this.currentScene.actors.filter(
+      (actor) => actor instanceof Meeple && actor.ruleTemplate.id === roleId
+    ) as Meeple[];
+  }
 }
-  

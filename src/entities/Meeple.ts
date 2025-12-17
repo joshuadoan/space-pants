@@ -1,10 +1,11 @@
 import { Actor, Vector, Graphic, Timer } from "excalibur";
 import type { Game } from "./Game";
-import type { Condition, RoleId, RuleTemplate, Rule } from "./types";
+import type { Condition, RuleTemplate, Rule } from "./types";
 import { Operator } from "./types";
 
 export enum GoodType {
   Ore = "ore",
+  Money = "money",
 }
 
 export enum VitalsType {
@@ -89,6 +90,7 @@ export class Meeple extends Actor {
   ruleTemplate: RuleTemplate;
   speed: number;
   private timers: Timer[] = [];
+  private isExecutingActions: boolean = false;
 
   constructor({
     position,
@@ -148,11 +150,34 @@ export class Meeple extends Actor {
         this.actions.moveTo(action.payload.target.pos, this.speed)
         break;
       case "transact":
-        this.transact(action.payload);
+        // If target is specified, transact on the target, otherwise transact on self
+        const targetMeeple = action.payload.target || this;
+        targetMeeple.transact(action.payload);
         break;
       default:
         break;
     }
+  }
+
+  /**
+   * Executes a travel action and returns a promise-like callback for chaining
+   * @param action The travel action to execute
+   * @param onComplete Callback to execute when travel is complete
+   */
+  private executeTravelAction(action: MeepleActionTravelTo, onComplete: () => void): void {
+    if (!action.payload.target) {
+      onComplete();
+      return;
+    }
+    this.state = {
+      type: "traveling",
+      target: action.payload.target
+    }
+    this.actions
+      .moveTo(action.payload.target.pos, this.speed)
+      .callMethod(() => {
+        onComplete();
+      });
   }
 
   initGenerators(game: Game): void {
@@ -196,7 +221,9 @@ export class Meeple extends Actor {
    * @returns True if the condition is met, false otherwise
    */
   private evaluateCondition(condition: Condition): boolean {
-    const currentValue = this.inventory[condition.good];
+    // Check the target's inventory if specified, otherwise check this meeple's inventory
+    const inventoryToCheck = condition.target ? condition.target.inventory : this.inventory;
+    const currentValue = inventoryToCheck[condition.good];
     const targetValue = condition.value;
 
     switch (condition.operator) {
@@ -239,30 +266,49 @@ export class Meeple extends Actor {
    * @param actions Array of actions to execute
    */
   runActions(actions: MeepleAction[]): void {
-    if (actions.length === 0) return;
+    if (actions.length === 0) {
+      this.isExecutingActions = false;
+      return;
+    }
 
-    // Execute the first action
-    this.dispatch(actions[0]);
+    // Mark that we're executing actions
+    this.isExecutingActions = true;
 
-    // If there are more actions, set up a chain to execute them sequentially
-    if (actions.length > 1) {
-      const remainingActions = actions.slice(1);
+    const firstAction = actions[0];
+    const remainingActions = actions.slice(1);
 
-      // Use a timer to check when the current action is complete
-      // This is a simplified approach - in a real implementation, you might want
-      // to track action completion more precisely
-      const actionTimer = new Timer({
-        fcn: () => {
+    // If the first action is a travel action, wait for it to complete before continuing
+    if (firstAction.type === "travel-to") {
+      this.executeTravelAction(firstAction, () => {
+        // After travel completes, execute remaining actions
+        if (remainingActions.length > 0) {
           this.runActions(remainingActions);
-          actionTimer.cancel();
-        },
-        repeats: false,
-        interval: 1000, // Wait 1 second between actions
+        } else {
+          this.isExecutingActions = false;
+        }
       });
+    } else {
+      // For non-travel actions, execute immediately
+      this.dispatch(firstAction);
 
-      this.timers.push(actionTimer);
-      this.scene?.engine.addTimer(actionTimer);
-      actionTimer.start();
+      // If there are more actions, execute them with a small delay
+      // (for non-travel actions, we still want some sequencing)
+      if (remainingActions.length > 0) {
+        const actionTimer = new Timer({
+          fcn: () => {
+            this.runActions(remainingActions);
+            actionTimer.cancel();
+          },
+          repeats: false,
+          interval: 100, // Small delay for non-travel actions
+        });
+
+        this.timers.push(actionTimer);
+        this.scene?.engine.addTimer(actionTimer);
+        actionTimer.start();
+      } else {
+        this.isExecutingActions = false;
+      }
     }
   }
 
@@ -270,10 +316,16 @@ export class Meeple extends Actor {
    * Evaluates rule template and executes actions for applicable rules
    */
   evaluateAndRunActions(): void {
+    // Don't evaluate rules if actions are already executing
+    if (this.isExecutingActions) {
+      return;
+    }
+
     const applicableRules = this.evaluateRuleTemplate();
-    applicableRules.forEach(rule => {
-      this.runActions(rule.actions);
-    });
+    // Only execute the first applicable rule to avoid conflicts
+    if (applicableRules.length > 0) {
+      this.runActions(applicableRules[0].actions);
+    }
   }
 
   /**
