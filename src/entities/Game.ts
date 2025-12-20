@@ -46,7 +46,7 @@ export class Game extends Engine {
 
   findRabdomMeepleByRoleId(roleId: RoleId): Meeple | undefined {
     const meeples = this.currentScene.actors.filter(
-      (actor) => actor instanceof Meeple && actor.ruleTemplate.id === roleId
+      (actor) => actor instanceof Meeple && actor.roleId === roleId
     );
     return meeples[Math.floor(Math.random() * meeples.length)] as Meeple;
   }
@@ -58,7 +58,7 @@ export class Game extends Engine {
    */
   findAllMeeplesByRoleId(roleId: RoleId): Meeple[] {
     return this.currentScene.actors.filter(
-      (actor) => actor instanceof Meeple && actor.ruleTemplate.id === roleId
+      (actor) => actor instanceof Meeple && actor.roleId === roleId
     ) as Meeple[];
   }
 }

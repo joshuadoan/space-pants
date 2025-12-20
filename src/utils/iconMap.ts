@@ -1,63 +1,42 @@
 import type { ComponentType } from "react";
 import { createElement } from "react";
 import {
-  IconArrowDown,
-  IconArrowLeft,
-  IconArrowRight,
-  IconArrowUp,
-  IconBeer,
   IconBolt,
-  IconBook,
   IconBuilding,
-  IconBulb,
-  IconChartBar,
-  IconClick,
-  IconClock,
-  IconCoins,
   IconCurrencyDollar,
-  IconDeviceFloppy,
-  IconDice,
-  IconEdit,
-  IconExchange,
-  IconGripVertical,
   IconHeart,
-  IconHelp,
-  IconHome,
-  IconInfoCircle,
-  IconMailOff,
-  IconMapPin,
   IconMeteor,
   IconMoodSmile,
   IconPackage,
   IconPick,
-  IconPlus,
-  IconRefresh,
-  IconRocket,
-  IconSatellite,
-  IconShip,
-  IconSword,
-  IconTarget,
-  IconTool,
-  IconTrendingUp,
-  IconTrash,
-  IconUser,
-  IconUsers,
-  IconX,
 } from "@tabler/icons-react";
-import { GoodType, VitalsType } from "../entities/Meeple";
+import {
+  CurrencyType,
+  MiningType,
+  ProductType,
+  VitalsType,
+} from "../entities/Meeple";
+import { RoleId } from "../entities/types";
 
 // ============================================================================
 // Icon Component Type
 // ============================================================================
 
-export type IconComponent = ComponentType<{ size?: number; className?: string }>;
+export type IconComponent = ComponentType<{
+  size?: number;
+  className?: string;
+}>;
 
-const IconMap: Record<GoodType | VitalsType, IconComponent> = {
+const IconMap: Record<MiningType | ProductType | CurrencyType | VitalsType | RoleId, IconComponent> = {
   [VitalsType.Health]: IconHeart,
   [VitalsType.Energy]: IconBolt,
   [VitalsType.Happiness]: IconMoodSmile,
-  [GoodType.Ore]: IconPick,
-  [GoodType.Money]: IconCurrencyDollar,
+  [MiningType.Ore]: IconPick,
+  [CurrencyType.Money]: IconCurrencyDollar,
+  [ProductType.Gruffle]: IconPackage,
+  [RoleId.Miner]: IconPick,
+  [RoleId.Asteroid]: IconMeteor,
+  [RoleId.SpaceStore]: IconBuilding,
 } as const;
 
 // ============================================================================
@@ -75,7 +54,17 @@ type IconComponentProps = {
 /**
  * Wrapper component to render an icon from the icon map
  */
-export function IconComponent({ icon, size, className, fill, ...rest }: IconComponentProps) {
-  return createElement(IconMap[icon], { size, className, fill, ...rest } as Record<string, unknown>);
+export function IconComponent({
+  icon,
+  size,
+  className,
+  fill,
+  ...rest
+}: IconComponentProps) {
+  return createElement(IconMap[icon], {
+    size,
+    className,
+    fill,
+    ...rest,
+  } as Record<string, unknown>);
 }
-

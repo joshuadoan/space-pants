@@ -1,10 +1,16 @@
 import { Actor, Vector, Graphic, Timer } from "excalibur";
 import type { Game } from "./Game";
-import type { Condition, RuleTemplate, Rule, RoleId } from "./types";
-import { Operator } from "./types";
+import { RoleId } from "./types";
 
-export enum GoodType {
+export enum MiningType {
   Ore = "ore",
+}
+
+export enum ProductType {
+  Gruffle = "gruffle",
+}
+
+export enum CurrencyType {
   Money = "money",
 }
 
@@ -14,76 +20,103 @@ export enum VitalsType {
   Happiness = "happiness",
 }
 
-export type Inventory = {
-  [key in GoodType | VitalsType]: number;
+export type Stats = {
+  [key in VitalsType]: number;
 };
 
+export type Inventory = {
+  [key in MiningType | ProductType | CurrencyType]: number;
+};
+
+export enum MeepleStateType {
+  Idle = "idle",
+  Traveling = "traveling",
+  Transacting = "transacting",
+  VisitingTarget = "visiting",
+}
+
 export type MeepleStateIdle = {
-  type: "idle";
+  type: MeepleStateType.Idle;
+};
+
+export type MeepleStateVisitingTarget = {
+  type: MeepleStateType.VisitingTarget;
+  target: Meeple;
 };
 
 export type MeepleStateTraveling = {
-  type: "traveling",
-  target: Meeple
-}
+  type: MeepleStateType.Traveling;
+  target: Meeple;
+};
 
 export type MeepleStateTransacting = {
-  type: "transacting";
-  good: GoodType | VitalsType;
+  type: MeepleStateType.Transacting;
+  good: MiningType | ProductType | CurrencyType;
   quantity: number;
+  transactionType: "add" | "remove";
+  target: Meeple;
+};
+
+export type MeepleState =
+  | MeepleStateIdle
+  | MeepleStateTraveling
+  | MeepleStateVisitingTarget
+  | MeepleStateTransacting;
+
+export enum MeepleActionType {
+  TravelTo = "travel-to",
+  Transact = "transact",
+  VisitTarget = "visit-target",
 }
 
-export type MeepleState = MeepleStateIdle | MeepleStateTraveling | MeepleStateTransacting;
-
-export type MeepleActionFinish = {
-  type: "finish";
+export type MeepleActionVisitTarget = {
+  type: MeepleActionType.VisitTarget;
   payload: {
-    state: MeepleState;
+    target: Meeple;
   };
 };
 
 export type MeepleActionTravelTo = {
-  type: "travel-to";
+  type: MeepleActionType.TravelTo;
   payload: {
-    target?: Meeple;
-    targetRoleId?: RoleId;
+    target: Meeple;
   };
 };
 
 export type Transaction = {
-  good: GoodType | VitalsType;
+  good: MiningType | ProductType | CurrencyType;
   quantity: number;
   transactionType: "add" | "remove";
-  target?: Meeple;
-  targetRoleId?: RoleId;
+  target: Meeple;
 };
 
 export type IventoryGenerator = {
-  good: GoodType;
+  good: MiningType | ProductType | CurrencyType;
   minimum: number;
   maximum: number;
   perSecond: number;
 };
 
 export type MeepleActionTransact = {
-  type: "transact";
+  type: MeepleActionType.Transact;
   payload: Transaction;
 };
 
 export type MeepleAction =
-  | MeepleActionFinish
   | MeepleActionTravelTo
-  | MeepleActionTransact;
+  | MeepleActionTransact
+  | MeepleActionVisitTarget;
 
 export type MeepleProps = {
   position: Vector;
   graphic: Graphic;
   name: string;
   state: MeepleState;
+  stats: Stats;
   inventory: Inventory;
   inventoryGenerators: IventoryGenerator[];
-  ruleTemplate: RuleTemplate;
   speed: number;
+  roleId: RoleId;
 };
 
 /**
@@ -92,40 +125,53 @@ export type MeepleProps = {
 export const COMMON_THRESHOLDS = [0, 1, 5, 10, 20, 30, 40, 50] as const;
 
 export class Meeple extends Actor {
+  // Identity & State
+  roleId: RoleId;
   state: MeepleState;
+
+  // Gameplay Properties
+  stats: Stats;
   inventory: Inventory;
   inventoryGenerators: IventoryGenerator[];
-  ruleTemplate: RuleTemplate;
   speed: number;
+
+  // Internal/Private Properties
   private timers: Timer[] = [];
-  private isExecutingActions: boolean = false;
 
   constructor({
     position,
     graphic,
     name,
+    roleId,
     state,
+    stats,
     inventory,
     inventoryGenerators,
-    ruleTemplate,
     speed,
   }: MeepleProps) {
     super({
       pos: position,
     });
 
+    // Base Actor setup
     this.graphics.add(graphic);
     this.name = name;
+
+    // Identity & State
+    this.roleId = roleId;
     this.state = state;
+
+    // Gameplay Properties
+    this.stats = stats;
     this.inventory = inventory;
     this.inventoryGenerators = inventoryGenerators;
-    this.ruleTemplate = ruleTemplate;
     this.speed = speed;
   }
 
   onInitialize(game: Game): void {
     this.initGenerators(game);
-    this.initRuleEvaluationTimer(game);
+    // this.initRulesTimer(game);
+
   }
 
   onDestroy(): void {
@@ -142,46 +188,32 @@ export class Meeple extends Actor {
     }
   }
 
-  /**
-   * Resolves a target meeple from a RoleId if needed
-   */
-  private resolveTarget(target?: Meeple, targetRoleId?: RoleId): Meeple | undefined {
-    if (target) return target;
-    if (targetRoleId && this.scene?.engine) {
-      const game = this.scene.engine as Game;
-      return game.findRabdomMeepleByRoleId(targetRoleId);
-    }
-    return undefined;
+  setState(state: MeepleState): void {
+    this.state = state;
   }
 
   dispatch(action: MeepleAction): void {
     switch (action.type) {
-      case "finish":
-        this.state = action.payload.state
-        break;
-      case "travel-to": {
-        const target = this.resolveTarget(action.payload.target, action.payload.targetRoleId);
-        if (!target) {
-          return;
-        }
+      case MeepleActionType.TravelTo: {
         this.state = {
-          type: "traveling",
-          target: target
-        }
-        this.actions.moveTo(target.pos, this.speed)
+          type: MeepleStateType.Traveling,
+          ...action.payload,
+        };
+        this.actions
+          .moveTo(action.payload.target.pos, this.speed)
+          .callMethod(() => {
+            this.state = {
+              type: MeepleStateType.VisitingTarget,
+              ...action.payload,
+            };
+          });
         break;
       }
-      case "transact": {
-        // Always set state to transacting when executing a transaction
-        // (even if we were traveling, we're now at the destination and transacting)
+      case MeepleActionType.Transact: {
         this.state = {
-          type: "transacting",
-          good: action.payload.good,
-          quantity: action.payload.quantity,
+          type: MeepleStateType.Transacting,
+          ...action.payload,
         };
-        // If target is specified, transact on the target, otherwise transact on self
-        const targetMeeple = this.resolveTarget(action.payload.target, action.payload.targetRoleId) || this;
-        targetMeeple.transact(action.payload);
         break;
       }
       default:
@@ -189,27 +221,24 @@ export class Meeple extends Actor {
     }
   }
 
-  /**
-   * Executes a travel action and returns a promise-like callback for chaining
-   * @param action The travel action to execute
-   * @param onComplete Callback to execute when travel is complete
-   */
-  private executeTravelAction(action: MeepleActionTravelTo, onComplete: () => void): void {
-    const target = this.resolveTarget(action.payload.target, action.payload.targetRoleId);
-    if (!target) {
-      onComplete();
-      return;
-    }
-    this.state = {
-      type: "traveling",
-      target: target
-    }
-    this.actions
-      .moveTo(target.pos, this.speed)
-      .callMethod(() => {
-        onComplete();
-      });
-  }
+  // initRulesTimer(game: Game): void {
+  //   const timer = new Timer({
+  //     fcn: () => {
+  //       switch (this.roleId) {
+  //         case RoleId.Miner: {
+
+  //         }
+  //         default: {
+  //           break;
+  //         }
+  //       }
+  //     },
+  //     repeats: true,
+  //     interval: 1000,
+  //   });
+  //   game.currentScene.add(timer);
+  //   timer.start();
+  // }
 
   initGenerators(game: Game): void {
     // Create timers for each inventory generator
@@ -225,7 +254,7 @@ export class Meeple extends Actor {
           if (currentCount < generator.maximum) {
             // Dispatch transact action to add 1 unit
             this.dispatch({
-              type: "transact",
+              type: MeepleActionType.Transact,
               payload: {
                 good: generator.good,
                 quantity: 1,
@@ -244,173 +273,5 @@ export class Meeple extends Actor {
       game.currentScene.add(timer);
       timer.start();
     });
-  }
-
-  /**
-   * Evaluates a single condition against the meeple's current inventory
-   * @param condition The condition to evaluate
-   * @returns True if the condition is met, false otherwise
-   */
-  private evaluateCondition(condition: Condition): boolean {
-    // Resolve target dynamically if targetRoleId is specified
-    let target: Meeple | undefined = condition.target;
-    if (condition.targetRoleId && !target && this.scene?.engine) {
-      const game = this.scene.engine as Game;
-      target = game.findRabdomMeepleByRoleId(condition.targetRoleId);
-    }
-    
-    // Check the target's inventory if specified, otherwise check this meeple's inventory
-    // If target is required (target or targetRoleId specified) but undefined, the condition fails
-    if ((condition.target !== undefined || condition.targetRoleId !== undefined) && !target) {
-      return false;
-    }
-    const inventoryToCheck = target ? target.inventory : this.inventory;
-    const currentValue = inventoryToCheck[condition.good];
-    const targetValue = condition.value;
-
-    switch (condition.operator) {
-      case Operator.Equal:
-        return currentValue === targetValue;
-      case Operator.LessThan:
-        return currentValue < targetValue;
-      case Operator.GreaterThan:
-        return currentValue > targetValue;
-      case Operator.LessThanOrEqual:
-        return currentValue <= targetValue;
-      case Operator.GreaterThanOrEqual:
-        return currentValue >= targetValue;
-      case Operator.NotEqual:
-        return currentValue !== targetValue;
-      default:
-        return false;
-    }
-  }
-
-  /**
-   * Evaluates all conditions for a rule
-   * @param rule The rule to evaluate
-   * @returns True if all conditions are met, false otherwise
-   */
-  private evaluateRuleConditions(rule: Rule): boolean {
-    return rule.conditions.every(condition => this.evaluateCondition(condition));
-  }
-
-  /**
-   * Evaluates the rule template and returns applicable rules
-   * @returns Array of rules whose conditions are currently met
-   */
-  evaluateRuleTemplate(): Rule[] {
-    return this.ruleTemplate.rules.filter(rule => this.evaluateRuleConditions(rule));
-  }
-
-  /**
-   * Executes multiple actions sequentially
-   * @param actions Array of actions to execute
-   */
-  runActions(actions: MeepleAction[]): void {
-    if (actions.length === 0) {
-      this.isExecutingActions = false;
-      return;
-    }
-
-    // Mark that we're executing actions
-    this.isExecutingActions = true;
-
-    const firstAction = actions[0];
-    const remainingActions = actions.slice(1);
-
-    // If the first action is a travel action, wait for it to complete before continuing
-    if (firstAction.type === "travel-to") {
-      this.executeTravelAction(firstAction, () => {
-        // After travel completes, execute remaining actions
-        // Transactions will set state to transacting when they execute
-        if (remainingActions.length > 0) {
-          this.runActions(remainingActions);
-        } else {
-          // If no more actions after travel, return to idle
-          if (this.state.type === "traveling") {
-            this.state = { type: "idle" };
-          }
-          this.isExecutingActions = false;
-        }
-      });
-    } else {
-      // For non-travel actions, execute immediately
-      this.dispatch(firstAction);
-
-      // If there are more actions, execute them with a small delay
-      // (for non-travel actions, we still want some sequencing)
-      if (remainingActions.length > 0) {
-        const actionTimer = new Timer({
-          fcn: () => {
-            this.runActions(remainingActions);
-            actionTimer.cancel();
-          },
-          repeats: false,
-          interval: 100, // Small delay for non-travel actions
-        });
-
-        this.timers.push(actionTimer);
-        this.scene?.engine.addTimer(actionTimer);
-        actionTimer.start();
-      } else {
-        // If no more actions and we were transacting, return to idle
-        if (this.state.type === "transacting") {
-          this.state = { type: "idle" };
-        }
-        this.isExecutingActions = false;
-      }
-    }
-  }
-
-  /**
-   * Evaluates rule template and executes actions for applicable rules
-   */
-  evaluateAndRunActions(): void {
-    // Don't evaluate rules if actions are already executing
-    if (this.isExecutingActions) {
-      return;
-    }
-
-    const applicableRules = this.evaluateRuleTemplate();
-    // Only execute the first applicable rule to avoid conflicts
-    if (applicableRules.length > 0) {
-      this.runActions(applicableRules[0].actions);
-    }
-  }
-
-  /**
-   * Initializes a timer to periodically evaluate rules
-   * @param game The game instance
-   */
-  initRuleEvaluationTimer(game: Game): void {
-    // Create a timer that evaluates rules every 2 seconds
-    const ruleEvaluationTimer = new Timer({
-      fcn: () => {
-        // Only evaluate rules if the meeple is idle (not currently traveling or transacting)
-        if (this.state.type === "idle") {
-          this.evaluateAndRunActions();
-        }
-      },
-      repeats: true,
-      interval: 2000, // Evaluate rules every 2 seconds
-    });
-
-    this.timers.push(ruleEvaluationTimer);
-    game.currentScene.add(ruleEvaluationTimer);
-    ruleEvaluationTimer.start();
-  }
-
-  /**
-   * Call a custom method on the meeple
-   * @param methodName Name of the method to call
-   * @param args Arguments to pass to the method
-   */
-  callMethod(methodName: string, ...args: any[]): void {
-    if (typeof (this as any)[methodName] === 'function') {
-      (this as any)[methodName](...args);
-    } else {
-      console.warn(`Method ${methodName} not found on Meeple`);
-    }
   }
 }

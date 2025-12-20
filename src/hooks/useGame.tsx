@@ -8,18 +8,17 @@ import {
 } from "react";
 import { Game } from "../entities/Game";
 import { createStarTilemap } from "../utils/createStarTilemap";
-import { GoodType, Meeple, VitalsType } from "../entities/Meeple";
+import { CurrencyType, Meeple, MeepleStateType, MiningType, ProductType, VitalsType } from "../entities/Meeple";
 import { createEntityGraphic, EntityGraphicStyle } from "../utils/graphics";
 import { Vector } from "excalibur";
 import { RoleId } from "../entities/types";
-import { createRuleTemple, createSpaceStoreInventory } from "../utils/rules";
 
 export const GAME_WIDTH = 1000;
 export const GAME_HEIGHT = 1000;
 
 const COUNTS = {
   MINER: 1,
-  ASTEROID: 1,
+  ASTEROID: 3,
   SPACE_STORE: 1,
 };
 
@@ -51,7 +50,11 @@ type ZoomToEntityAction = {
 };
 
 /** Union type of all possible game actions */
-type GameAction = SetIsLoadingAction | SetGameAction | SetMeeplesAction | ZoomToEntityAction;
+type GameAction =
+  | SetIsLoadingAction
+  | SetGameAction
+  | SetMeeplesAction
+  | ZoomToEntityAction;
 
 /** State shape for the game context */
 type GameState = {
@@ -139,14 +142,13 @@ export function GameProvider({ children }: { children: ReactNode }) {
   const [gameState, dispatch] = useReducer(gameReducer, initialState);
   const gameRef = useRef<Game | null>(null);
 
-
-useEffect(() => {
-  if (gameState.activeMeeple) {
-    gameState.game?.currentScene.camera.strategy.lockToActor(
-      gameState.activeMeeple
-    );
-  }
-}, [gameState.activeMeeple]);
+  useEffect(() => {
+    if (gameState.activeMeeple) {
+      gameState.game?.currentScene.camera.strategy.lockToActor(
+        gameState.activeMeeple
+      );
+    }
+  }, [gameState.activeMeeple]);
 
   useEffect(() => {
     const game = new Game(1000, 1000);
@@ -164,55 +166,30 @@ useEffect(() => {
         ),
         graphic: createEntityGraphic(EntityGraphicStyle.Asteroid),
         name: `Asteroid ${j}`,
-        state: { type: "idle" },
-        inventory: {
-          [GoodType.Ore]: 0,
-          [GoodType.Money]: 0,
+        state: { type: MeepleStateType.Idle },
+        stats: {
           [VitalsType.Health]: 100,
           [VitalsType.Energy]: 100,
           [VitalsType.Happiness]: 100,
         },
+        inventory: {
+          [MiningType.Ore]: 0,
+          [ProductType.Gruffle]: 0,
+          [CurrencyType.Money]: 0,
+        },
         speed: 0,
         inventoryGenerators: [
           {
-            good: GoodType.Ore,
+            good: MiningType.Ore,
             minimum: 1,
             maximum: 100,
             perSecond: 1,
           },
         ],
-        ruleTemplate: {
-          id: RoleId.Asteroid,
-          name: "Asteroid",
-          rules: [],
-        },
+        roleId: RoleId.Asteroid,
       });
 
       game.currentScene.add(asteroid);
-    }
-
-    for (let i = 0; i < COUNTS.MINER; i++) {
-      const miner = new Meeple({
-        position: new Vector(
-          Math.random() * GAME_WIDTH,
-          Math.random() * GAME_HEIGHT
-        ),
-        graphic: createEntityGraphic(EntityGraphicStyle.Miner),
-        name: `Miner ${i}`,
-        state: { type: "idle" },
-        inventory: {
-          [GoodType.Ore]: 0,
-          [GoodType.Money]: 0,
-          [VitalsType.Health]: 100,
-          [VitalsType.Energy]: 100,
-          [VitalsType.Happiness]: 100,
-        },
-        inventoryGenerators: [],
-        speed: 100,
-        ruleTemplate: createRuleTemple(game, RoleId.Miner),
-      });
-
-      game.currentScene.add(miner);
     }
 
     // Create SpaceStores
@@ -224,14 +201,57 @@ useEffect(() => {
         ),
         graphic: createEntityGraphic(EntityGraphicStyle.SpaceStation),
         name: `SpaceStore ${k}`,
-        state: { type: "idle" },
-        inventory: createSpaceStoreInventory(),
-        inventoryGenerators: [],
+        state: { type: MeepleStateType.Idle },
+        stats: {
+          [VitalsType.Health]: 100,
+          [VitalsType.Energy]: 100,
+          [VitalsType.Happiness]: 100,
+        },
+        inventory: {
+          [MiningType.Ore]: 0,
+          [ProductType.Gruffle]: 0,
+          [CurrencyType.Money]: 100,
+        },
+        inventoryGenerators: [
+          {
+            good: CurrencyType.Money,
+            minimum: 1,
+            maximum: 100,
+            perSecond: 1,
+          },
+        ],
         speed: 0,
-        ruleTemplate: createRuleTemple(game, RoleId.SpaceStore),
+        roleId: RoleId.SpaceStore,
       });
 
       game.currentScene.add(spaceStore);
+    }
+
+    for (let i = 0; i < COUNTS.MINER; i++) {
+      const miner = new Meeple({
+        position: new Vector(
+          Math.random() * GAME_WIDTH,
+          Math.random() * GAME_HEIGHT
+        ),
+        graphic: createEntityGraphic(EntityGraphicStyle.Miner),
+        name: `Miner ${i}`,
+        state: { type: MeepleStateType.Idle },
+        inventory: {
+          [MiningType.Ore]: 0,
+          [ProductType.Gruffle]: 0,
+          [CurrencyType.Money]: 0,
+        },
+        stats: {
+          [VitalsType.Health]: 100,
+          [VitalsType.Energy]: 100,
+          [VitalsType.Happiness]: 100,
+        },
+        inventoryGenerators: [],
+        speed: 100,
+        roleId: RoleId.Miner,
+      });
+
+      game.currentScene.add(miner);
     }
 
     dispatch({ type: "set-game", payload: game });
@@ -247,7 +267,7 @@ useEffect(() => {
       if (gameRef.current) {
         dispatch({
           type: "set-meeples",
-          payload: game.currentScene.actors.filter(
+          payload: gameRef.current.currentScene.actors.filter(
             (actor): actor is Meeple => actor instanceof Meeple
           ),
         });
