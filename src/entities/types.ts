@@ -12,3 +12,5 @@ export enum Operator {
   GreaterThanOrEqual = ">=",
   NotEqual = "!=",
 }
+
+export type Condition = () => boolean;

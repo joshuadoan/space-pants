@@ -44,7 +44,7 @@ export class Game extends Engine {
     this.worldHeight = worldHeight;
   }
 
-  findRabdomMeepleByRoleId(roleId: RoleId): Meeple | undefined {
+  findRandomMeepleByRoleId(roleId: RoleId): Meeple | undefined {
     const meeples = this.currentScene.actors.filter(
       (actor) => actor instanceof Meeple && actor.roleId === roleId
     );

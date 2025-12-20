@@ -8,17 +8,33 @@ import {
 } from "react";
 import { Game } from "../entities/Game";
 import { createStarTilemap } from "../utils/createStarTilemap";
-import { CurrencyType, Meeple, MeepleStateType, MiningType, ProductType, VitalsType } from "../entities/Meeple";
+import {
+  CurrencyType,
+  Meeple,
+  MeepleStateType,
+  MiningType,
+  ProductType,
+  VitalsType,
+} from "../entities/Meeple";
 import { createEntityGraphic, EntityGraphicStyle } from "../utils/graphics";
 import { Vector } from "excalibur";
 import { RoleId } from "../entities/types";
+import { Instruction } from "../entities/Instruction";
+import {
+  Finish,
+  AddOreToMinerInventory,
+  RemoveOreFromAsteroid,
+  SetRandomTargetByRoleId,
+  SetTarget,
+  TravelToAsteroid,
+} from "./instructionTemplates";
 
 export const GAME_WIDTH = 1000;
 export const GAME_HEIGHT = 1000;
 
 const COUNTS = {
-  MINER: 1,
-  ASTEROID: 3,
+  MINER: 3,
+  ASTEROID: 1,
   SPACE_STORE: 1,
 };
 
@@ -187,6 +203,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
           },
         ],
         roleId: RoleId.Asteroid,
+        instructions: [],
       });
 
       game.currentScene.add(asteroid);
@@ -222,6 +239,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
         ],
         speed: 0,
         roleId: RoleId.SpaceStore,
+        instructions: [],
       });
 
       game.currentScene.add(spaceStore);
@@ -249,9 +267,27 @@ export function GameProvider({ children }: { children: ReactNode }) {
         inventoryGenerators: [],
         speed: 100,
         roleId: RoleId.Miner,
+        instructions: [],
       });
 
       game.currentScene.add(miner);
+
+      miner.instructions = [
+        new Instruction({
+          id: "mine_ore",
+          name: "Mine Ore",
+          game,
+          conditions: [() => miner.inventory[MiningType.Ore] < 14],
+          actions: [
+            SetRandomTargetByRoleId(RoleId.Asteroid),
+            TravelToAsteroid,
+            RemoveOreFromAsteroid,
+            SetTarget(miner),
+            AddOreToMinerInventory(miner),
+            Finish,
+          ],
+        }),
+      ];
     }
 
     dispatch({ type: "set-game", payload: game });
