@@ -82,66 +82,131 @@ export const MeeplesList = () => {
               </Link>
               <div>{meeple.state.type}</div>
               {id && (
-                <div>
-                  <ul className="flex flex-col gap-2">
-                    {Object.entries(meeple.stats).map(([key, value]) => {
-                      const vitalsType = key as VitalsType;
-                      return (
-                        <li
-                          key={vitalsType}
-                          className="flex items-center gap-2"
-                        >
-                          <IconComponent icon={vitalsType} size={16} />
-                          <span className="text-sm">
-                            {value} {vitalsType}
-                          </span>
-                        </li>
-                      );
-                    })}
+                <div className="flex flex-col gap-4">
+                  <div className="card card-compact bg-base-200 shadow-sm">
+                    <div className="card-body p-3">
+                      <h4 className="card-title text-base text-primary">
+                        Stats
+                      </h4>
+                      <div className="flex flex-col gap-2 mt-2">
+                        {Object.entries(meeple.stats).map(([key, value]) => {
+                          const vitalsType = key as VitalsType;
+                          return (
+                            <div
+                              key={vitalsType}
+                              className="flex items-center gap-2 p-2 rounded-lg bg-base-100"
+                            >
+                              <IconComponent
+                                icon={vitalsType}
+                                size={16}
+                                className="text-primary"
+                              />
+                              <span className="text-sm text-base-content flex-1">
+                                <span className="font-semibold text-primary">
+                                  {value}
+                                </span>{" "}
+                                <span className="text-base-content/70">
+                                  {vitalsType}
+                                </span>
+                              </span>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  </div>
 
-                    {Object.entries(meeple.inventory).map(([key, value]) => {
-                      const goodType = key as
-                        | MiningType
-                        | ProductType
-                        | CurrencyType;
-                      return (
-                        <li key={goodType} className="flex items-center gap-2">
-                          <IconComponent icon={goodType} size={16} />
-                          <span className="text-sm">
-                            {value} {goodType}
-                          </span>
-                        </li>
-                      );
-                    })}
-                  </ul>
-                  <div className="flex flex-col gap-3 mt-2">
-                    <h3 className="text-sm font-semibold text-base-content">
-                      Instructions{" "}
-                    </h3>
-                    {meeple.instructions.map((instruction) => (
-                      <div key={instruction.id}>
-                        <div>{instruction.name}</div>
-                        {instruction.conditions.map((condition, index) => (
-                          <div key={index} className="flex flex-col gap-2">
-                            <div className="flex items-center gap-2">
-                                <span className="badge badge-sm badge-ghost">
-                                  {evaluateCondition(
+                  <div className="card card-compact bg-base-200 shadow-sm">
+                    <div className="card-body p-3">
+                      <h4 className="card-title text-base text-secondary">
+                        Inventory
+                      </h4>
+                      <div className="flex flex-col gap-2 mt-2">
+                        {Object.entries(meeple.inventory).map(
+                          ([key, value]) => {
+                            const goodType = key as
+                              | MiningType
+                              | ProductType
+                              | CurrencyType;
+                            return (
+                              <div
+                                key={goodType}
+                                className="flex items-center gap-2 p-2 rounded-lg bg-base-100"
+                              >
+                                <IconComponent
+                                  icon={goodType}
+                                  size={16}
+                                  className="text-secondary"
+                                />
+                                <span className="text-sm text-base-content flex-1">
+                                  <span className="font-semibold text-secondary">
+                                    {value}
+                                  </span>{" "}
+                                  <span className="text-base-content/70">
+                                    {goodType}
+                                  </span>
+                                </span>
+                              </div>
+                            );
+                          }
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                  <div className="flex flex-col gap-4 mt-4">
+                    <div className="divider my-0"></div>
+                    <div className="flex flex-col gap-3">
+                      {meeple.instructions.map((instruction) => (
+                        <div
+                          key={instruction.id}
+                          className="card card-compact bg-base-200 shadow-sm"
+                        >
+                          <div className="card-body p-3">
+                            <h4 className="card-title text-base text-primary">
+                              {instruction.name}
+                            </h4>
+                            <div className="flex flex-col gap-2 mt-2">
+                              {instruction.conditions.map(
+                                (condition, index) => {
+                                  const isMet = evaluateCondition(
                                     condition,
                                     condition.target?.inventory
-                                  )
-                                    ? "✅"
-                                    : "❌"}
-                                </span>
-                                <span className="text-sm">
-                                  {condition.good} {condition.operator}{" "}
-                                  {condition.value}{" "}
-                                  {condition.target?.name}
-                                </span>
+                                  );
+                                  return (
+                                    <div
+                                      key={index}
+                                      className={`flex items-center gap-2 p-2 rounded-lg border ${
+                                        isMet
+                                          ? "bg-success/10 border-success/30"
+                                          : "bg-error/10 border-error/30"
+                                      }`}
+                                    >
+                                      <span className="text-sm text-base-content flex-1">
+                                        <span className="font-medium">
+                                          {condition.good}
+                                        </span>{" "}
+                                        <span className="text-base-content/70">
+                                          {condition.operator}
+                                        </span>{" "}
+                                        <span className="font-semibold text-primary">
+                                          {condition.value}
+                                        </span>
+                                        <span className="text-base-content/70">
+                                          at
+                                        </span>{" "}
+                                        <span className="font-medium text-secondary">
+                                          {condition.target.name}
+                                        </span>
+                                      </span>
+                                    </div>
+                                  );
+                                }
+                              )}
                             </div>
                           </div>
-                        ))}
-                      </div>
-                    ))}
+                        </div>
+                      ))}
+                    </div>
                   </div>
                 </div>
               )}
