@@ -1,6 +1,7 @@
 import type { ComponentType } from "react";
 import { createElement } from "react";
 import {
+  IconArrowLeft,
   IconBolt,
   IconBuilding,
   IconCurrencyDollar,
@@ -16,7 +17,7 @@ import {
   ProductType,
   VitalsType,
 } from "../entities/Meeple";
-import { RoleId } from "../entities/types";
+import { RoleId, UserActionType } from "../entities/types";
 
 // ============================================================================
 // Icon Component Type
@@ -27,7 +28,15 @@ export type IconComponent = ComponentType<{
   className?: string;
 }>;
 
-const IconMap: Record<MiningType | ProductType | CurrencyType | VitalsType | RoleId, IconComponent> = {
+const IconMap: Record<
+  | MiningType
+  | ProductType
+  | CurrencyType
+  | VitalsType
+  | RoleId
+  | UserActionType,
+  IconComponent
+> = {
   [VitalsType.Health]: IconHeart,
   [VitalsType.Energy]: IconBolt,
   [VitalsType.Happiness]: IconMoodSmile,
@@ -37,6 +46,7 @@ const IconMap: Record<MiningType | ProductType | CurrencyType | VitalsType | Rol
   [RoleId.Miner]: IconPick,
   [RoleId.Asteroid]: IconMeteor,
   [RoleId.SpaceStore]: IconBuilding,
+  [UserActionType.Back]: IconArrowLeft,
 } as const;
 
 // ============================================================================

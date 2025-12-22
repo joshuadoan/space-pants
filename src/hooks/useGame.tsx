@@ -11,6 +11,7 @@ import { createStarTilemap } from "../utils/createStarTilemap";
 import {
   CurrencyType,
   Meeple,
+  MeepleActionType,
   MeepleStateType,
   MiningType,
   ProductType,
@@ -19,22 +20,16 @@ import {
 import { createEntityGraphic, EntityGraphicStyle } from "../utils/graphics";
 import { Vector } from "excalibur";
 import { RoleId } from "../entities/types";
-import { Instruction } from "../entities/Instruction";
 import {
-  Finish,
-  AddOreToMinerInventory,
-  RemoveOreFromAsteroid,
-  SetRandomTargetByRoleId,
-  SetTarget,
-  TravelToAsteroid,
-} from "./instructionTemplates";
+  Instruction,
+} from "../entities/Instruction";
 
 export const GAME_WIDTH = 1000;
 export const GAME_HEIGHT = 1000;
 
 const COUNTS = {
-  MINER: 3,
-  ASTEROID: 1,
+  MINER: 42,
+  ASTEROID: 2,
   SPACE_STORE: 1,
 };
 
@@ -54,12 +49,10 @@ type SetGameAction = {
   payload: Game;
 };
 
-/** Action to update the meeples list */
 type SetMeeplesAction = {
   type: "set-meeples";
   payload: Meeple[];
 };
-
 type ZoomToEntityAction = {
   type: "zoom-to-entity";
   payload: Meeple;
@@ -69,8 +62,8 @@ type ZoomToEntityAction = {
 type GameAction =
   | SetIsLoadingAction
   | SetGameAction
-  | SetMeeplesAction
-  | ZoomToEntityAction;
+  | ZoomToEntityAction
+  | SetMeeplesAction;
 
 /** State shape for the game context */
 type GameState = {
@@ -86,6 +79,7 @@ type GameContextValue = {
   isLoading: boolean;
   meeples: Meeple[];
   zoomToEntity: (meeple: Meeple) => void;
+  getMeepleById: (id: string) => Meeple | undefined;
 };
 
 // ============================================================================
@@ -119,15 +113,15 @@ function gameReducer(state: GameState, action: GameAction): GameState {
         ...state,
         game: action.payload,
       };
-    case "set-meeples":
-      return {
-        ...state,
-        meeples: action.payload,
-      };
     case "zoom-to-entity":
       return {
         ...state,
         activeMeeple: action.payload,
+      };
+    case "set-meeples":
+      return {
+        ...state,
+        meeples: action.payload,
       };
     default:
       return state;
@@ -277,36 +271,111 @@ export function GameProvider({ children }: { children: ReactNode }) {
           id: "mine_ore",
           name: "Mine Ore",
           game,
-          conditions: [() => miner.inventory[MiningType.Ore] < 14],
+          conditions: [() => miner.inventory[MiningType.Ore] < 1],
           actions: [
-            SetRandomTargetByRoleId(RoleId.Asteroid),
-            TravelToAsteroid,
-            RemoveOreFromAsteroid,
-            SetTarget(miner),
-            AddOreToMinerInventory(miner),
-            Finish,
+            {
+              type: MeepleActionType.SetRandomTargetByRoleId,
+              payload: {
+                roleId: RoleId.Asteroid,
+              },
+            },
+            {
+              type: MeepleActionType.TravelTo,
+              payload: {},
+            },
+            {
+              type: MeepleActionType.Transact,
+              payload: {
+                good: MiningType.Ore,
+                quantity: 1,
+                transactionType: "remove",
+              },
+            },
+            {
+              type: MeepleActionType.SetTarget,
+              payload: {
+                target: miner,
+              },
+            },
+            {
+              type: MeepleActionType.Transact,
+              payload: {
+                good: MiningType.Ore,
+                quantity: 1,
+                transactionType: "add",
+              },
+            },
+            {
+              type: MeepleActionType.Finish,
+              payload: {
+                state: {
+                  type: MeepleStateType.Idle,
+                },
+              },
+            },
+          ],
+        }),
+        // if ore is greater than or equal to 10, sell to space store
+        new Instruction({
+          id: "sell-ore-to-store",
+          name: "Sell Ore to Space Store",
+          game,
+          conditions: [() => miner.inventory[MiningType.Ore] >= 1],
+          actions: [
+            {
+              type: MeepleActionType.SetRandomTargetByRoleId,
+              payload: {
+                roleId: RoleId.SpaceStore,
+              },
+            },
+            {
+              type: MeepleActionType.TravelTo,
+              payload: {},
+            },
+            {
+              type: MeepleActionType.Transact,
+              payload: {
+                good: MiningType.Ore,
+                quantity: 1,
+                transactionType: "remove",
+                target: miner,
+              },
+            },
+            {
+              type: MeepleActionType.Transact,
+              payload: {
+                good: CurrencyType.Money,
+                quantity: 1,
+                transactionType: "add",
+                target: miner,
+              },
+            },
+            {
+              type: MeepleActionType.Finish,
+              payload: {
+                state: {
+                  type: MeepleStateType.Idle,
+                },
+              },
+            },
           ],
         }),
       ];
     }
 
     dispatch({ type: "set-game", payload: game });
-    dispatch({
-      type: "set-meeples",
-      payload: game.currentScene.actors.filter(
-        (actor): actor is Meeple => actor instanceof Meeple
-      ),
-    });
+        dispatch({
+          type: "set-meeples",
+          payload: game.currentScene.actors.filter(
+            (actor): actor is Meeple => actor instanceof Meeple
+          ),
+        });
+
     dispatch({ type: "set-is-loading", payload: false });
 
     const interval = setInterval(() => {
       if (gameRef.current) {
-        dispatch({
-          type: "set-meeples",
-          payload: gameRef.current.currentScene.actors.filter(
-            (actor): actor is Meeple => actor instanceof Meeple
-          ),
-        });
+        dispatch({ type: "set-game", payload: game });
       }
     }, 1000);
     return () => clearInterval(interval);
@@ -316,11 +385,19 @@ export function GameProvider({ children }: { children: ReactNode }) {
     dispatch({ type: "zoom-to-entity", payload: meeple });
   };
 
+  const getMeepleById = (id: string) => {
+    return gameState.game?.currentScene.actors.find(
+      (actor): actor is Meeple =>
+        actor instanceof Meeple && String(actor.id) === id
+    );
+  };
+
   return (
     <GameContext.Provider
       value={{
         ...gameState,
         zoomToEntity,
+        getMeepleById,
       }}
     >
       {children}

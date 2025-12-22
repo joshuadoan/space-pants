@@ -1,12 +1,36 @@
 import { useGame } from "../hooks/useGame";
-import { MiningType, ProductType, CurrencyType, VitalsType } from "../entities/Meeple";
 import { IconComponent } from "../utils/iconMap";
-import { RoleId } from "../entities/types";
+import { RoleId, UserActionType } from "../entities/types";
 import { useMeepleFilters } from "../hooks/useMeepleFilters";
+import { Link, useParams } from "react-router-dom";
+import {
+  CurrencyType,
+  Meeple,
+  MiningType,
+  ProductType,
+  VitalsType,
+} from "../entities/Meeple";
+import { useEffect } from "react";
 
 export const MeeplesList = () => {
-  const { isLoading, meeples, zoomToEntity } = useGame();
+  const { id } = useParams<{ id: string }>();
+  const { isLoading, game, zoomToEntity } = useGame();
+
+  const meeples =
+    game?.currentScene.actors.filter(
+      (actor): actor is Meeple => actor instanceof Meeple
+    ) || [];
+
   const { filteredMeeples, filters, toggleFilter } = useMeepleFilters(meeples);
+
+  useEffect(() => {
+    if (id) {
+      const meeple = meeples.find((meeple) => String(meeple.id) === id);
+      if (meeple) {
+        zoomToEntity(meeple);
+      }
+    }
+  }, [id]);
 
   if (isLoading) {
     return <div>Loading...</div>;
@@ -15,69 +39,103 @@ export const MeeplesList = () => {
   return (
     <div className="flex flex-col h-full">
       <div className="flex gap-2 p-2 flex-wrap">
-        {Object.values(RoleId).map((roleId) => {
-          const isActive = filters.includes(roleId);
-          return (
-            <button
-              key={roleId}
-              onClick={() => toggleFilter(roleId)}
-              className={`btn btn-sm ${
-                isActive ? "btn-primary" : "btn-outline"
-              } flex items-center gap-1.5`}
-            >
-              <IconComponent icon={roleId} size={14} />
-              <span>{roleId}</span>
-            </button>
-          );
-        })}
+        {id ? (
+          <Link
+            to="/"
+            className="btn btn-sm btn-outline flex items-center gap-1.5"
+          >
+            <IconComponent icon={UserActionType.Back} size={14} />
+            <span>Back</span>
+          </Link>
+        ) : (
+          Object.values(RoleId).map((roleId) => {
+            const isActive = filters.includes(roleId);
+            return (
+              <button
+                key={roleId}
+                onClick={() => toggleFilter(roleId)}
+                className={`btn btn-sm ${
+                  isActive ? "btn-primary" : "btn-outline"
+                } flex items-center gap-1.5`}
+              >
+                <IconComponent icon={roleId} size={14} />
+                <span>{roleId}</span>
+              </button>
+            );
+          })
+        )}
       </div>
       <ul className="overflow-y-auto flex-1 flex flex-col gap-2 p-2">
-        {filteredMeeples.map((meeple) => (
-        <li
-          key={meeple.id}
-          className="flex flex-col gap-2 p-2 border border-gray-300 rounded-md"
-        >
-          <div
-            className="cursor-pointer hover:text-primary"
-            onClick={() => zoomToEntity(meeple)}
-          >
-            {meeple.name}
-          </div>
-          <div>{meeple.state.type}</div>
-          <div>State: {meeple.state.type}</div>
-          <div className="flex gap-2">
-            <div className="flex gap-2">
-              <div className="flex items-center gap-2">
-                <IconComponent icon={VitalsType.Health} />
-                {meeple.stats[VitalsType.Health]}
-              </div>
-              <div className="flex items-center gap-2">
-                <IconComponent icon={VitalsType.Energy} />
-                {meeple.stats[VitalsType.Energy]}
-              </div>
-              <div className="flex items-center gap-2">
-                <IconComponent icon={VitalsType.Happiness} />
-                {meeple.stats[VitalsType.Happiness]}
-              </div>
-            </div>
-            Pos: {Math.round(meeple.pos.x)}°, {Math.round(meeple.pos.y)}°
-          </div>
-          <ul>
-            {Object.entries(meeple.inventory)
-              .filter(([key]) =>
-                [...Object.values(MiningType), ...Object.values(ProductType), ...Object.values(CurrencyType)].includes(key as MiningType | ProductType | CurrencyType)
-              )
-              .map(([key, value], i) => {
-                return (
-                  <li key={i} className="flex items-center gap-2">
-                    <IconComponent icon={key as MiningType | ProductType | CurrencyType} />
-                    {value} {key}
-                  </li>
-                );
-              })}
-          </ul>
-        </li>
-      ))}
+        {filteredMeeples
+          .filter((meeple) => (id ? String(meeple.id) === id : true))
+          .map((meeple) => (
+            <li
+              key={meeple.id}
+              className="flex flex-col gap-2 p-2 border border-gray-300 rounded-md"
+            >
+              <Link
+                className="cursor-pointer hover:text-primary underline"
+                to={`/meeple/${meeple.id}`}
+              >
+                {meeple.name}
+              </Link>
+              <div>{meeple.state.type}</div>
+              <div>State: {meeple.state.type}</div>
+              {id && (
+                <div>
+                  <ul className="flex flex-col gap-2">
+                    {Object.entries(meeple.stats).map(([key, value]) => {
+                      const vitalsType = key as VitalsType;
+                      return (
+                        <li
+                          key={vitalsType}
+                          className="flex items-center gap-2"
+                        >
+                          <IconComponent icon={vitalsType} size={16} />
+                          <span className="text-sm">
+                            {value} {vitalsType}
+                          </span>
+                        </li>
+                      );
+                    })}
+
+                    {Object.entries(meeple.inventory).map(([key, value]) => {
+                      const goodType = key as
+                        | MiningType
+                        | ProductType
+                        | CurrencyType;
+                      return (
+                        <li key={goodType} className="flex items-center gap-2">
+                          <IconComponent icon={goodType} size={16} />
+                          <span className="text-sm">
+                            {value} {goodType}
+                          </span>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                  <form>
+                    {
+                      meeple.instructions.map((instruction) => {
+                        return (
+                          <div key={instruction.id}>
+                            <div>{instruction.name}</div>
+                            {
+                              instruction.conditions.map((condition) => {
+                                return (
+                                  JSON.stringify(condition)
+                                )
+                              })
+                            }
+                          </div>
+                        );
+                      })
+                    }
+                  </form>
+                </div>
+              )}
+            </li>
+          ))}
       </ul>
     </div>
   );

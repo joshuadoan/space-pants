@@ -4,12 +4,12 @@ import { RoleId } from "../entities/types";
 
 /**
  * Custom hook for filtering meeples by role ID
- * 
+ *
  * @param meeples - Array of meeples to filter
  * @returns Object containing filtered meeples, active filters, and filter toggle function
  */
 export function useMeepleFilters(meeples: Meeple[]) {
-  const [filters, setFilters] = useState<RoleId[]>([]);
+  const [filters, setFilters] = useState<RoleId[]>(Object.values(RoleId));
 
   const toggleFilter = (roleId: RoleId) => {
     setFilters((prev) =>
@@ -32,4 +32,3 @@ export function useMeepleFilters(meeples: Meeple[]) {
     toggleFilter,
   };
 }
-

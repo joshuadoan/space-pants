@@ -13,4 +13,8 @@ export enum Operator {
   NotEqual = "!=",
 }
 
+export enum UserActionType {
+  Back = "back",
+}
+
 export type Condition = () => boolean;

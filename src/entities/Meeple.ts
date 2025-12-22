@@ -1,7 +1,7 @@
 import { Actor, Vector, Graphic, Timer } from "excalibur";
 import type { Game } from "./Game";
 import { RoleId } from "./types";
-import { Instruction } from "./Instruction";
+import type { Instruction } from "./Instruction";
 
 export enum MiningType {
   Ore = "ore",
@@ -99,7 +99,7 @@ export type Transaction = {
   good: MiningType | ProductType | CurrencyType;
   quantity: number;
   transactionType: "add" | "remove";
-  target: Meeple;
+  target?: Meeple;
 };
 
 export type IventoryGenerator = {
