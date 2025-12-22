@@ -11,7 +11,6 @@ import {
   VitalsType,
 } from "../entities/Meeple";
 import { useEffect } from "react";
-import { Instructions } from "./Instructions";
 import { evaluateCondition } from "../utils/evaluateCondition";
 
 export const MeeplesList = () => {
@@ -124,18 +123,20 @@ export const MeeplesList = () => {
                         <div>{instruction.name}</div>
                         {instruction.conditions.map((condition, index) => (
                           <div key={index} className="flex flex-col gap-2">
-                            <div>
-                              {condition.good} {condition.operator}{" "}
-                              {condition.value}{" "}
-                              {condition.target?.name === meeple.name
-                                ? "self"
-                                : condition.target?.name}
-                              {evaluateCondition(
-                                condition,
-                                condition.target?.inventory
-                              )
-                                ? "✅"
-                                : "❌"}
+                            <div className="flex items-center gap-2">
+                                <span className="badge badge-sm badge-ghost">
+                                  {evaluateCondition(
+                                    condition,
+                                    condition.target?.inventory
+                                  )
+                                    ? "✅"
+                                    : "❌"}
+                                </span>
+                                <span className="text-sm">
+                                  {condition.good} {condition.operator}{" "}
+                                  {condition.value}{" "}
+                                  {condition.target?.name}
+                                </span>
                             </div>
                           </div>
                         ))}
