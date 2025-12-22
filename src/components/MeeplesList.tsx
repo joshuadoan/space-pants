@@ -11,6 +11,8 @@ import {
   VitalsType,
 } from "../entities/Meeple";
 import { useEffect } from "react";
+import { Instructions } from "./Instructions";
+import { evaluateCondition } from "../utils/evaluateCondition";
 
 export const MeeplesList = () => {
   const { id } = useParams<{ id: string }>();
@@ -80,7 +82,6 @@ export const MeeplesList = () => {
                 {meeple.name}
               </Link>
               <div>{meeple.state.type}</div>
-              <div>State: {meeple.state.type}</div>
               {id && (
                 <div>
                   <ul className="flex flex-col gap-2">
@@ -114,24 +115,33 @@ export const MeeplesList = () => {
                       );
                     })}
                   </ul>
-                  <form>
-                    {
-                      meeple.instructions.map((instruction) => {
-                        return (
-                          <div key={instruction.id}>
-                            <div>{instruction.name}</div>
-                            {
-                              instruction.conditions.map((condition) => {
-                                return (
-                                  JSON.stringify(condition)
-                                )
-                              })
-                            }
+                  <div className="flex flex-col gap-3 mt-2">
+                    <h3 className="text-sm font-semibold text-base-content">
+                      Instructions{" "}
+                    </h3>
+                    {meeple.instructions.map((instruction) => (
+                      <div key={instruction.id}>
+                        <div>{instruction.name}</div>
+                        {instruction.conditions.map((condition, index) => (
+                          <div key={index} className="flex flex-col gap-2">
+                            <div>
+                              {condition.good} {condition.operator}{" "}
+                              {condition.value}{" "}
+                              {condition.target?.name === meeple.name
+                                ? "self"
+                                : condition.target?.name}
+                              {evaluateCondition(
+                                condition,
+                                condition.target?.inventory
+                              )
+                                ? "✅"
+                                : "❌"}
+                            </div>
                           </div>
-                        );
-                      })
-                    }
-                  </form>
+                        ))}
+                      </div>
+                    ))}
+                  </div>
                 </div>
               )}
             </li>

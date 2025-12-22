@@ -19,16 +19,13 @@ import {
 } from "../entities/Meeple";
 import { createEntityGraphic, EntityGraphicStyle } from "../utils/graphics";
 import { Vector } from "excalibur";
-import { RoleId } from "../entities/types";
-import {
-  Instruction,
-} from "../entities/Instruction";
+import { Operator, RoleId } from "../entities/types";
 
 export const GAME_WIDTH = 1000;
 export const GAME_HEIGHT = 1000;
 
 const COUNTS = {
-  MINER: 42,
+  MINER: 1,
   ASTEROID: 2,
   SPACE_STORE: 1,
 };
@@ -68,16 +65,13 @@ type GameAction =
 /** State shape for the game context */
 type GameState = {
   game: Game | null;
-  meeples: Meeple[];
   isLoading: boolean;
-  activeMeeple: Meeple | null;
 };
 
 /** Type for the game context value */
 type GameContextValue = {
   game: Game | null;
   isLoading: boolean;
-  meeples: Meeple[];
   zoomToEntity: (meeple: Meeple) => void;
   getMeepleById: (id: string) => Meeple | undefined;
 };
@@ -88,9 +82,7 @@ type GameContextValue = {
 
 const initialState: GameState = {
   game: null,
-  meeples: [],
   isLoading: true,
-  activeMeeple: null,
 };
 
 // ============================================================================
@@ -112,16 +104,6 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       return {
         ...state,
         game: action.payload,
-      };
-    case "zoom-to-entity":
-      return {
-        ...state,
-        activeMeeple: action.payload,
-      };
-    case "set-meeples":
-      return {
-        ...state,
-        meeples: action.payload,
       };
     default:
       return state;
@@ -151,14 +133,6 @@ const GameContext = createContext<GameContextValue | undefined>(undefined);
 export function GameProvider({ children }: { children: ReactNode }) {
   const [gameState, dispatch] = useReducer(gameReducer, initialState);
   const gameRef = useRef<Game | null>(null);
-
-  useEffect(() => {
-    if (gameState.activeMeeple) {
-      gameState.game?.currentScene.camera.strategy.lockToActor(
-        gameState.activeMeeple
-      );
-    }
-  }, [gameState.activeMeeple]);
 
   useEffect(() => {
     const game = new Game(1000, 1000);
@@ -267,11 +241,15 @@ export function GameProvider({ children }: { children: ReactNode }) {
       game.currentScene.add(miner);
 
       miner.instructions = [
-        new Instruction({
+        {
           id: "mine_ore",
           name: "Mine Ore",
-          game,
-          conditions: [() => miner.inventory[MiningType.Ore] < 1],
+          conditions: [{
+            good: MiningType.Ore,
+            operator: Operator.LessThan,
+            value: 1,
+            target: miner,
+          }],
           actions: [
             {
               type: MeepleActionType.SetRandomTargetByRoleId,
@@ -314,13 +292,17 @@ export function GameProvider({ children }: { children: ReactNode }) {
               },
             },
           ],
-        }),
+        },
         // if ore is greater than or equal to 10, sell to space store
-        new Instruction({
+        {
           id: "sell-ore-to-store",
           name: "Sell Ore to Space Store",
-          game,
-          conditions: [() => miner.inventory[MiningType.Ore] >= 1],
+          conditions: [{
+            good: MiningType.Ore,
+            operator: Operator.GreaterThanOrEqual,
+            value: 1,
+            target: miner,
+          }],
           actions: [
             {
               type: MeepleActionType.SetRandomTargetByRoleId,
@@ -359,7 +341,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
               },
             },
           ],
-        }),
+        },
       ];
     }
 
@@ -382,7 +364,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const zoomToEntity = (meeple: Meeple) => {
-    dispatch({ type: "zoom-to-entity", payload: meeple });
+    gameRef.current?.currentScene.camera.strategy.lockToActor(meeple);
   };
 
   const getMeepleById = (id: string) => {

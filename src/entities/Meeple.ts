@@ -1,7 +1,8 @@
 import { Actor, Vector, Graphic, Timer } from "excalibur";
 import type { Game } from "./Game";
-import { RoleId } from "./types";
-import type { Instruction } from "./Instruction";
+import { RoleId, type Instruction } from "./types";
+import { evaluateCondition } from "../utils/evaluateCondition";
+
 
 export enum MiningType {
   Ore = "ore",
@@ -293,6 +294,12 @@ export class Meeple extends Actor {
     });
   }
 
+  isValidInstruction(instruction: Instruction): boolean {
+    return instruction.conditions.every((condition) => {
+      return evaluateCondition(condition, condition.target.inventory);
+    });
+  }
+
   initRulesTimer(game: Game): void {
     const timer = new Timer({
       fcn: async () => {
@@ -303,7 +310,7 @@ export class Meeple extends Actor {
           case RoleId.Miner:
             {
               for (const instruction of this.instructions) {
-                if (instruction.isValid) {
+                if (this.isValidInstruction(instruction)) {
                   for (const action of instruction.actions) {
                     await this.dispatch(action);
                   }

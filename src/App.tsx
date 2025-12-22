@@ -1,4 +1,4 @@
-import { Routes, Route, Outlet, Link, useParams } from "react-router-dom";
+import { Routes, Route, Outlet, Link } from "react-router-dom";
 import { MeeplesList } from "./components/MeeplesList";
 
 function App() {

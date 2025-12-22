@@ -10,7 +10,7 @@ import type { Game } from "../entities/Game";
  */
 export function createStarTilemap(game: Game): TileMap {
   // Tile size - larger tiles mean fewer tiles to manage
-  const TILE_SIZE = 64;
+  const TILE_SIZE = 32;
   
   // Calculate number of tiles needed to cover the world
   const rows = Math.ceil(game.worldHeight / TILE_SIZE);
