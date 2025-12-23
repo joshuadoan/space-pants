@@ -19,7 +19,7 @@ const Layout = () => {
     <div className="w-screen h-screen flex flex-col">
       <main className="flex-1 flex h-full">
         <canvas id="game-canvas" className="absolute inset-0 w-full h-full" />
-        <div className="h-full w-sm opacity-80">
+        <div className="h-full w-full opacity-80">
           <Outlet />
         </div>
       </main>

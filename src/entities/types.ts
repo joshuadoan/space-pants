@@ -24,6 +24,7 @@ export enum Operator {
 
 export enum UserActionType {
   Back = "back",
+  HideUi = "hide-ui",
 }
 
 export type Condition = {

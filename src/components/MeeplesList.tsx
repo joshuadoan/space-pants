@@ -11,7 +11,7 @@ import {
   ProductType,
   VitalsType,
 } from "../entities/Meeple";
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useReducer } from "react";
 import { evaluateCondition } from "../utils/evaluateCondition";
 import cx from "classnames";
 import {
@@ -20,7 +20,31 @@ import {
   IconArrowsExchange,
 } from "@tabler/icons-react";
 
+type State = {
+  showUi: boolean;
+};
+
+type ActionToggleShowUi = {
+  type: "toggle-show-ui";
+  payload: boolean;
+};
+
+type Action = ActionToggleShowUi;
+
+const initialState: State = {
+  showUi: true,
+};
+
+const reducer = (state: State, action: Action): State => {
+  switch (action.type) {
+    case "toggle-show-ui":
+      return { ...state, showUi: action.payload };
+  }
+};
+
 export const MeeplesList = () => {
+  const [state, dispatch] = useReducer(reducer, initialState);
+
   const { id } = useParams<{ id: string }>();
   const { isLoading, game, zoomToEntity, centerCameraInGame } = useGame();
   const navigate = useNavigate();
@@ -56,35 +80,53 @@ export const MeeplesList = () => {
   }
 
   return (
-    <div className="flex flex-col h-full w-sm p-2">
-      <div className="flex gap-2 p-2 flex-wrap">
-        {id ? (
-          <Link
-            to="/"
-            className="btn btn-sm btn-outline flex items-center gap-1.5"
-          >
-            <IconComponent icon={UserActionType.Back} size={14} />
-            <span>Back</span>
-          </Link>
-        ) : (
-          Object.values(RoleId).map((roleId) => {
-            const isActive = filters.includes(roleId);
-            return (
-              <button
-                key={roleId}
-                onClick={() => toggleFilter(roleId)}
-                className={`btn btn-sm ${
-                  isActive ? "btn-primary" : "btn-outline"
-                } flex items-center gap-1.5`}
-              >
-                <IconComponent icon={roleId} size={14} />
-                <span>{roleId}</span>
-              </button>
-            );
-          })
-        )}
+    <div className="flex flex-col h-full  p-2">
+      <nav className="p-2">
+        <button
+          onClick={() =>
+            dispatch({ type: "toggle-show-ui", payload: !state.showUi })
+          }
+          className="btn btn-sm btn-outline flex items-center gap-1.5"
+        >
+          <IconComponent icon={UserActionType.HideUi} size={14} />
+          <span>{state.showUi ? "Hide UI" : "Show UI"}</span>
+        </button>
+      </nav>
+      <div 
+      className={cx("flex justify-between items-center", {
+        "hidden": !state.showUi,
+      })}>
+        <div className="flex gap-2 p-2 flex-wrap">
+          {id ? (
+            <Link
+              to="/"
+              className="btn btn-sm btn-outline flex items-center gap-1.5"
+            >
+              <IconComponent icon={UserActionType.Back} size={14} />
+              <span>Back</span>
+            </Link>
+          ) : (
+            Object.values(RoleId).map((roleId) => {
+              const isActive = filters.includes(roleId);
+              return (
+                <button
+                  key={roleId}
+                  onClick={() => toggleFilter(roleId)}
+                  className={`btn btn-sm ${
+                    isActive ? "btn-primary" : "btn-outline"
+                  } flex items-center gap-1.5`}
+                >
+                  <IconComponent icon={roleId} size={14} />
+                  <span>{roleId}</span>
+                </button>
+              );
+            })
+          )}
+        </div>
       </div>
-      <ul className="overflow-y-auto flex-1 flex flex-col gap-3 p-2">
+      <ul className={cx("overflow-y-auto flex-1 flex flex-col gap-3 p-2 w-sm", {
+        "hidden": !state.showUi,
+      })}>
         {filteredMeeples
           .filter((meeple) => (id ? String(meeple.id) === id : true))
           .map((meeple) => (
