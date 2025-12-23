@@ -2,7 +2,7 @@ import { useGame } from "../hooks/useGame";
 import { IconComponent } from "../utils/iconMap";
 import { RoleId, UserActionType } from "../entities/types";
 import { useMeepleFilters } from "../hooks/useMeepleFilters";
-import { Link, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import {
   CurrencyType,
   Meeple,
@@ -10,35 +10,48 @@ import {
   ProductType,
   VitalsType,
 } from "../entities/Meeple";
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
 import { evaluateCondition } from "../utils/evaluateCondition";
+import cx from "classnames";
 
 export const MeeplesList = () => {
   const { id } = useParams<{ id: string }>();
-  const { isLoading, game, zoomToEntity } = useGame();
+  const { isLoading, game, zoomToEntity, centerCameraInGame } = useGame();
+  const navigate = useNavigate();
 
   const meeples =
     game?.currentScene.actors.filter(
       (actor): actor is Meeple => actor instanceof Meeple
     ) || [];
 
-  const { filteredMeeples, filters, toggleFilter } = useMeepleFilters(meeples);
+  const { filteredMeeples, filters, toggleFilter } =
+    useMeepleFilters(meeples);
+  const selectedMeeple = useMemo(() => {
+    return meeples.find((meeple) => String(meeple.id) === id);
+  }, [id]);
 
   useEffect(() => {
-    if (id) {
-      const meeple = meeples.find((meeple) => String(meeple.id) === id);
-      if (meeple) {
-        zoomToEntity(meeple);
-      }
+    if (selectedMeeple) {
+      zoomToEntity(selectedMeeple);
     }
-  }, [id]);
+  }, [selectedMeeple]);
+
+  useEffect(() => {
+    centerCameraInGame();
+  }, []);
+
+  useEffect(() => {
+    if (id && !selectedMeeple) {
+      navigate("/");
+    }
+  }, [id, selectedMeeple]);
 
   if (isLoading) {
     return <div>Loading...</div>;
   }
 
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col h-full w-sm p-2">
       <div className="flex gap-2 p-2 flex-wrap">
         {id ? (
           <Link
@@ -80,6 +93,10 @@ export const MeeplesList = () => {
               >
                 {meeple.name}
               </Link>
+              <div className="flex items-center gap-1.5 text-sm text-base-content/70">
+                <IconComponent icon={meeple.roleId} size={14} />
+                <span>{meeple.roleId}</span>
+              </div>
               <div>{meeple.state.type}</div>
               {id && (
                 <div className="flex flex-col gap-4">
@@ -88,27 +105,25 @@ export const MeeplesList = () => {
                       <h4 className="card-title text-base text-primary">
                         Stats
                       </h4>
-                      <div className="flex flex-col gap-2 mt-2">
+                      <div className="flex flex-wrap gap-2 mt-2">
                         {Object.entries(meeple.stats).map(([key, value]) => {
                           const vitalsType = key as VitalsType;
                           return (
                             <div
                               key={vitalsType}
-                              className="flex items-center gap-2 p-2 rounded-lg bg-base-100"
+                              className="tooltip tooltip-top"
+                              data-tip={vitalsType}
                             >
-                              <IconComponent
-                                icon={vitalsType}
-                                size={16}
-                                className="text-primary"
-                              />
-                              <span className="text-sm text-base-content flex-1">
-                                <span className="font-semibold text-primary">
+                              <div className="flex items-center gap-1.5 px-2 py-1.5 rounded-lg bg-base-100">
+                                <IconComponent
+                                  icon={vitalsType}
+                                  size={16}
+                                  className="text-primary"
+                                />
+                                <span className="text-sm font-semibold text-primary">
                                   {value}
-                                </span>{" "}
-                                <span className="text-base-content/70">
-                                  {vitalsType}
                                 </span>
-                              </span>
+                              </div>
                             </div>
                           );
                         })}
@@ -121,7 +136,7 @@ export const MeeplesList = () => {
                       <h4 className="card-title text-base text-secondary">
                         Inventory
                       </h4>
-                      <div className="flex flex-col gap-2 mt-2">
+                      <div className="flex flex-wrap gap-2 mt-2">
                         {Object.entries(meeple.inventory).map(
                           ([key, value]) => {
                             const goodType = key as
@@ -131,21 +146,19 @@ export const MeeplesList = () => {
                             return (
                               <div
                                 key={goodType}
-                                className="flex items-center gap-2 p-2 rounded-lg bg-base-100"
+                                className="tooltip tooltip-top"
+                                data-tip={goodType}
                               >
-                                <IconComponent
-                                  icon={goodType}
-                                  size={16}
-                                  className="text-secondary"
-                                />
-                                <span className="text-sm text-base-content flex-1">
-                                  <span className="font-semibold text-secondary">
+                                <div className="flex items-center gap-1.5 px-2 py-1.5 rounded-lg bg-base-100">
+                                  <IconComponent
+                                    icon={goodType}
+                                    size={16}
+                                    className="text-secondary"
+                                  />
+                                  <span className="text-sm font-semibold text-secondary">
                                     {value}
-                                  </span>{" "}
-                                  <span className="text-base-content/70">
-                                    {goodType}
                                   </span>
-                                </span>
+                                </div>
                               </div>
                             );
                           }
@@ -153,60 +166,63 @@ export const MeeplesList = () => {
                       </div>
                     </div>
                   </div>
-                  <div className="flex flex-col gap-4 mt-4">
-                    <div className="divider my-0"></div>
-                    <div className="flex flex-col gap-3">
-                      {meeple.instructions.map((instruction) => (
-                        <div
-                          key={instruction.id}
-                          className="card card-compact bg-base-200 shadow-sm"
-                        >
-                          <div className="card-body p-3">
-                            <h4 className="card-title text-base text-primary">
-                              {instruction.name}
-                            </h4>
-                            <div className="flex flex-col gap-2 mt-2">
-                              {instruction.conditions.map(
-                                (condition, index) => {
-                                  const isMet = evaluateCondition(
-                                    condition,
-                                    condition.target?.inventory
-                                  );
-                                  return (
-                                    <div
-                                      key={index}
-                                      className={`flex items-center gap-2 p-2 rounded-lg border ${
-                                        isMet
-                                          ? "bg-success/10 border-success/30"
-                                          : "bg-error/10 border-error/30"
-                                      }`}
-                                    >
-                                      <span className="text-sm text-base-content flex-1">
-                                        <span className="font-medium">
-                                          {condition.good}
-                                        </span>{" "}
-                                        <span className="text-base-content/70">
-                                          {condition.operator}
-                                        </span>{" "}
-                                        <span className="font-semibold text-primary">
-                                          {condition.value}
-                                        </span>
-                                        <span className="text-base-content/70">
-                                          at
-                                        </span>{" "}
-                                        <span className="font-medium text-secondary">
-                                          {condition.target.name}
-                                        </span>
-                                      </span>
-                                    </div>
-                                  );
-                                }
-                              )}
-                            </div>
+                  <div className="flex flex-col gap-4">
+                    {meeple.instructions.map((instruction) => (
+                      <div
+                        key={instruction.id}
+                        className="card card-compact bg-base-200 shadow-sm"
+                      >
+                        <div className="card-body p-3">
+                          <div className="flex flex-col gap-2 mt-2">
+                            {instruction.conditions.map((condition, index) => {
+                              const isMet = evaluateCondition(
+                                condition,
+                                condition.target?.inventory
+                              );
+                              return (
+                                <div
+                                  key={index}
+                                  className={cx(
+                                    "flex items-center gap-2 p-2 rounded-lg border",
+                                    {
+                                      "bg-success/10 border-success/30": isMet,
+                                      "bg-error/10 border-error/30": !isMet,
+                                    }
+                                  )}
+                                >
+                                  <span className="text-sm text-base-content flex-1">
+                                    <span className="text-base-content/70">
+                                      if
+                                    </span>{" "}
+                                    <span className="font-medium">
+                                      {condition.good}
+                                    </span>{" "}
+                                    <span className="text-base-content/70">
+                                      {condition.operator}
+                                    </span>{" "}
+                                    <span className="font-semibold text-primary">
+                                      {condition.value}
+                                    </span>{" "}
+                                    <span className="text-base-content/70">
+                                      targeting
+                                    </span>{" "}
+                                    <span className="font-medium text-secondary">
+                                      {condition.target.name}
+                                    </span>{" "}
+                                    <span className="text-base-content/70">
+                                      then
+                                    </span>{" "}
+                                    <span className="text-base-content/70">
+                                      {instruction.name}
+                                    </span>
+                                  </span>
+                                </div>
+                              );
+                            })}
                           </div>
                         </div>
-                      ))}
-                    </div>
+                      </div>
+                    ))}
                   </div>
                 </div>
               )}

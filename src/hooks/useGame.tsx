@@ -20,13 +20,14 @@ import {
 import { createEntityGraphic, EntityGraphicStyle } from "../utils/graphics";
 import { Vector } from "excalibur";
 import { Operator, RoleId } from "../entities/types";
+import { generateSpaceName } from "../utils/generateSpaceName";
 
 export const GAME_WIDTH = 1000;
 export const GAME_HEIGHT = 1000;
 
 const COUNTS = {
-  MINER: 42,
-  ASTEROID: 7,
+  MINER: 7,
+  ASTEROID: 14,
   SPACE_STORE: 1,
 };
 
@@ -74,6 +75,7 @@ type GameContextValue = {
   isLoading: boolean;
   zoomToEntity: (meeple: Meeple) => void;
   getMeepleById: (id: string) => Meeple | undefined;
+  centerCameraInGame: () => void;
 };
 
 // ============================================================================
@@ -149,7 +151,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
           Math.random() * GAME_HEIGHT
         ),
         graphic: createEntityGraphic(EntityGraphicStyle.Asteroid),
-        name: `Asteroid ${j}`,
+        name: generateSpaceName(),
         state: { type: MeepleStateType.Idle },
         stats: {
           [VitalsType.Health]: 100,
@@ -162,19 +164,50 @@ export function GameProvider({ children }: { children: ReactNode }) {
           [CurrencyType.Money]: 0,
         },
         speed: 0,
-        inventoryGenerators: [
-          {
-            good: MiningType.Ore,
-            minimum: 1,
-            maximum: 100,
-            perSecond: 1,
-          },
-        ],
         roleId: RoleId.Asteroid,
         instructions: [],
       });
 
       game.currentScene.add(asteroid);
+
+      asteroid.instructions = [
+        {
+          id: "generate-ore",
+          name: "Generate Ore",
+          conditions: [
+            {
+              good: MiningType.Ore,
+              operator: Operator.LessThan,
+              value: 100,
+              target: asteroid,
+            },
+          ],
+          actions: [
+            {
+              type: MeepleActionType.SetTarget,
+              payload: {
+                target: asteroid,
+              },
+            },
+            {
+              type: MeepleActionType.Transact,
+              payload: {
+                good: MiningType.Ore,
+                quantity: 1,
+                transactionType: "add",
+              },
+            },
+            {
+              type: MeepleActionType.Finish,
+              payload: {
+                state: {
+                  type: MeepleStateType.Idle,
+                },
+              },
+            },
+          ],
+        },
+      ];
     }
 
     // Create SpaceStores
@@ -185,7 +218,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
           Math.random() * GAME_HEIGHT
         ),
         graphic: createEntityGraphic(EntityGraphicStyle.SpaceStation),
-        name: `SpaceStore ${k}`,
+        name: generateSpaceName(),
         state: { type: MeepleStateType.Idle },
         stats: {
           [VitalsType.Health]: 100,
@@ -195,22 +228,53 @@ export function GameProvider({ children }: { children: ReactNode }) {
         inventory: {
           [MiningType.Ore]: 0,
           [ProductType.Gruffle]: 0,
-          [CurrencyType.Money]: 100,
+          [CurrencyType.Money]: 0,
         },
-        inventoryGenerators: [
-          {
-            good: CurrencyType.Money,
-            minimum: 1,
-            maximum: 100,
-            perSecond: 1,
-          },
-        ],
         speed: 0,
         roleId: RoleId.SpaceStore,
         instructions: [],
       });
 
       game.currentScene.add(spaceStore);
+      spaceStore.instructions = [
+        {
+          id: "generate-money",
+          name: "Generate Money",
+          conditions: [
+            {
+              good: CurrencyType.Money,
+              operator: Operator.LessThan,
+              value: 100,
+              target: spaceStore,
+            },
+          ],
+          actions: [
+            {
+              type: MeepleActionType.SetTarget,
+              payload: {
+                target: spaceStore,
+              },
+            },
+            {
+              type: MeepleActionType.Transact,
+              payload: {
+                good: CurrencyType.Money,
+                quantity: 1,
+                transactionType: "add",
+                target: spaceStore,
+              },
+            },
+            {
+              type: MeepleActionType.Finish,
+              payload: {
+                state: {
+                  type: MeepleStateType.Idle,
+                },
+              },
+            },
+          ],
+        },
+      ];
     }
 
     for (let i = 0; i < COUNTS.MINER; i++) {
@@ -220,7 +284,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
           Math.random() * GAME_HEIGHT
         ),
         graphic: createEntityGraphic(EntityGraphicStyle.Miner),
-        name: `Miner ${i}`,
+        name: generateSpaceName(),
         state: { type: MeepleStateType.Idle },
         inventory: {
           [MiningType.Ore]: 0,
@@ -232,7 +296,6 @@ export function GameProvider({ children }: { children: ReactNode }) {
           [VitalsType.Energy]: 100,
           [VitalsType.Happiness]: 100,
         },
-        inventoryGenerators: [],
         speed: 100,
         roleId: RoleId.Miner,
         instructions: [],
@@ -244,12 +307,14 @@ export function GameProvider({ children }: { children: ReactNode }) {
         {
           id: "mine_ore",
           name: "Mine Ore",
-          conditions: [{
-            good: MiningType.Ore,
-            operator: Operator.LessThan,
-            value: 1,
-            target: miner,
-          }],
+          conditions: [
+            {
+              good: MiningType.Ore,
+              operator: Operator.LessThan,
+              value: 1,
+              target: miner,
+            },
+          ],
           actions: [
             {
               type: MeepleActionType.SetRandomTargetByRoleId,
@@ -297,12 +362,14 @@ export function GameProvider({ children }: { children: ReactNode }) {
         {
           id: "sell-ore-to-store",
           name: "Sell Ore to Space Store",
-          conditions: [{
-            good: MiningType.Ore,
-            operator: Operator.GreaterThanOrEqual,
-            value: 1,
-            target: miner,
-          }],
+          conditions: [
+            {
+              good: MiningType.Ore,
+              operator: Operator.GreaterThanOrEqual,
+              value: 1,
+              target: miner,
+            },
+          ],
           actions: [
             {
               type: MeepleActionType.SetRandomTargetByRoleId,
@@ -346,12 +413,12 @@ export function GameProvider({ children }: { children: ReactNode }) {
     }
 
     dispatch({ type: "set-game", payload: game });
-        dispatch({
-          type: "set-meeples",
-          payload: game.currentScene.actors.filter(
-            (actor): actor is Meeple => actor instanceof Meeple
-          ),
-        });
+    dispatch({
+      type: "set-meeples",
+      payload: game.currentScene.actors.filter(
+        (actor): actor is Meeple => actor instanceof Meeple
+      ),
+    });
 
     dispatch({ type: "set-is-loading", payload: false });
 
@@ -367,6 +434,11 @@ export function GameProvider({ children }: { children: ReactNode }) {
     gameRef.current?.currentScene.camera.strategy.lockToActor(meeple);
   };
 
+  const centerCameraInGame = () => {
+    if (!gameState.game) return;
+    gameState.game.currentScene.camera.pos = new Vector(GAME_WIDTH / 2, GAME_HEIGHT / 2);
+  };
+
   const getMeepleById = (id: string) => {
     return gameState.game?.currentScene.actors.find(
       (actor): actor is Meeple =>
@@ -380,6 +452,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
         ...gameState,
         zoomToEntity,
         getMeepleById,
+        centerCameraInGame,
       }}
     >
       {children}

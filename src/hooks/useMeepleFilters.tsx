@@ -9,7 +9,7 @@ import { RoleId } from "../entities/types";
  * @returns Object containing filtered meeples, active filters, and filter toggle function
  */
 export function useMeepleFilters(meeples: Meeple[]) {
-  const [filters, setFilters] = useState<RoleId[]>(Object.values(RoleId));
+  const [filters, setFilters] = useState<RoleId[]>([RoleId.Miner]);
 
   const toggleFilter = (roleId: RoleId) => {
     setFilters((prev) =>

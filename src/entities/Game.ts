@@ -34,7 +34,7 @@ export class Game extends Engine {
       // Dark space background (almost black)
       backgroundColor: Color.fromHex("#000000"),
       antialiasing: true,
-      displayMode: DisplayMode.FillContainer,
+      displayMode: DisplayMode.FillScreen,
       canvasElement,
       width: worldWidth,
       height: worldHeight,

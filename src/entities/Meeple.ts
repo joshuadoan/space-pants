@@ -3,7 +3,6 @@ import type { Game } from "./Game";
 import { RoleId, type Instruction } from "./types";
 import { evaluateCondition } from "../utils/evaluateCondition";
 
-
 export enum MiningType {
   Ore = "ore",
 }
@@ -129,7 +128,6 @@ export type MeepleProps = {
   state: MeepleState;
   stats: Stats;
   inventory: Inventory;
-  inventoryGenerators: IventoryGenerator[];
   speed: number;
   roleId: RoleId;
   instructions: Instruction[];
@@ -148,7 +146,6 @@ export class Meeple extends Actor {
   // Gameplay Properties
   stats: Stats;
   inventory: Inventory;
-  inventoryGenerators: IventoryGenerator[];
   speed: number;
   instructions: Instruction[];
   readonly game: Game;
@@ -164,7 +161,6 @@ export class Meeple extends Actor {
     state,
     stats,
     inventory,
-    inventoryGenerators,
     speed,
     instructions = [],
   }: MeepleProps) {
@@ -183,14 +179,12 @@ export class Meeple extends Actor {
     // Gameplay Properties
     this.stats = stats;
     this.inventory = inventory;
-    this.inventoryGenerators = inventoryGenerators;
     this.speed = speed;
     this.instructions = instructions;
     this.game = this.scene?.engine as Game;
   }
 
   onInitialize(game: Game): void {
-    this.initGenerators(game);
     this.initRulesTimer(game);
   }
 
@@ -306,21 +300,11 @@ export class Meeple extends Actor {
         if (this.state.type !== MeepleStateType.Idle) {
           return;
         }
-        switch (this.roleId) {
-          case RoleId.Miner:
-            {
-              for (const instruction of this.instructions) {
-                if (this.isValidInstruction(instruction)) {
-                  for (const action of instruction.actions) {
-                    await this.dispatch(action);
-                  }
-                }
-              }
+        for (const instruction of this.instructions) {
+          if (this.isValidInstruction(instruction)) {
+            for (const action of instruction.actions) {
+              await this.dispatch(action);
             }
-
-            break;
-          default: {
-            break;
           }
         }
       },
@@ -329,40 +313,5 @@ export class Meeple extends Actor {
     });
     game.currentScene.add(timer);
     timer.start();
-  }
-
-  initGenerators(game: Game): void {
-    // Create timers for each inventory generator
-    this.inventoryGenerators.forEach((generator) => {
-      // Calculate interval: 1000ms / perSecond (e.g., 1 per second = 1000ms interval)
-      const interval = 1000 / generator.perSecond;
-
-      const timer = new Timer({
-        fcn: () => {
-          const currentCount = this.inventory[generator.good];
-
-          // Only generate if current count is below maximum
-          if (currentCount < generator.maximum) {
-            // Dispatch transact action to add 1 unit
-            this.dispatch({
-              type: MeepleActionType.Transact,
-              payload: {
-                good: generator.good,
-                quantity: 1,
-                transactionType: "add",
-                target: this,
-              },
-            });
-          }
-        },
-        repeats: true,
-        interval: interval,
-      });
-
-      this.timers.push(timer);
-
-      game.currentScene.add(timer);
-      timer.start();
-    });
   }
 }
