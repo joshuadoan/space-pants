@@ -6,6 +6,7 @@ import { Link, useNavigate, useParams } from "react-router-dom";
 import {
   CurrencyType,
   Meeple,
+  MeepleStateType,
   MiningType,
   ProductType,
   VitalsType,
@@ -13,6 +14,11 @@ import {
 import { useEffect, useMemo } from "react";
 import { evaluateCondition } from "../utils/evaluateCondition";
 import cx from "classnames";
+import {
+  IconPlayerPause,
+  IconRoute,
+  IconArrowsExchange,
+} from "@tabler/icons-react";
 
 export const MeeplesList = () => {
   const { id } = useParams<{ id: string }>();
@@ -79,13 +85,13 @@ export const MeeplesList = () => {
           })
         )}
       </div>
-      <ul className="overflow-y-auto flex-1 flex flex-col gap-2 p-2">
+      <ul className="overflow-y-auto flex-1 flex flex-col gap-3 p-2">
         {filteredMeeples
           .filter((meeple) => (id ? String(meeple.id) === id : true))
           .map((meeple) => (
             <li
               key={meeple.id}
-              className="flex flex-col gap-2 p-2 border border-gray-300 rounded-md"
+              className="flex flex-col gap-2 p-3 border border-gray-300 rounded-md"
             >
               <Link
                 className="cursor-pointer hover:text-primary underline"
@@ -97,7 +103,45 @@ export const MeeplesList = () => {
                 <IconComponent icon={meeple.roleId} size={14} />
                 <span>{meeple.roleId}</span>
               </div>
-              <div>{meeple.state.type}</div>
+              <div className="flex items-center gap-2">
+                {meeple.state.type === MeepleStateType.Idle && (
+                  <div className="badge badge-lg gap-1.5 bg-info/20 text-info border-info/30">
+                    <IconPlayerPause size={14} />
+                    <span className="font-semibold capitalize">
+                      {meeple.state.type}
+                    </span>
+                    {meeple.state.target && (
+                      <span className="text-info/70 text-xs">
+                        → {meeple.state.target.name}
+                      </span>
+                    )}
+                  </div>
+                )}
+                {meeple.state.type === MeepleStateType.Traveling && (
+                  <div className="badge badge-lg gap-1.5 bg-warning/20 text-warning border-warning/30">
+                    <IconRoute size={14} />
+                    <span className="font-semibold capitalize">
+                      {meeple.state.type}
+                    </span>
+                    <span className="text-warning/70 text-xs">
+                      → {meeple.state.target.name}
+                    </span>
+                  </div>
+                )}
+                {meeple.state.type === MeepleStateType.Transacting && (
+                  <div className="badge badge-lg gap-1.5 bg-success/20 text-success border-success/30">
+                    <IconArrowsExchange size={14} />
+                    <span className="font-semibold capitalize">
+                      {meeple.state.type}
+                    </span>
+                    <span className="text-success/70 text-xs">
+                      {meeple.state.transactionType === "add" ? "+" : "-"}
+                      {meeple.state.quantity} {meeple.state.good} with{" "}
+                      {meeple.state.target.name}
+                    </span>
+                  </div>
+                )}
+              </div>
               {id && (
                 <div className="flex flex-col gap-4">
                   <div className="card card-compact bg-base-200 shadow-sm">
