@@ -5,6 +5,7 @@ import {
   IconBolt,
   IconBuilding,
   IconCurrencyDollar,
+  IconEyeOff,
   IconHeart,
   IconMeteor,
   IconMoodSmile,
@@ -47,6 +48,7 @@ const IconMap: Record<
   [RoleId.Asteroid]: IconMeteor,
   [RoleId.SpaceStore]: IconBuilding,
   [UserActionType.Back]: IconArrowLeft,
+  [UserActionType.HideUi]: IconEyeOff,
 } as const;
 
 // ============================================================================
