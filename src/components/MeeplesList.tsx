@@ -54,7 +54,7 @@ export const MeeplesList = () => {
       (actor): actor is Meeple => actor instanceof Meeple
     ) || [];
 
-  const { filteredMeeples, filters, toggleFilter } = useMeepleFilters(meeples);
+  const { filteredMeeples, selectedFilter, setFilter } = useMeepleFilters(meeples);
   const selectedMeeple = useMemo(() => {
     return meeples.find((meeple) => String(meeple.id) === id);
   }, [id]);
@@ -96,7 +96,7 @@ export const MeeplesList = () => {
       className={cx("flex justify-between items-center", {
         "hidden": !state.showUi,
       })}>
-        <div className="flex gap-2 p-2 flex-wrap">
+        <div className="p-2">
           {id ? (
             <Link
               to="/"
@@ -106,21 +106,31 @@ export const MeeplesList = () => {
               <span>Back</span>
             </Link>
           ) : (
-            Object.values(RoleId).map((roleId) => {
-              const isActive = filters.includes(roleId);
-              return (
-                <button
-                  key={roleId}
-                  onClick={() => toggleFilter(roleId)}
-                  className={`btn btn-sm ${
-                    isActive ? "btn-primary" : "btn-outline"
-                  } flex items-center gap-1.5`}
-                >
-                  <IconComponent icon={roleId} size={14} />
-                  <span>{roleId}</span>
-                </button>
-              );
-            })
+            <div className="tabs tabs-boxed">
+              <button
+                onClick={() => setFilter(null)}
+                className={cx("tab flex items-center gap-1.5", {
+                  "tab-active": selectedFilter === null,
+                })}
+              >
+                <span>All</span>
+              </button>
+              {Object.values(RoleId).map((roleId) => {
+                const isActive = selectedFilter === roleId;
+                return (
+                  <button
+                    key={roleId}
+                    onClick={() => setFilter(roleId)}
+                    className={cx("tab flex items-center gap-1.5", {
+                      "tab-active": isActive,
+                    })}
+                  >
+                    <IconComponent icon={roleId} size={14} />
+                    <span>{roleId}</span>
+                  </button>
+                );
+              })}
+            </div>
           )}
         </div>
       </div>
