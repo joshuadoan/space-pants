@@ -30,8 +30,7 @@ export const MeeplesList = () => {
       (actor): actor is Meeple => actor instanceof Meeple
     ) || [];
 
-  const { filteredMeeples, filters, toggleFilter } =
-    useMeepleFilters(meeples);
+  const { filteredMeeples, filters, toggleFilter } = useMeepleFilters(meeples);
   const selectedMeeple = useMemo(() => {
     return meeples.find((meeple) => String(meeple.id) === id);
   }, [id]);

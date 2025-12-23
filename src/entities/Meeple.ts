@@ -3,6 +3,8 @@ import type { Game } from "./Game";
 import { RoleId, type Instruction } from "./types";
 import { evaluateCondition } from "../utils/evaluateCondition";
 
+const DEFAULT_DELAY = 3000;
+
 export enum MiningType {
   Ore = "ore",
 }
@@ -228,7 +230,7 @@ export class Meeple extends Actor {
               };
             })
             .meet(target, this.speed)
-            .delay(1000)
+            .delay(DEFAULT_DELAY)
             .callMethod(() => {
               resolve(this.state);
             });
@@ -265,7 +267,7 @@ export class Meeple extends Actor {
             .callMethod(() => {
               this.transact({ ...action.payload, target: target });
             })
-            .delay(1000)
+            .delay(DEFAULT_DELAY)
             .callMethod(() => {
               resolve(this.state);
             });

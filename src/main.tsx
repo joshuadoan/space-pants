@@ -7,14 +7,15 @@ import { ToastProvider } from "./components/Toast.tsx";
 import { GameProvider } from "./hooks/useGame.tsx";
 import "./index.css";
 
-createRoot(document.getElementById('root')!).render(
+createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <BrowserRouter>
       <GameProvider>
         <ToastProvider>
           <App />
+          <canvas/>
         </ToastProvider>
       </GameProvider>
     </BrowserRouter>
-  </StrictMode>,
-)
+  </StrictMode>
+);

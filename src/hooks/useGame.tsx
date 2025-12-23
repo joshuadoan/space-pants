@@ -22,8 +22,8 @@ import { Vector } from "excalibur";
 import { Operator, RoleId } from "../entities/types";
 import { generateSpaceName } from "../utils/generateSpaceName";
 
-export const GAME_WIDTH = 1000;
-export const GAME_HEIGHT = 1000;
+export const GAME_WIDTH = 2400;
+export const GAME_HEIGHT = 2400;
 
 const COUNTS = {
   MINER: 42,
@@ -137,7 +137,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
   const gameRef = useRef<Game | null>(null);
 
   useEffect(() => {
-    const game = new Game(1000, 1000);
+    const game = new Game(GAME_WIDTH, GAME_HEIGHT);
     const tilemap = createStarTilemap(game);
 
     game.currentScene.add(tilemap);
