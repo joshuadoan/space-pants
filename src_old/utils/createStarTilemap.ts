@@ -8,9 +8,9 @@ import type { Game } from "../entities/Game";
  * 
  * @param game - The game instance to add the star tilemap to
  */
-export function createStarTilemap(game: Game): TileMap {
+export function createStarTilemap(game: Game): void {
   // Tile size - larger tiles mean fewer tiles to manage
-  const TILE_SIZE = 32;
+  const TILE_SIZE = 64;
   
   // Calculate number of tiles needed to cover the world
   const rows = Math.ceil(game.worldHeight / TILE_SIZE);
@@ -60,6 +60,6 @@ export function createStarTilemap(game: Game): TileMap {
   // Add the tilemap to the scene
   // Set z-index to be behind everything else
   tilemap.z = -1000;
-  return tilemap;
+  game.currentScene.add(tilemap);
 }
 

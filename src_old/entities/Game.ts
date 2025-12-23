@@ -1,6 +1,4 @@
 import { Color, DisplayMode, Engine } from "excalibur";
-import type { RoleId } from "./types";
-import { Meeple } from "./Meeple";
 
 /**
  * Custom Excalibur Engine wrapper for the Space Pants game.
@@ -34,7 +32,7 @@ export class Game extends Engine {
       // Dark space background (almost black)
       backgroundColor: Color.fromHex("#000000"),
       antialiasing: true,
-      displayMode: DisplayMode.FillScreen,
+      displayMode: DisplayMode.FillContainer,
       canvasElement,
       width: worldWidth,
       height: worldHeight,
@@ -43,22 +41,5 @@ export class Game extends Engine {
     this.worldWidth = worldWidth;
     this.worldHeight = worldHeight;
   }
-
-  findRandomMeepleByRoleId(roleId: RoleId): Meeple | undefined {
-    const meeples = this.currentScene.actors.filter(
-      (actor) => actor instanceof Meeple && actor.roleId === roleId
-    );
-    return meeples[Math.floor(Math.random() * meeples.length)] as Meeple;
-  }
-
-  /**
-   * Finds all meeples with the specified role ID
-   * @param roleId The role ID to search for
-   * @returns Array of meeples with the specified role
-   */
-  findAllMeeplesByRoleId(roleId: RoleId): Meeple[] {
-    return this.currentScene.actors.filter(
-      (actor) => actor instanceof Meeple && actor.roleId === roleId
-    ) as Meeple[];
-  }
 }
+  
