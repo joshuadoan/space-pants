@@ -26,7 +26,7 @@ export const GAME_WIDTH = 2400;
 export const GAME_HEIGHT = 2400;
 
 const COUNTS = {
-  MINER: 42,
+  MINER: 420,
   ASTEROID: 14,
   SPACE_STORE: 1,
 };
