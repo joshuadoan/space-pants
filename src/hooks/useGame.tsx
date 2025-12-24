@@ -31,6 +31,9 @@ const COUNTS = {
   SPACE_STORE: 3,
 };
 
+const MIN_SHIP_DEFAULT_SPEED = 50;
+const MAX_SHIP_DEFAULT_SPEED = 150;
+
 // ============================================================================
 // Types
 // ============================================================================
@@ -76,6 +79,7 @@ type GameContextValue = {
   zoomToEntity: (meeple: Meeple) => void;
   getMeepleById: (id: string) => Meeple | undefined;
   centerCameraInGame: () => void;
+  setZoom: (zoom: number) => void;
 };
 
 // ============================================================================
@@ -296,7 +300,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
           [VitalsType.Energy]: 100,
           [VitalsType.Happiness]: 100,
         },
-        speed: 100,
+        speed: Math.random() * (MAX_SHIP_DEFAULT_SPEED - MIN_SHIP_DEFAULT_SPEED) + MIN_SHIP_DEFAULT_SPEED,
         roleId: RoleId.Miner,
         instructions: [],
       });
@@ -446,6 +450,11 @@ export function GameProvider({ children }: { children: ReactNode }) {
     );
   };
 
+  const setZoom = (zoom: number) => {
+    if (!gameState.game) return;
+    gameState.game.currentScene.camera.zoom = zoom;
+  };
+
   return (
     <GameContext.Provider
       value={{
@@ -453,6 +462,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
         zoomToEntity,
         getMeepleById,
         centerCameraInGame,
+        setZoom,
       }}
     >
       {children}

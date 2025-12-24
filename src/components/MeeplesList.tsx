@@ -1,7 +1,5 @@
-import React, { useCallback, useEffect, useMemo, useReducer } from "react";
+import { useEffect, useMemo, useReducer } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
-import { AutoSizer, List } from "react-virtualized";
-import "react-virtualized/styles.css";
 import cx from "classnames";
 
 import { Meeple } from "../entities/Meeple";
@@ -10,6 +8,8 @@ import { useGame } from "../hooks/useGame";
 import { useMeepleFilters } from "../hooks/useMeepleFilters";
 import { IconComponent } from "../utils/iconMap";
 import { MeepleDetails } from "./MeepleDetail";
+import { MeepleExtraDetail } from "./MeepleExtraDetail";
+import { DEFAULT_ZOOM_VALUE, ZoomSlider } from "./ZoomSlider";
 
 type State = {
   showUi: boolean;
@@ -37,7 +37,8 @@ export const MeeplesList = () => {
   const [state, dispatch] = useReducer(reducer, initialState);
 
   const { id } = useParams<{ id: string }>();
-  const { isLoading, game, zoomToEntity, centerCameraInGame } = useGame();
+  const { isLoading, game, zoomToEntity, centerCameraInGame, setZoom } =
+    useGame();
   const navigate = useNavigate();
 
   const meeples =
@@ -47,6 +48,7 @@ export const MeeplesList = () => {
 
   const { filteredMeeples, selectedFilter, setFilter } =
     useMeepleFilters(meeples);
+
   const selectedMeeple = useMemo(() => {
     return meeples.find((meeple) => String(meeple.id) === id);
   }, [id, meeples]);
@@ -73,45 +75,13 @@ export const MeeplesList = () => {
     }
   }, [id, selectedMeeple, navigate]);
 
-  const getRowHeight = useCallback(
-    ({ index }: { index: number }) => {
-      // Use dynamic row height - estimate based on whether id is present
-      // When id is present, the row is much taller due to stats, inventory, and instructions
-      if (id) {
-        const meeple = displayMeeples[index];
-        if (meeple) {
-          // Base height + stats section + inventory section + instructions
-          const baseHeight = 150; // Base content height
-          const statsHeight = Object.keys(meeple.stats).length > 0 ? 100 : 0;
-          const inventoryHeight =
-            Object.keys(meeple.inventory).length > 0 ? 100 : 0;
-          const instructionsHeight = meeple.instructions.length * 150;
-          return (
-            baseHeight + statsHeight + inventoryHeight + instructionsHeight
-          );
-        }
-      }
-      // Default height for list items without details
-      return 120;
-    },
-    [displayMeeples, id]
-  );
-
-  const noRowsRenderer = useCallback(() => {
-    return (
-      <div className="flex items-center justify-center h-full text-base-content/70">
-        No meeples found
-      </div>
-    );
-  }, []);
-
   if (isLoading) {
     return <div>Loading...</div>;
   }
 
   return (
     <div className="flex flex-col h-full p-2">
-      <nav className="p-2">
+      <nav className="p-2 flex justify-between">
         <button
           onClick={() =>
             dispatch({ type: "toggle-show-ui", payload: !state.showUi })
@@ -121,6 +91,12 @@ export const MeeplesList = () => {
           <IconComponent icon={UserActionType.HideUi} size={14} />
           <span>{state.showUi ? "Hide UI" : "Show UI"}</span>
         </button>
+        <div>
+          <ZoomSlider
+            zoom={game?.currentScene.camera.zoom || DEFAULT_ZOOM_VALUE}
+            setZoom={setZoom}
+          />
+        </div>
       </nav>
       <div
         className={cx("flex justify-between items-center", {
@@ -166,47 +142,30 @@ export const MeeplesList = () => {
         </div>
       </div>
       <div
-        className={cx("flex-1 p-2 w-sm", {
+        className={cx("flex-1 p-2 w-sm overflow-y-auto", {
           hidden: !state.showUi,
         })}
       >
-        <AutoSizer>
-          {({ height, width }) => (
-            <List
-              height={height}
-              width={width}
-              rowCount={displayMeeples.length}
-              rowHeight={getRowHeight}
-              rowRenderer={({
-                index,
-                key,
-                style,
-              }: {
-                index: number;
-                key: string;
-                style: React.CSSProperties;
-              }) => {
-                const meeple = displayMeeples[index];
-                return (
-                  <MeepleDetails
-                    style={{ ...style, paddingBottom: "0.75rem" }}
-                    key={key}
-                    id={meeple.id}
-                    name={meeple.name}
-                    roleId={meeple.roleId}
-                    state={meeple.state}
-                    stats={{ ...meeple.stats }}
-                    inventory={{ ...meeple.inventory }}
-                    instructions={meeple.instructions}
-                    isSelected={id === String(meeple.id)}
-                  />
-                );
-              }}
-              noRowsRenderer={noRowsRenderer}
-              overscanRowCount={5}
-            />
-          )}
-        </AutoSizer>
+        {displayMeeples.map((meeple) => (
+          <MeepleDetails
+            key={meeple.id}
+            id={meeple.id}
+            name={meeple.name}
+            roleId={meeple.roleId}
+            state={meeple.state}
+            stats={{ ...meeple.stats }}
+            inventory={{ ...meeple.inventory }}
+            instructions={meeple.instructions}
+            isSelected={id === String(meeple.id)}
+          />
+        ))}
+        {selectedMeeple ? (
+          <MeepleExtraDetail
+            stats={selectedMeeple.stats}
+            inventory={selectedMeeple.inventory}
+            instructions={selectedMeeple.instructions}
+          />
+        ) : null}
       </div>
     </div>
   );
