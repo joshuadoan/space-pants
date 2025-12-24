@@ -3,7 +3,6 @@ import {
   MeepleStateType,
   type CurrencyType,
   type Inventory,
-  type MeepleProps,
   type MeepleState,
   type MiningType,
   type ProductType,
@@ -26,10 +25,11 @@ export const MeepleDetails = (props: {
   instructions: Instruction[];
   id: number;
   isSelected: boolean;
+  style: React.CSSProperties;
 }) => {
-  const { id, isSelected, ...meeple } = props;
+  const { id, isSelected, style, ...meeple } = props;
   return (
-    <MeepleDetail>
+    <MeepleDetail style={style}>
       <Link
         className="cursor-pointer hover:text-primary underline"
         to={`/meeple/${id}`}
@@ -115,8 +115,8 @@ export const MeepleDetails = (props: {
   );
 };
 
-export const MeepleDetail = ({ children }: { children: React.ReactNode }) => (
-  <div className="flex flex-col gap-2 p-3 border border-gray-300 rounded-md">
+export const MeepleDetail = ({ children, style }: { children: React.ReactNode, style: React.CSSProperties }) => (
+  <div className="flex flex-col gap-2 p-3 border border-gray-300 rounded-md mb-2" style={style}>
     {children}
   </div>
 );

@@ -110,7 +110,7 @@ export const MeeplesList = () => {
   }
 
   return (
-    <div className="flex flex-col h-full  p-2">
+    <div className="flex flex-col h-full p-2">
       <nav className="p-2">
         <button
           onClick={() =>
@@ -171,7 +171,7 @@ export const MeeplesList = () => {
         })}
       >
         <AutoSizer>
-          {({ height, width }: { height: number; width: number }) => (
+          {({ height, width }) => (
             <List
               height={height}
               width={width}
@@ -180,13 +180,16 @@ export const MeeplesList = () => {
               rowRenderer={({
                 index,
                 key,
+                style,
               }: {
                 index: number;
                 key: string;
+                style: React.CSSProperties;
               }) => {
                 const meeple = displayMeeples[index];
                 return (
                   <MeepleDetails
+                    style={{ ...style, paddingBottom: "0.75rem" }}
                     key={key}
                     id={meeple.id}
                     name={meeple.name}
