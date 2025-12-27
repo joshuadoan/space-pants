@@ -1,12 +1,11 @@
 import type {
   CurrencyType,
-  Inventory,
   MiningType,
   ProductType,
-  Stats,
   VitalsType,
-} from "../entities/Meeple";
-import type { Instruction } from "../entities/types";
+  Instruction,
+} from "../entities/types";
+import type { Stats, Inventory } from "../entities/Meeple";
 import { evaluateCondition } from "../utils/evaluateCondition";
 import { IconComponent } from "../utils/iconMap";
 import cx from "classnames";
@@ -61,7 +60,7 @@ export const MeepleExtraDetail = ({
               {instruction.conditions.map((condition, conditionIndex) => {
                 const isMet = evaluateCondition(
                   condition,
-                  condition.target?.inventory
+                  inventory
                 );
                 return (
                   <MeepleExtraDetailCardInstruction
@@ -76,10 +75,6 @@ export const MeepleExtraDetail = ({
                       </span>{" "}
                       <span className="font-semibold text-primary">
                         {condition.value}
-                      </span>{" "}
-                      <span className="text-base-content/70">targeting</span>{" "}
-                      <span className="font-medium text-secondary">
-                        {condition.target.name}
                       </span>{" "}
                       <span className="text-base-content/70">then</span>{" "}
                       <span className="text-base-content/70">

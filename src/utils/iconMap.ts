@@ -2,6 +2,7 @@ import type { ComponentType } from "react";
 import { createElement } from "react";
 import {
   IconArrowLeft,
+  IconBeer,
   IconBolt,
   IconBuilding,
   IconCurrencyDollar,
@@ -11,13 +12,14 @@ import {
   IconMoodSmile,
   IconPackage,
   IconPick,
+  IconSparkles,
 } from "@tabler/icons-react";
 import {
   CurrencyType,
   MiningType,
   ProductType,
   VitalsType,
-} from "../entities/Meeple";
+} from "../entities/types";
 import { RoleId, UserActionType } from "../entities/types";
 
 // ============================================================================
@@ -49,6 +51,9 @@ const IconMap: Record<
   [RoleId.SpaceStore]: IconBuilding,
   [UserActionType.Back]: IconArrowLeft,
   [UserActionType.HideUi]: IconEyeOff,
+  [ProductType.Fizzy]: IconSparkles,
+  [RoleId.SpaceBar]: IconBeer,
+  [RoleId.SpaceApartments]: IconBuilding,
 } as const;
 
 // ============================================================================

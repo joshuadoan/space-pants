@@ -161,8 +161,8 @@ export const MeeplesList = () => {
         ))}
         {selectedMeeple ? (
           <MeepleExtraDetail
-            stats={selectedMeeple.stats}
-            inventory={selectedMeeple.inventory}
+            stats={{...selectedMeeple.stats}}
+            inventory={{...selectedMeeple.inventory}}
             instructions={selectedMeeple.instructions}
           />
         ) : null}

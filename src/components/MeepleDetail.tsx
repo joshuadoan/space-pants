@@ -54,9 +54,6 @@ export const MeepleStateBadge = ({ state }: { state: MeepleState }) => (
       <div className="badge badge-lg gap-1.5 bg-info/20 text-info border-info/30">
         <IconPlayerPause size={14} />
         <span className="font-semibold capitalize">{state.type}</span>
-        {state.target && (
-          <span className="text-info/70 text-xs">→ {state.target.name}</span>
-        )}
       </div>
     )}
     {state.type === MeepleStateType.Traveling && (
@@ -70,9 +67,19 @@ export const MeepleStateBadge = ({ state }: { state: MeepleState }) => (
       <div className="badge badge-lg gap-1.5 bg-success/20 text-success border-success/30">
         <IconArrowsExchange size={14} />
         <span className="font-semibold capitalize">{state.type}</span>
+        <span className="text-success/70 text-xs"> with {state.target.name}</span>
         <span className="text-success/70 text-xs">
           {state.transactionType === "add" ? "+" : "-"}
-          {state.quantity} {state.good} with {state.target.name}
+          {state.quantity} {state.good}
+        </span>
+      </div>
+    )}
+    {state.type === MeepleStateType.Visiting && (
+      <div className="badge badge-lg gap-1.5 bg-success/20 text-success border-success/30">
+        <IconArrowsExchange size={14} />
+        <span className="font-semibold capitalize">{state.type}</span>
+        <span className="text-success/70 text-xs">
+          Visiting with {state.target.name}
         </span>
       </div>
     )}
