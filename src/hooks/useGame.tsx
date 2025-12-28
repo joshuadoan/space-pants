@@ -22,13 +22,13 @@ import {
 import { generateSpaceName } from "../utils/generateSpaceName";
 import { Meeple, MeepleActionType, MeepleStateType } from "../entities/Meeple";
 
-export const GAME_WIDTH = 500;
-export const GAME_HEIGHT = 500;
+export const GAME_WIDTH = 2500;
+export const GAME_HEIGHT = 2500;
 
 const COUNTS = {
-  MINER: 1,
+  MINER: 17,
   ASTEROID: 3,
-  SPACE_STORE: 1,
+  SPACE_STORE: 7,
   SPACE_BAR: 1,
   SPACE_APARTMENT: 1,
 };
@@ -221,7 +221,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
               payload: {
                 good: MiningType.Ore,
                 quantity: 1,
-                transactionType: "add",
+                transactionType: "add-self",
               },
             },
             {
@@ -262,7 +262,45 @@ export function GameProvider({ children }: { children: ReactNode }) {
         instructions: [],
       });
 
-      spaceStore.instructions = [];
+      // every time ore = 1 create a 1 Fizzy product
+      spaceStore.instructions = [
+        {
+          id: "create-fizzy-product",
+          name: "Create Fizzy Product",
+          conditions: [
+            {
+              good: MiningType.Ore,
+              operator: Operator.GreaterThanOrEqual,
+              value: 1,
+              target: () => spaceStore,
+            },
+          ],
+          actions: [
+            {
+              type: MeepleActionType.Transact,
+              payload: {
+                good: CurrencyType.Money,
+                quantity: 2,
+                transactionType: "add-self",
+              },
+            },
+            {
+              type: MeepleActionType.Transact,
+              payload: {
+                good: MiningType.Ore,
+                quantity: 1,
+                transactionType: "remove-self",
+              },
+            },
+            {
+              type: MeepleActionType.Finish,
+              payload: {
+                state: { type: MeepleStateType.Idle },
+              },
+            },
+          ],
+        },
+      ];
 
       game.currentScene.add(spaceStore);
     }
@@ -326,6 +364,42 @@ export function GameProvider({ children }: { children: ReactNode }) {
       });
 
       miner.instructions = [
+        // if ore greater than 1, sell ore to space store
+        {
+          id: "sell-ore-to-space-store",
+          name: "Sell Ore to Space Store",
+          conditions: [
+            {
+              good: MiningType.Ore,
+              operator: Operator.GreaterThanOrEqual,
+              value: 1,
+              target: () => miner,
+            },
+          ],
+          actions: [
+            {
+              type: MeepleActionType.TravelTo,
+              payload: {
+                target: () => game.findRandomMeepleByRoleId(RoleId.SpaceStore) as Meeple,
+              },
+            },
+            {
+              type: MeepleActionType.Transact,
+              payload: {
+                good: MiningType.Ore,
+                quantity: 1,
+                transactionType: "sell",
+              },
+            },
+            {
+              type: MeepleActionType.Finish,
+              payload: {
+                state: { type: MeepleStateType.Idle, target: miner },
+              },
+            },
+          ],
+
+        },
         {
           id: "mine-ore",
           name: "Mine Ore",
@@ -350,7 +424,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
               payload: {
                 good: MiningType.Ore,
                 quantity: 1,
-                transactionType: "add",
+                transactionType: "add-self",
               },
             },
             {

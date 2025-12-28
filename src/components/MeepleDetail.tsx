@@ -69,7 +69,6 @@ export const MeepleStateBadge = ({ state }: { state: MeepleState }) => (
         <span className="font-semibold capitalize">{state.type}</span>
         <span className="text-success/70 text-xs"> with {state.target.name}</span>
         <span className="text-success/70 text-xs">
-          {state.transactionType === "add" ? "+" : "-"}
           {state.quantity} {state.good}
         </span>
       </div>

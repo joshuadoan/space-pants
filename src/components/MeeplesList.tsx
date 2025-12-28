@@ -3,7 +3,14 @@ import { Link, useNavigate, useParams } from "react-router-dom";
 import cx from "classnames";
 
 import { Meeple } from "../entities/Meeple";
-import { RoleId, UserActionType } from "../entities/types";
+import {
+  CurrencyType,
+  MiningType,
+  ProductType,
+  RoleId,
+  UserActionType,
+  type GoodType,
+} from "../entities/types";
 import { useGame } from "../hooks/useGame";
 import { useMeepleFilters } from "../hooks/useMeepleFilters";
 import { IconComponent } from "../utils/iconMap";
@@ -59,6 +66,35 @@ export const MeeplesList = () => {
     );
   }, [filteredMeeples, id]);
 
+  const aggregatedMiningStats = useMemo(() => {
+    return displayMeeples.reduce((acc: Record<MiningType, number>, meeple) => {
+      for (const goodType of Object.values(MiningType)) {
+        acc[goodType] =
+          (acc[goodType] || 0) + (meeple.inventory[goodType] || 0);
+      }
+      return acc;
+    }, {} as Record<GoodType, number>);
+  }, [displayMeeples]);
+
+  const aggregatedProductStats = useMemo(() => {
+
+    return displayMeeples.reduce((acc: Record<ProductType, number>, meeple) => {
+      for (const goodType of Object.values(ProductType)) {
+        acc[goodType] = (acc[goodType] || 0) + (meeple.inventory[goodType] || 0);
+      }
+      return acc;
+    }, {} as Record<ProductType, number>);
+  }, [displayMeeples]);
+
+  const aggregatedCurrencyStats = useMemo(() => {
+    return displayMeeples.reduce((acc: Record<CurrencyType, number>, meeple) => {
+      for (const goodType of Object.values(CurrencyType)) {
+        acc[goodType] = (acc[goodType] || 0) + (meeple.inventory[goodType] || 0);
+      }
+      return acc;
+    }, {} as Record<CurrencyType, number>);
+  }, [displayMeeples]);
+
   useEffect(() => {
     if (selectedMeeple) {
       zoomToEntity(selectedMeeple);
@@ -91,7 +127,40 @@ export const MeeplesList = () => {
           <IconComponent icon={UserActionType.HideUi} size={14} />
           <span>{state.showUi ? "Hide UI" : "Show UI"}</span>
         </button>
-        <div>
+        <div className="flex items-center gap-2">
+          {/* <-- stats  */}
+          <div className="flex items-center gap-2 flex-wrap">
+            {Object.entries(aggregatedMiningStats)
+              .map(([goodType, quantity]) => (
+                <div
+                  key={goodType}
+                  className="badge badge-outline flex items-center gap-1.5 px-2 py-1"
+                >
+                  <IconComponent icon={goodType as MiningType} size={14} />
+                  <span className="font-medium">{quantity}</span>
+                </div>
+              ))}
+            {Object.entries(aggregatedProductStats)
+              .map(([goodType, quantity]) => (
+                <div
+                  key={goodType}
+                  className="badge badge-outline flex items-center gap-1.5 px-2 py-1"
+                >
+                  <IconComponent icon={goodType as ProductType} size={14} />
+                  <span className="font-medium">{quantity}</span>
+                </div>
+              ))}
+            {Object.entries(aggregatedCurrencyStats)
+              .map(([goodType, quantity]) => (
+                <div
+                  key={goodType}
+                  className="badge badge-outline flex items-center gap-1.5 px-2 py-1"
+                >
+                  <IconComponent icon={goodType as CurrencyType} size={14} />
+                  <span className="font-medium">{quantity}</span>
+                </div>
+              ))}
+          </div>
           <ZoomSlider
             zoom={game?.currentScene.camera.zoom || DEFAULT_ZOOM_VALUE}
             setZoom={setZoom}
@@ -161,8 +230,8 @@ export const MeeplesList = () => {
         ))}
         {selectedMeeple ? (
           <MeepleExtraDetail
-            stats={{...selectedMeeple.stats}}
-            inventory={{...selectedMeeple.inventory}}
+            stats={{ ...selectedMeeple.stats }}
+            inventory={{ ...selectedMeeple.inventory }}
             instructions={selectedMeeple.instructions}
           />
         ) : null}

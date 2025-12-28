@@ -10,6 +10,7 @@ import {
   type Transaction,
 } from "./types";
 import { evaluateCondition } from "../utils/evaluateCondition";
+import { EXCHANGE_RATE } from "./types";
 
 const DEFAULT_DELAY = 3000;
 
@@ -47,7 +48,7 @@ export type MeepleStateTransacting = {
   type: MeepleStateType.Transacting;
   good: MiningType | ProductType | CurrencyType;
   quantity: number;
-  transactionType: "add" | "remove";
+  source: Meeple;
   target: Meeple;
 };
 
@@ -87,7 +88,7 @@ export type MeepleActionVisit = {
 
 export type MeepleActionTransact = {
   type: MeepleActionType.Transact;
-  payload: Omit<Transaction, "target">;
+  payload: Omit<Transaction, "source" | "target">;
 };
 
 export type MeepleAction =
@@ -173,49 +174,82 @@ export class Meeple extends Actor {
     this.state = state;
   }
 
+  // take target inventory and add to source inventory
   transact(transaction: Transaction): void {
     switch (transaction.transactionType) {
-      case "add": {
-        this.inventory[transaction.good] += transaction.quantity;
-        if (transaction.target && transaction.target.id !== this.id) {
-          transaction.target.inventory[transaction.good] -= transaction.quantity;
-        }
+      case "buy":
+        // remove good from target
+        transaction.target.inventory[transaction.good] -= transaction.quantity;
+
+        // add good to source
+        transaction.source.inventory[transaction.good] += transaction.quantity;
+
+        // add money to source
+        transaction.source.inventory[CurrencyType.Money] +=
+          EXCHANGE_RATE[transaction.good][CurrencyType.Money] *
+          transaction.quantity;
+
+        // remove money from target
+        transaction.target.inventory[CurrencyType.Money] -=
+          EXCHANGE_RATE[transaction.good][CurrencyType.Money] *
+          transaction.quantity;
+
         break;
-      }
-      case "remove": {
-        this.inventory[transaction.good] -= transaction.quantity;
-        if (transaction.target && transaction.target.id !== this.id) {
-          transaction.target.inventory[transaction.good] += transaction.quantity;
-        }
+      case "sell":
+        //  exchange good
+        transaction.target.inventory[transaction.good] += transaction.quantity;
+        transaction.source.inventory[transaction.good] -= transaction.quantity;
+
+        // exchange money
+        transaction.source.inventory[CurrencyType.Money] +=
+          EXCHANGE_RATE[transaction.good][CurrencyType.Money] *
+          transaction.quantity;
+
+        transaction.target.inventory[CurrencyType.Money] -=
+          EXCHANGE_RATE[transaction.good][CurrencyType.Money] *
+          transaction.quantity;
+
         break;
-      }
-      default: {
-        throw new Error("Invalid transaction type");
-      }
+      case "add-self":
+        transaction.source.inventory[transaction.good] += transaction.quantity;
+        break;
+      case "remove-self":
+        transaction.source.inventory[transaction.good] -= transaction.quantity;
+        break;
+      default:
+        throw new Error(
+          `Invalid transaction type: ${transaction.transactionType}`
+        );
     }
   }
 
   dispatch(action: MeepleAction): Promise<void> {
-    // const previousState = this.state;
+    const previousState = this.state;
     switch (action.type) {
       case MeepleActionType.Transact: {
         return new Promise((resolve) => {
           this.actions
             .callMethod(() => {
+              const target = this.state.target;
               this.setState({
                 type: MeepleStateType.Transacting,
                 ...action.payload,
-                target: this.state.target || this,
+                source: this,
+                target: target ?? this,
               });
             })
             .callMethod(() => {
-              this.transact({
+              const target = this.state.target;
+
+              target?.transact({
                 ...action.payload,
-                target: this.state.target,
+                source: this,
+                target: target ?? this,
               });
             })
             .delay(DEFAULT_DELAY)
             .callMethod(() => {
+              this.setState(previousState);
               resolve();
             });
         });
@@ -256,14 +290,6 @@ export class Meeple extends Actor {
     }
   }
 
-  onPreUpdate(engine: Game, millisecindsEllapsed: number): void {
-    const delta = millisecindsEllapsed / 1000;
-
-    if (delta > 0) {
-      return;
-    }
-  }
-
   isValidInstruction(instruction: Instruction): boolean {
     return instruction.conditions.every((condition) => {
       return evaluateCondition(condition, condition.target().inventory);
@@ -279,12 +305,6 @@ export class Meeple extends Actor {
         for (const instruction of this.instructions) {
           if (this.isValidInstruction(instruction)) {
             for (const action of instruction.actions) {
-              // const target = action.payload.
-              // console.log(
-              //   "dispatching action",
-              //   action.type,
-              //   target.name
-              // );
               await this.dispatch({
                 ...action,
               });
@@ -293,7 +313,7 @@ export class Meeple extends Actor {
         }
       },
       repeats: true,
-      interval: 1000,
+      interval: 300,
     });
     game.currentScene.add(timer);
     timer.start();

@@ -35,11 +35,13 @@ export type Condition = {
   target: () => Meeple;
 };
 
+// take from source and add to target
 export type Transaction = {
   good: MiningType | ProductType | CurrencyType;
   quantity: number;
-  transactionType: "add" | "remove";
-  target?: Meeple;
+  source: Meeple;
+  target: Meeple;
+  transactionType: "buy" | "sell" | "add-self" | "remove-self";
 };
 
 export enum MiningType {
@@ -60,3 +62,23 @@ export enum VitalsType {
   Energy = "energy",
   Happiness = "happiness",
 }
+export type GoodType = MiningType | ProductType | CurrencyType;
+
+// exhnage rate everything for eveything buying and selling
+export const EXCHANGE_RATE: Record<
+  GoodType,
+  Record<CurrencyType, number>
+> = {
+  [MiningType.Ore]: {
+    [CurrencyType.Money]: 2,
+  },
+  [ProductType.Gruffle]: {
+    [CurrencyType.Money]: 1,
+  },
+  [ProductType.Fizzy]: {
+    [CurrencyType.Money]: 1,
+  },
+  [CurrencyType.Money]: {
+    [CurrencyType.Money]: 1,
+  },
+};
