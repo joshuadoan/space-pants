@@ -10,7 +10,7 @@ import {
   type Transaction,
 } from "./types";
 import { evaluateCondition } from "../utils/evaluateCondition";
-import { EXCHANGE_RATE } from "./types";
+import { GOODS_COSTS } from "../utils/instruction-templates";
 
 const DEFAULT_DELAY = 3000;
 
@@ -186,12 +186,12 @@ export class Meeple extends Actor {
 
         // add money to source
         transaction.source.inventory[CurrencyType.Money] +=
-          EXCHANGE_RATE[transaction.good][CurrencyType.Money] *
+          GOODS_COSTS[transaction.good] *
           transaction.quantity;
 
         // remove money from target
         transaction.target.inventory[CurrencyType.Money] -=
-          EXCHANGE_RATE[transaction.good][CurrencyType.Money] *
+          GOODS_COSTS[transaction.good] *
           transaction.quantity;
 
         break;
@@ -202,11 +202,11 @@ export class Meeple extends Actor {
 
         // exchange money
         transaction.source.inventory[CurrencyType.Money] +=
-          EXCHANGE_RATE[transaction.good][CurrencyType.Money] *
+          GOODS_COSTS[transaction.good] *
           transaction.quantity;
 
         transaction.target.inventory[CurrencyType.Money] -=
-          EXCHANGE_RATE[transaction.good][CurrencyType.Money] *
+          GOODS_COSTS[transaction.good] *
           transaction.quantity;
 
         break;

@@ -6,10 +6,12 @@ import { Meeple } from "../entities/Meeple";
 import {
   CurrencyType,
   MiningType,
+  Operator,
   ProductType,
   RoleId,
   UserActionType,
   type GoodType,
+  type Instruction,
 } from "../entities/types";
 import { useGame } from "../hooks/useGame";
 import { useMeepleFilters } from "../hooks/useMeepleFilters";
@@ -44,8 +46,14 @@ export const MeeplesList = () => {
   const [state, dispatch] = useReducer(reducer, initialState);
 
   const { id } = useParams<{ id: string }>();
-  const { isLoading, game, zoomToEntity, centerCameraInGame, setZoom } =
-    useGame();
+  const {
+    isLoading,
+    game,
+    zoomToEntity,
+    centerCameraInGame,
+    setZoom,
+    setInstructions,
+  } = useGame();
   const navigate = useNavigate();
 
   const meeples =
@@ -77,22 +85,26 @@ export const MeeplesList = () => {
   }, [displayMeeples]);
 
   const aggregatedProductStats = useMemo(() => {
-
     return displayMeeples.reduce((acc: Record<ProductType, number>, meeple) => {
       for (const goodType of Object.values(ProductType)) {
-        acc[goodType] = (acc[goodType] || 0) + (meeple.inventory[goodType] || 0);
+        acc[goodType] =
+          (acc[goodType] || 0) + (meeple.inventory[goodType] || 0);
       }
       return acc;
     }, {} as Record<ProductType, number>);
   }, [displayMeeples]);
 
   const aggregatedCurrencyStats = useMemo(() => {
-    return displayMeeples.reduce((acc: Record<CurrencyType, number>, meeple) => {
-      for (const goodType of Object.values(CurrencyType)) {
-        acc[goodType] = (acc[goodType] || 0) + (meeple.inventory[goodType] || 0);
-      }
-      return acc;
-    }, {} as Record<CurrencyType, number>);
+    return displayMeeples.reduce(
+      (acc: Record<CurrencyType, number>, meeple) => {
+        for (const goodType of Object.values(CurrencyType)) {
+          acc[goodType] =
+            (acc[goodType] || 0) + (meeple.inventory[goodType] || 0);
+        }
+        return acc;
+      },
+      {} as Record<CurrencyType, number>
+    );
   }, [displayMeeples]);
 
   useEffect(() => {
@@ -130,8 +142,8 @@ export const MeeplesList = () => {
         <div className="flex items-center gap-2">
           {/* <-- stats  */}
           <div className="flex items-center gap-2 flex-wrap">
-            {Object.entries(aggregatedMiningStats)
-              .map(([goodType, quantity]) => (
+            {Object.entries(aggregatedMiningStats).map(
+              ([goodType, quantity]) => (
                 <div
                   key={goodType}
                   className="badge badge-outline flex items-center gap-1.5 px-2 py-1"
@@ -139,9 +151,10 @@ export const MeeplesList = () => {
                   <IconComponent icon={goodType as MiningType} size={14} />
                   <span className="font-medium">{quantity}</span>
                 </div>
-              ))}
-            {Object.entries(aggregatedProductStats)
-              .map(([goodType, quantity]) => (
+              )
+            )}
+            {Object.entries(aggregatedProductStats).map(
+              ([goodType, quantity]) => (
                 <div
                   key={goodType}
                   className="badge badge-outline flex items-center gap-1.5 px-2 py-1"
@@ -149,9 +162,10 @@ export const MeeplesList = () => {
                   <IconComponent icon={goodType as ProductType} size={14} />
                   <span className="font-medium">{quantity}</span>
                 </div>
-              ))}
-            {Object.entries(aggregatedCurrencyStats)
-              .map(([goodType, quantity]) => (
+              )
+            )}
+            {Object.entries(aggregatedCurrencyStats).map(
+              ([goodType, quantity]) => (
                 <div
                   key={goodType}
                   className="badge badge-outline flex items-center gap-1.5 px-2 py-1"
@@ -159,7 +173,8 @@ export const MeeplesList = () => {
                   <IconComponent icon={goodType as CurrencyType} size={14} />
                   <span className="font-medium">{quantity}</span>
                 </div>
-              ))}
+              )
+            )}
           </div>
           <ZoomSlider
             zoom={game?.currentScene.camera.zoom || DEFAULT_ZOOM_VALUE}
@@ -229,13 +244,115 @@ export const MeeplesList = () => {
           />
         ))}
         {selectedMeeple ? (
-          <MeepleExtraDetail
-            stats={{ ...selectedMeeple.stats }}
-            inventory={{ ...selectedMeeple.inventory }}
-            instructions={selectedMeeple.instructions}
-          />
+          <>
+            <MeepleExtraDetail
+              stats={{ ...selectedMeeple.stats }}
+              inventory={{ ...selectedMeeple.inventory }}
+              instructions={selectedMeeple.instructions}
+            />
+            {selectedMeeple.instructions.map((instruction) => (
+              <MeepleInstructionForm
+                key={instruction.id}
+                instruction={instruction}
+                onChange={(instruction) => {
+                  // replace by id
+                  const newInstructions = selectedMeeple.instructions.map((i) =>
+                    i.id === instruction.id ? instruction : i
+                  );
+                  setInstructions(selectedMeeple.id, newInstructions);
+                }}
+              />
+            ))}
+          </>
         ) : null}
       </div>
     </div>
+  );
+};
+
+export const MeepleInstructionForm = ({
+  instruction,
+  onChange,
+  className,
+}: {
+  instruction: Instruction;
+  onChange: (instruction: Instruction) => void;
+  className?: string;
+}) => {
+  function onSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    const formData = new FormData(e.target as HTMLFormElement);
+    const name = formData.get("name") as string;
+    const conditions = instruction.conditions.map((condition) => {
+      const good = formData.get("good") as MiningType | ProductType | CurrencyType;
+      const operator = formData.get("operator") as Operator;
+      const value = formData.get("value") as  unknown as number;
+      return { ...condition, good, operator, value };
+    });
+    console.log("conditions", conditions);
+    onChange({ ...instruction, name, conditions });
+  }
+  return (
+    <form
+      className={cx(
+        "flex flex-col gap-4 card card-compact bg-base-200 shadow-sm p-3",
+        className
+      )}
+      onSubmit={onSubmit}
+    >
+      <fieldset className="fieldset">
+        <legend className="fieldset-legend">Name</legend>
+        <input
+          type="text"
+          className="input"
+          placeholder="Type here"
+          defaultValue={instruction.name}
+          name="name"
+        />
+      </fieldset>
+      <fieldset className="fieldset">
+        <legend className="fieldset-legend">Conditions</legend>
+        <div className="flex flex-col gap-2">
+          {instruction.conditions.map((condition, i) => (
+            <div key={i} className="flex items-center gap-2">
+              {/* {condition.good} {condition.operator} {condition.value} */}
+              <select defaultValue={condition.good} className="select" name="good">
+                <option disabled={true}>Pick a good</option>
+                {Object.values(MiningType).map((good: MiningType) => (
+                  <option key={good} value={good}>
+                    {good}
+                  </option>
+                ))}
+                {Object.values(ProductType).map((good: ProductType) => (
+                  <option key={good} value={good}>
+                    {good}
+                  </option>
+                ))}
+              </select>
+              <select defaultValue={condition.operator} className="select" name="operator">
+                <option disabled={true}>Pick an operator</option>
+                {Object.values(Operator).map((operator: Operator) => (
+                  <option key={operator} value={operator}>
+                    {operator}
+                  </option>
+                ))}
+              </select>
+              <input
+                type="number"
+                className="input"
+                placeholder="Value"
+                defaultValue={condition.value}
+                name="value"
+              />
+            </div>
+          ))}
+        </div>
+      </fieldset>
+      <footer className="flex justify-end">
+        <button type="submit" className="btn btn-primary">
+          Save
+        </button>
+      </footer>
+    </form>
   );
 };

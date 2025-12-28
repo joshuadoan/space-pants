@@ -18,9 +18,11 @@ import {
   ProductType,
   RoleId,
   VitalsType,
+  type Instruction,
 } from "../entities/types";
 import { generateSpaceName } from "../utils/generateSpaceName";
 import { Meeple, MeepleActionType, MeepleStateType } from "../entities/Meeple";
+import { MINING_TO_PRODUCT_CONVERSION_RATES } from "../utils/instruction-templates";
 
 export const GAME_WIDTH = 2500;
 export const GAME_HEIGHT = 2500;
@@ -28,7 +30,7 @@ export const GAME_HEIGHT = 2500;
 const COUNTS = {
   MINER: 17,
   ASTEROID: 3,
-  SPACE_STORE: 7,
+  SPACE_STORE: 1,
   SPACE_BAR: 1,
   SPACE_APARTMENT: 1,
 };
@@ -61,12 +63,13 @@ type ZoomToEntityAction = {
   payload: Meeple;
 };
 
+
 /** Union type of all possible game actions */
 type GameAction =
   | SetIsLoadingAction
   | SetGameAction
   | ZoomToEntityAction
-  | SetMeeplesAction;
+  | SetMeeplesAction
 
 /** State shape for the game context */
 type GameState = {
@@ -82,6 +85,7 @@ type GameContextValue = {
   getMeepleById: (id: string) => Meeple | undefined;
   centerCameraInGame: () => void;
   setZoom: (zoom: number) => void;
+  setInstructions: (meepleId: number, instructions: Instruction[]) => void;
 };
 
 // ============================================================================
@@ -128,16 +132,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
  */
 const GameContext = createContext<GameContextValue | undefined>(undefined);
 
-// ============================================================================
-// Provider Component
-// ============================================================================
 
-/**
- * Provider component that makes game state available to all child components.
- * Wrap your app with this component to enable game context access.
- *
- * @param children - React children components
- */
 export function GameProvider({ children }: { children: ReactNode }) {
   const [gameState, dispatch] = useReducer(gameReducer, initialState);
   const gameRef = useRef<Game | null>(null);
@@ -279,8 +274,8 @@ export function GameProvider({ children }: { children: ReactNode }) {
             {
               type: MeepleActionType.Transact,
               payload: {
-                good: CurrencyType.Money,
-                quantity: 2,
+                good: ProductType.Fizzy,
+                quantity: 1 * MINING_TO_PRODUCT_CONVERSION_RATES[MiningType.Ore][ProductType.Fizzy],
                 transactionType: "add-self",
               },
             },
@@ -481,6 +476,16 @@ export function GameProvider({ children }: { children: ReactNode }) {
     gameState.game.currentScene.camera.zoom = zoom;
   };
 
+  const setInstructions = (meepleId: number, instructions: Instruction[]) => {
+    if (!gameState.game) return;
+    console.log("setInstructions", meepleId, instructions);
+    const meeple = gameState.game.currentScene.actors.find(
+      (actor): actor is Meeple => actor instanceof Meeple && actor.id === meepleId
+    );
+    if (!meeple) return;
+    meeple.instructions = instructions;
+  };
+
   return (
     <GameContext.Provider
       value={{
@@ -489,6 +494,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
         getMeepleById,
         centerCameraInGame,
         setZoom,
+        setInstructions,
       }}
     >
       {children}

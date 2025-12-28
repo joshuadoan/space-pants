@@ -21,7 +21,7 @@ export const MeepleExtraDetail = ({
 }) => {
   return (
     <div>
-      <MeepleExtraDetails>
+      <MeepleExtraDetails className="mb-4">
         <MeepleExtraDetailsCard>
           <MeepleExtraDetailCardTitle>Stats</MeepleExtraDetailCardTitle>
           <MeepleExtraDetailCardItemList>
@@ -58,10 +58,7 @@ export const MeepleExtraDetail = ({
           <MeepleExtraDetailsCard key={instruction.id}>
             <MeepleExtraDetailCardInstructions>
               {instruction.conditions.map((condition, conditionIndex) => {
-                const isMet = evaluateCondition(
-                  condition,
-                  inventory
-                );
+                const isMet = evaluateCondition(condition, inventory);
                 return (
                   <MeepleExtraDetailCardInstruction
                     key={conditionIndex}
@@ -94,9 +91,11 @@ export const MeepleExtraDetail = ({
 
 export const MeepleExtraDetails = ({
   children,
+  className,
 }: {
   children: React.ReactNode;
-}) => <div className="flex flex-col gap-4">{children}</div>;
+  className?: string;
+}) => <div className={cx("flex flex-col gap-4", className)}>{children}</div>;
 
 export const MeepleExtraDetailsCard = ({
   children,

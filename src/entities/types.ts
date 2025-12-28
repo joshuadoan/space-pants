@@ -63,22 +63,3 @@ export enum VitalsType {
   Happiness = "happiness",
 }
 export type GoodType = MiningType | ProductType | CurrencyType;
-
-// exhnage rate everything for eveything buying and selling
-export const EXCHANGE_RATE: Record<
-  GoodType,
-  Record<CurrencyType, number>
-> = {
-  [MiningType.Ore]: {
-    [CurrencyType.Money]: 2,
-  },
-  [ProductType.Gruffle]: {
-    [CurrencyType.Money]: 1,
-  },
-  [ProductType.Fizzy]: {
-    [CurrencyType.Money]: 1,
-  },
-  [CurrencyType.Money]: {
-    [CurrencyType.Money]: 1,
-  },
-};

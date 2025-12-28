@@ -78,10 +78,19 @@ export function IconComponent({
   fill,
   ...rest
 }: IconComponentProps) {
-  return createElement(IconMap[icon], {
+  const iconElement = createElement(IconMap[icon], {
     size,
     className,
     fill,
     ...rest,
   } as Record<string, unknown>);
+
+  return createElement(
+    "div",
+    {
+      className: "tooltip tooltip-top cursor-pointer",
+      "data-tip": icon,
+    },
+    iconElement
+  );
 }
