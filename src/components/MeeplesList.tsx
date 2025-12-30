@@ -3,7 +3,14 @@ import { Link, useNavigate, useParams } from "react-router-dom";
 import cx from "classnames";
 
 import { Meeple } from "../entities/Meeple";
-import { RoleId, UserActionType } from "../entities/types";
+import {
+  CurrencyType,
+  MiningType,
+  ProductType,
+  RoleId,
+  UserActionType,
+  type GoodType,
+} from "../entities/types";
 import { useGame } from "../hooks/useGame";
 import { useMeepleFilters } from "../hooks/useMeepleFilters";
 import { IconComponent } from "../utils/iconMap";
@@ -37,8 +44,13 @@ export const MeeplesList = () => {
   const [state, dispatch] = useReducer(reducer, initialState);
 
   const { id } = useParams<{ id: string }>();
-  const { isLoading, game, zoomToEntity, centerCameraInGame, setZoom } =
-    useGame();
+  const {
+    isLoading,
+    game,
+    zoomToEntity,
+    centerCameraInGame,
+    setZoom,
+  } = useGame();
   const navigate = useNavigate();
 
   const meeples =
@@ -58,6 +70,39 @@ export const MeeplesList = () => {
       id ? String(meeple.id) === id : true
     );
   }, [filteredMeeples, id]);
+
+  const aggregatedMiningStats = useMemo(() => {
+    return displayMeeples.reduce((acc: Record<MiningType, number>, meeple) => {
+      for (const goodType of Object.values(MiningType)) {
+        acc[goodType] =
+          (acc[goodType] || 0) + (meeple.state.inventory[goodType] || 0);
+      }
+      return acc;
+    }, {} as Record<GoodType, number>);
+  }, [displayMeeples]);
+
+  const aggregatedProductStats = useMemo(() => {
+    return displayMeeples.reduce((acc: Record<ProductType, number>, meeple) => {
+      for (const goodType of Object.values(ProductType)) {
+        acc[goodType] =
+          (acc[goodType] || 0) + (meeple.state.inventory[goodType] || 0);
+      }
+      return acc;
+    }, {} as Record<ProductType, number>);
+  }, [displayMeeples]);
+
+  const aggregatedCurrencyStats = useMemo(() => {
+    return displayMeeples.reduce(
+      (acc: Record<CurrencyType, number>, meeple) => {
+        for (const goodType of Object.values(CurrencyType)) {
+          acc[goodType] =
+            (acc[goodType] || 0) + (meeple.state.inventory[goodType] || 0);
+        }
+        return acc;
+      },
+      {} as Record<CurrencyType, number>
+    );
+  }, [displayMeeples]);
 
   useEffect(() => {
     if (selectedMeeple) {
@@ -91,7 +136,43 @@ export const MeeplesList = () => {
           <IconComponent icon={UserActionType.HideUi} size={14} />
           <span>{state.showUi ? "Hide UI" : "Show UI"}</span>
         </button>
-        <div>
+        <div className="flex items-center gap-2">
+          {/* <-- stats  */}
+          <div className="flex items-center gap-2 flex-wrap">
+            {Object.entries(aggregatedMiningStats).map(
+              ([goodType, quantity]) => (
+                <div
+                  key={goodType}
+                  className="badge badge-outline flex items-center gap-1.5 px-2 py-1"
+                >
+                  <IconComponent icon={goodType as MiningType} size={14} />
+                  <span className="font-medium">{quantity}</span>
+                </div>
+              )
+            )}
+            {Object.entries(aggregatedProductStats).map(
+              ([goodType, quantity]) => (
+                <div
+                  key={goodType}
+                  className="badge badge-outline flex items-center gap-1.5 px-2 py-1"
+                >
+                  <IconComponent icon={goodType as ProductType} size={14} />
+                  <span className="font-medium">{quantity}</span>
+                </div>
+              )
+            )}
+            {Object.entries(aggregatedCurrencyStats).map(
+              ([goodType, quantity]) => (
+                <div
+                  key={goodType}
+                  className="badge badge-outline flex items-center gap-1.5 px-2 py-1"
+                >
+                  <IconComponent icon={goodType as CurrencyType} size={14} />
+                  <span className="font-medium">{quantity}</span>
+                </div>
+              )
+            )}
+          </div>
           <ZoomSlider
             zoom={game?.currentScene.camera.zoom || DEFAULT_ZOOM_VALUE}
             setZoom={setZoom}
@@ -153,18 +234,18 @@ export const MeeplesList = () => {
             name={meeple.name}
             roleId={meeple.roleId}
             state={meeple.state}
-            stats={{ ...meeple.stats }}
-            inventory={{ ...meeple.inventory }}
-            instructions={meeple.instructions}
+            stats={{ ...meeple.state.stats }}
+            inventory={{ ...meeple.state.inventory }}
             isSelected={id === String(meeple.id)}
           />
         ))}
         {selectedMeeple ? (
-          <MeepleExtraDetail
-            stats={selectedMeeple.stats}
-            inventory={selectedMeeple.inventory}
-            instructions={selectedMeeple.instructions}
-          />
+          <>
+            <MeepleExtraDetail
+              stats={{ ...selectedMeeple.state.stats }}
+              inventory={{ ...selectedMeeple.state.inventory }}
+            />
+          </>
         ) : null}
       </div>
     </div>

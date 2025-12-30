@@ -9,25 +9,25 @@ export function keyboardControls(game: Game, player: Meeple) {
     
     game.input.keyboard.on("hold", (evt: KeyEvent) => {
       if (evt.key === Keys.ArrowLeft) {
-        const newX = player.pos.x - player.speed;
+        const newX = player.pos.x - player.state.speed;
         if (newX >= playerHalfWidth) {
           player.pos.x = newX;
         }
       }
       if (evt.key === Keys.ArrowRight) {
-        const newX = player.pos.x + player.speed;
+        const newX = player.pos.x + player.state.speed;
         if (newX <= game.worldWidth - playerHalfWidth) {
           player.pos.x = newX;
         }
       }
       if (evt.key === Keys.ArrowUp) {
-        const newY = player.pos.y - player.speed;
+        const newY = player.pos.y - player.state.speed;
         if (newY >= playerHalfHeight) {
           player.pos.y = newY;
         }
       }
       if (evt.key === Keys.ArrowDown) {
-        const newY = player.pos.y + player.speed;
+        const newY = player.pos.y + player.state.speed;
         if (newY <= game.worldHeight - playerHalfHeight) {
           player.pos.y = newY;
         }

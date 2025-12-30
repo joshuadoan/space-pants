@@ -2,6 +2,7 @@ import type { ComponentType } from "react";
 import { createElement } from "react";
 import {
   IconArrowLeft,
+  IconBeer,
   IconBolt,
   IconBuilding,
   IconCurrencyDollar,
@@ -11,13 +12,14 @@ import {
   IconMoodSmile,
   IconPackage,
   IconPick,
+  IconSparkles,
 } from "@tabler/icons-react";
 import {
   CurrencyType,
   MiningType,
   ProductType,
   VitalsType,
-} from "../entities/Meeple";
+} from "../entities/types";
 import { RoleId, UserActionType } from "../entities/types";
 
 // ============================================================================
@@ -49,6 +51,9 @@ const IconMap: Record<
   [RoleId.SpaceStore]: IconBuilding,
   [UserActionType.Back]: IconArrowLeft,
   [UserActionType.HideUi]: IconEyeOff,
+  [ProductType.Fizzy]: IconSparkles,
+  [RoleId.SpaceBar]: IconBeer,
+  [RoleId.SpaceApartments]: IconBuilding,
 } as const;
 
 // ============================================================================
@@ -73,10 +78,19 @@ export function IconComponent({
   fill,
   ...rest
 }: IconComponentProps) {
-  return createElement(IconMap[icon], {
+  const iconElement = createElement(IconMap[icon], {
     size,
     className,
     fill,
     ...rest,
   } as Record<string, unknown>);
+
+  return createElement(
+    "div",
+    {
+      className: "tooltip tooltip-top cursor-pointer",
+      "data-tip": icon,
+    },
+    iconElement
+  );
 }

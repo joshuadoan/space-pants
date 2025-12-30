@@ -1,52 +1,88 @@
-# Space Pants - Talk Notes
+# Space Pants - Documentation
 
 ## Project Overview
 - Real-time space economy simulation
 - React 19 + TypeScript + Excalibur.js
-- Autonomous entities interact in dynamic economy
+- Autonomous entities interact in dynamic economy using rule-based AI
 
-## Features
+## Current Implementation
 
 ### Entities
-- Miners: Mine → Trade → Socialize cycle
-- Traders: Buy/sell products at stations
-- Space Stations: Convert ore to products
-- Space Bars: Social gathering spots
-- Space Apartments: Rest and recovery facilities
-- Bartenders: Work at bars, buy products
-- Pirates: Patrol, chase traders, steal money
-- Pirate Dens: Rest facilities for pirates
-- Asteroids: Ore sources
-- Player: Controllable character
+- **Miners**: Mine ore from asteroids → Trade ore for money at space stores
+- **Space Stores**: Trading hubs that accept ore from miners
+- **Space Bars**: Social gathering spots (currently static)
+- **Space Apartments**: Residential buildings (currently static)
+- **Asteroids**: Ore sources for miners
 
-### Interactive
-- Tabbed interface to filter entities
-- Edit entity rules in real-time
-- Click entity to zoom camera
-- Real-time stats & FPS monitoring
+### Entity States
+Entities can be in one of four states:
+1. **idle**: Not performing any action
+2. **traveling**: Moving towards a target entity
+3. **visiting**: Has reached target and is interacting
+4. **transacting**: Performing inventory transaction (add/remove goods)
 
-## Performance: React Auto-Memoization
+### Rule System
+- Rules are evaluated every 500ms via Excalibur Timer
+- Rules are state-based (different rules for idle, traveling, visiting, transacting)
+- Rules check inventory (ore, money, products) or stats (health, energy, happiness)
+- First matching rule's actions are executed
 
-### The Problem
-- State updates every 1000ms (1 second)
-- 70+ entities updating simultaneously
-- Complex UI cards per entity
+### Interactive Features
+- Tabbed interface to filter entities by type
+- Click entity name to zoom camera to it
+- View detailed stats and inventory for selected entities
+- Zoom slider for camera control
+- Hide/Show UI toggle
 
-### The Solution
-- React compares component output automatically
-- Only re-renders if output changed
-- Skips unchanged components → smooth 60 FPS
+## Architecture
 
-### How It Works
-- Functional components = pure functions
-- React compares virtual DOM output
-- Same output = skip re-render
-- Happens automatically, no manual memo needed
+### State Management
+- **Game State**: Managed via `useGame` hook with reducer pattern
+- **Entity State**: Managed within Excalibur.js Actor system
+- **UI State**: Local component state with React hooks
 
-### Key Point
-Even with 1 second updates, React's output comparison keeps it smooth because unchanged components don't re-render.
+### Game Loop
+- Excalibur.js handles rendering and physics
+- React handles UI updates
+- Game state syncs with React every 500ms
+- Entity rules evaluated independently via timers
+
+### Performance Considerations
+- React 19's automatic memoization optimizes re-renders
+- Only components with changed output re-render
+- Viewport culling for background stars
+- Efficient entity filtering with `useMemo`
 
 ## Tech Stack
-- React 19, TypeScript, Excalibur.js
-- TailwindCSS, Vite
-- Custom hooks + reducer pattern
+- **React 19**: UI framework with automatic memoization
+- **TypeScript**: Type safety
+- **Excalibur.js v0.31.0**: 2D game engine
+- **Vite v7.3.0**: Build tool and dev server
+- **TailwindCSS v4.1.18**: Utility-first CSS
+- **DaisyUI v5.5.14**: Component library
+- **React Router v7.11.0**: Client-side routing
+
+## Code Structure
+
+### Key Files
+- `src/entities/Meeple.ts`: Base entity class with state management
+- `src/entities/rules.ts`: Rule evaluation system
+- `src/entities/Game.ts`: Excalibur engine wrapper
+- `src/hooks/useGame.tsx`: Game initialization and state
+- `src/components/MeeplesList.tsx`: Main UI component
+
+### Entity Lifecycle
+1. Entity created with initial state (idle, empty inventory)
+2. Timer starts evaluating rules every 500ms
+3. Rules check conditions based on current state
+4. Matching rule executes actions (travel, visit, transact)
+5. State transitions occur via `dispatch()` method
+6. React UI updates reflect state changes
+
+## Future Enhancements
+- Editable rules system with UI
+- Additional entity types (Traders, Pirates, Bartenders)
+- Player-controlled entity
+- More complex economic interactions
+- Save/load game state
+- Enhanced visualization features

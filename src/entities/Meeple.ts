@@ -1,27 +1,15 @@
 import { Actor, Vector, Graphic, Timer } from "excalibur";
 import type { Game } from "./Game";
-import { RoleId, type Instruction } from "./types";
-import { evaluateCondition } from "../utils/evaluateCondition";
+import {
+  CurrencyType,
+  MiningType,
+  ProductType,
+  RoleId,
+  VitalsType,
+} from "./types";
+import { meepleActionsRule } from "./rules";
 
-const DEFAULT_DELAY = 3000;
-
-export enum MiningType {
-  Ore = "ore",
-}
-
-export enum ProductType {
-  Gruffle = "gruffle",
-}
-
-export enum CurrencyType {
-  Money = "money",
-}
-
-export enum VitalsType {
-  Health = "health",
-  Energy = "energy",
-  Happiness = "happiness",
-}
+export const DEFAULT_DELAY = 3000;
 
 export type Stats = {
   [key in VitalsType]: number;
@@ -31,108 +19,64 @@ export type Inventory = {
   [key in MiningType | ProductType | CurrencyType]: number;
 };
 
-export enum MeepleStateType {
-  Idle = "idle",
-  Traveling = "traveling",
-  Transacting = "transacting",
-}
+export type SharedMeepleState = {
+  inventory: Inventory;
+  stats: Stats;
+  speed: number;
+};
 
 export type MeepleStateIdle = {
-  type: MeepleStateType.Idle;
-  target?: Meeple;
-};
+  name: "idle";
+} & SharedMeepleState;
 
 export type MeepleStateTraveling = {
-  type: MeepleStateType.Traveling;
+  name: "traveling";
   target: Meeple;
-};
+} & SharedMeepleState;
+
+export type MeepleStateVisiting = {
+  name: "visiting";
+  target: Meeple;
+} & SharedMeepleState;
 
 export type MeepleStateTransacting = {
-  type: MeepleStateType.Transacting;
-  good: MiningType | ProductType | CurrencyType;
+  name: "transacting";
+  good: MiningType | ProductType | CurrencyType | VitalsType;
   quantity: number;
   transactionType: "add" | "remove";
-  target: Meeple;
-};
+} & SharedMeepleState;
 
 export type MeepleState =
   | MeepleStateIdle
   | MeepleStateTraveling
+  | MeepleStateVisiting
   | MeepleStateTransacting;
 
-export enum MeepleActionType {
-  TravelTo = "travel-to",
-  SetRandomTargetByRoleId = "set-random-target-by-role-id",
-  SetTarget = "set-target",
-  Transact = "transact",
-  VisitTarget = "visit-target",
-  Finish = "finish",
-}
-
-export type MeepleActionFinish = {
-  type: MeepleActionType.Finish;
-  payload: {
-    state: MeepleState;
-  };
-};
-
-export type MeepleActionSetRandomTargetByRoleId = {
-  type: MeepleActionType.SetRandomTargetByRoleId;
-  payload: {
-    roleId: RoleId;
-  };
-};
-
-export type MeepleActionSetTarget = {
-  type: MeepleActionType.SetTarget;
-  payload: {
-    target: Meeple;
-  };
-};
-
-export type MeepleActionTravelTo = {
-  type: MeepleActionType.TravelTo;
-  payload: {
-    target?: Meeple;
-  };
-};
-
-export type Transaction = {
-  good: MiningType | ProductType | CurrencyType;
-  quantity: number;
-  transactionType: "add" | "remove";
-  target?: Meeple;
-};
-
-export type IventoryGenerator = {
-  good: MiningType | ProductType | CurrencyType;
-  minimum: number;
-  maximum: number;
-  perSecond: number;
-};
-
-export type MeepleActionTransact = {
-  type: MeepleActionType.Transact;
-  payload: Transaction;
-};
-
 export type MeepleAction =
-  | MeepleActionTravelTo
-  | MeepleActionSetRandomTargetByRoleId
-  | MeepleActionTransact
-  | MeepleActionFinish
-  | MeepleActionSetTarget;
+  | {
+      name: "travel-to";
+      target: Meeple;
+    }
+  | {
+      name: "finish";
+    }
+  | {
+      name: "visit";
+      target: Meeple;
+    }
+  | {
+      name: "transact-inventory";
+      good: MiningType | ProductType | CurrencyType;
+      quantity: number;
+      transactionType: "add" | "remove";
+    };
 
 export type MeepleProps = {
   position: Vector;
   graphic: Graphic;
   name: string;
   state: MeepleState;
-  stats: Stats;
-  inventory: Inventory;
-  speed: number;
   roleId: RoleId;
-  instructions: Instruction[];
 };
 
 /**
@@ -146,10 +90,6 @@ export class Meeple extends Actor {
   state: MeepleState;
 
   // Gameplay Properties
-  stats: Stats;
-  inventory: Inventory;
-  speed: number;
-  instructions: Instruction[];
   readonly game: Game;
 
   // Internal/Private Properties
@@ -161,10 +101,6 @@ export class Meeple extends Actor {
     name,
     roleId,
     state,
-    stats,
-    inventory,
-    speed,
-    instructions = [],
   }: MeepleProps) {
     super({
       pos: position,
@@ -178,11 +114,6 @@ export class Meeple extends Actor {
     this.roleId = roleId;
     this.state = state;
 
-    // Gameplay Properties
-    this.stats = stats;
-    this.inventory = inventory;
-    this.speed = speed;
-    this.instructions = instructions;
     this.game = this.scene?.engine as Game;
   }
 
@@ -196,124 +127,125 @@ export class Meeple extends Actor {
     });
   }
 
-  transact(transaction: Transaction): void {
-    if (!transaction.target) {
-      return;
-    }
-    if (transaction.transactionType === "add") {
-      transaction.target.inventory[transaction.good] += transaction.quantity;
-    } else {
-      transaction.target.inventory[transaction.good] -= transaction.quantity;
-    }
-  }
-
   setState(state: MeepleState): void {
     this.state = state;
   }
 
-  async dispatch(action: MeepleAction): Promise<MeepleState> {
-    return new Promise((resolve) => {
-      switch (action.type) {
-        case MeepleActionType.TravelTo: {
-          const target = action.payload.target ?? this.state.target;
-          if (!target) {
-            resolve({
-              type: MeepleStateType.Idle,
-            });
-            break;
-          }
-          this.actions
-            .callMethod(() => {
-              this.state = {
-                type: MeepleStateType.Traveling,
-                target: target,
-              };
-            })
-            .meet(target, this.speed)
-            .delay(DEFAULT_DELAY)
-            .callMethod(() => {
-              resolve(this.state);
-            });
-          break;
-        }
-        case MeepleActionType.SetRandomTargetByRoleId: {
-          const game = this.scene?.engine as Game;
-          const target = game.findRandomMeepleByRoleId(action.payload.roleId);
-          this.state.target = target;
-          resolve(this.state);
-          break;
-        }
-        case MeepleActionType.SetTarget: {
-          this.state.target = action.payload.target;
-          resolve(this.state);
-          break;
-        }
-        case MeepleActionType.Transact: {
-          const target = action.payload.target ?? this.state.target;
-          if (!target) {
-            resolve({
-              type: MeepleStateType.Idle,
-            });
-            break;
-          }
-          this.actions
-            .callMethod(() => {
-              this.state = {
-                type: MeepleStateType.Transacting,
-                ...action.payload,
-                target: target,
-              };
-            })
-            .callMethod(() => {
-              this.transact({ ...action.payload, target: target });
-            })
-            .delay(DEFAULT_DELAY)
-            .callMethod(() => {
-              resolve(this.state);
-            });
-          break;
-        }
-        case MeepleActionType.Finish: {
-          this.actions
-            .callMethod(() => {
-              this.state = action.payload.state;
-            })
-            .callMethod(() => {
-              resolve(this.state);
-            });
-          resolve(this.state);
-          break;
-        }
-        default:
-          break;
+  dispatch(action: MeepleAction): void {
+    let nextState: MeepleState;
+    switch (action.name) {
+      case "travel-to": {
+        nextState = {
+          ...this.state,
+          name: "traveling",
+          target: action.target,
+        };
+        break;
       }
-    });
-  }
-
-  isValidInstruction(instruction: Instruction): boolean {
-    return instruction.conditions.every((condition) => {
-      return evaluateCondition(condition, condition.target.inventory);
-    });
+      case "visit":
+        nextState = {
+          ...this.state,
+          name: "visiting",
+          target: action.target,
+        };
+        break;
+      case "transact-inventory": {
+        nextState = {
+          ...this.state,
+          name: "transacting",
+          good: action.good,
+          quantity: action.quantity,
+          transactionType: action.transactionType,
+          inventory: {
+            ...this.state.inventory,
+            [action.good]:
+              action.transactionType === "add"
+                ? this.state.inventory[action.good] + action.quantity
+                : this.state.inventory[action.good] - action.quantity,
+          },
+        };
+        break;
+      }
+      case "finish": {
+        nextState = {
+          ...this.state,
+          name: "idle",
+        };
+        break;
+      }
+    }
+    this.setState(nextState);
   }
 
   initRulesTimer(game: Game): void {
     const timer = new Timer({
       fcn: async () => {
-        if (this.state.type !== MeepleStateType.Idle) {
-          return;
-        }
-        for (const instruction of this.instructions) {
-          if (this.isValidInstruction(instruction)) {
-            for (const action of instruction.actions) {
-              await this.dispatch(action);
-            }
-          }
-        }
+        meepleActionsRule(this, game);
       },
       repeats: true,
-      interval: 1000,
+      interval: 500,
     });
     game.currentScene.add(timer);
     timer.start();
+  }
+
+  travelTo(target: Meeple): void {
+    this.actions
+      .callMethod(() => {
+        this.dispatch({
+          name: "travel-to",
+          target,
+        });
+      })
+      .moveTo(target.pos, this.state.speed)
+      .callMethod(() => {
+        this.dispatch({
+          name: "visit",
+          target,
+        });
+      })
+      .delay(DEFAULT_DELAY);
+  }
+
+  addToInventory(
+    good: MiningType | ProductType | CurrencyType,
+    quantity: number
+  ): void {
+    this.actions
+      .callMethod(() => {
+        this.dispatch({
+          name: "transact-inventory",
+          good,
+          quantity,
+          transactionType: "add",
+        });
+      })
+      .delay(DEFAULT_DELAY)
+      .callMethod(() => {
+        this.dispatch({
+          name: "finish",
+        });
+      });
+  }
+
+  removeFromInventory(
+    good: MiningType | ProductType | CurrencyType,
+    quantity: number
+  ): void {
+    this.actions
+      .callMethod(() => {
+        this.dispatch({
+          name: "transact-inventory",
+          good,
+          quantity,
+          transactionType: "remove",
+        });
+      })
+      .delay(DEFAULT_DELAY)
+      .callMethod(() => {
+        this.dispatch({
+          name: "finish",
+        });
+      });
   }
 }

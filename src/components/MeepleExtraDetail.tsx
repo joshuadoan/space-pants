@@ -1,28 +1,23 @@
 import type {
   CurrencyType,
-  Inventory,
   MiningType,
   ProductType,
-  Stats,
   VitalsType,
-} from "../entities/Meeple";
-import type { Instruction } from "../entities/types";
-import { evaluateCondition } from "../utils/evaluateCondition";
+} from "../entities/types";
+import type { Stats, Inventory } from "../entities/Meeple";
 import { IconComponent } from "../utils/iconMap";
 import cx from "classnames";
 
 export const MeepleExtraDetail = ({
   stats,
   inventory,
-  instructions,
 }: {
   stats: Stats;
   inventory: Inventory;
-  instructions: Instruction[];
 }) => {
   return (
     <div>
-      <MeepleExtraDetails>
+      <MeepleExtraDetails className="mb-4">
         <MeepleExtraDetailsCard>
           <MeepleExtraDetailCardTitle>Stats</MeepleExtraDetailCardTitle>
           <MeepleExtraDetailCardItemList>
@@ -54,44 +49,6 @@ export const MeepleExtraDetail = ({
             })}
           </MeepleExtraDetailCardItemList>
         </MeepleExtraDetailsCard>
-
-        {instructions.map((instruction) => (
-          <MeepleExtraDetailsCard key={instruction.id}>
-            <MeepleExtraDetailCardInstructions>
-              {instruction.conditions.map((condition, conditionIndex) => {
-                const isMet = evaluateCondition(
-                  condition,
-                  condition.target?.inventory
-                );
-                return (
-                  <MeepleExtraDetailCardInstruction
-                    key={conditionIndex}
-                    isMet={isMet}
-                  >
-                    <span className="text-sm text-base-content flex-1">
-                      <span className="text-base-content/70">if</span>{" "}
-                      <span className="font-medium">{condition.good}</span>{" "}
-                      <span className="text-base-content/70">
-                        {condition.operator}
-                      </span>{" "}
-                      <span className="font-semibold text-primary">
-                        {condition.value}
-                      </span>{" "}
-                      <span className="text-base-content/70">targeting</span>{" "}
-                      <span className="font-medium text-secondary">
-                        {condition.target.name}
-                      </span>{" "}
-                      <span className="text-base-content/70">then</span>{" "}
-                      <span className="text-base-content/70">
-                        {instruction.name}
-                      </span>
-                    </span>
-                  </MeepleExtraDetailCardInstruction>
-                );
-              })}
-            </MeepleExtraDetailCardInstructions>
-          </MeepleExtraDetailsCard>
-        ))}
       </MeepleExtraDetails>
     </div>
   );
@@ -99,9 +56,11 @@ export const MeepleExtraDetail = ({
 
 export const MeepleExtraDetails = ({
   children,
+  className,
 }: {
   children: React.ReactNode;
-}) => <div className="flex flex-col gap-4">{children}</div>;
+  className?: string;
+}) => <div className={cx("flex flex-col gap-4", className)}>{children}</div>;
 
 export const MeepleExtraDetailsCard = ({
   children,

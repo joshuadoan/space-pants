@@ -1,12 +1,11 @@
 import { Link } from "react-router-dom";
 import {
-  MeepleStateType,
   type Inventory,
   type MeepleState,
   type Stats,
 } from "../entities/Meeple";
 import { IconComponent } from "../utils/iconMap";
-import type { Instruction, RoleId } from "../entities/types";
+import type { RoleId } from "../entities/types";
 import { IconPlayerPause, IconRoute } from "@tabler/icons-react";
 import { IconArrowsExchange } from "@tabler/icons-react";
 
@@ -16,7 +15,6 @@ export const MeepleDetails = (props: {
   state: MeepleState;
   stats: Stats;
   inventory: Inventory;
-  instructions: Instruction[];
   id: number;
   isSelected: boolean;
 }) => {
@@ -50,29 +48,34 @@ export const MeepleRoleBadge = ({ roleId }: { roleId: RoleId }) => (
 
 export const MeepleStateBadge = ({ state }: { state: MeepleState }) => (
   <div className="flex items-center gap-2 mb-2">
-    {state.type === MeepleStateType.Idle && (
+    {state.name === "idle" && (
       <div className="badge badge-lg gap-1.5 bg-info/20 text-info border-info/30">
         <IconPlayerPause size={14} />
-        <span className="font-semibold capitalize">{state.type}</span>
-        {state.target && (
-          <span className="text-info/70 text-xs">→ {state.target.name}</span>
-        )}
+        <span className="font-semibold capitalize">{state.name}</span>
       </div>
     )}
-    {state.type === MeepleStateType.Traveling && (
+    {state.name === "traveling" && (
       <div className="badge badge-lg gap-1.5 bg-warning/20 text-warning border-warning/30">
         <IconRoute size={14} />
-        <span className="font-semibold capitalize">{state.type}</span>
+        <span className="font-semibold capitalize">{state.name}</span>
         <span className="text-warning/70 text-xs">→ {state.target.name}</span>
       </div>
     )}
-    {state.type === MeepleStateType.Transacting && (
+    {state.name === "visiting" && (
       <div className="badge badge-lg gap-1.5 bg-success/20 text-success border-success/30">
         <IconArrowsExchange size={14} />
-        <span className="font-semibold capitalize">{state.type}</span>
+        <span className="font-semibold capitalize">{state.name}</span>
         <span className="text-success/70 text-xs">
-          {state.transactionType === "add" ? "+" : "-"}
-          {state.quantity} {state.good} with {state.target.name}
+          Visiting with {state.target.name}
+        </span>
+      </div>
+    )}
+    {state.name === "transacting" && (
+      <div className="badge badge-lg gap-1.5 bg-base-200 text-base-content border-base-content/30">
+        <IconArrowsExchange size={14} />
+        <span className="font-semibold capitalize">{state.name}</span>
+        <span className="text-base-content/70 text-xs">
+          Transacting {state.transactionType} {state.quantity} {state.good}
         </span>
       </div>
     )}
