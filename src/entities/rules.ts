@@ -9,6 +9,8 @@ import {
   VitalsType,
 } from "./types";
 
+const UNIT = 1;
+
 type Rule = {
   name: string;
   property: MiningType | ProductType | CurrencyType | VitalsType;
@@ -68,8 +70,8 @@ const MINER_RULES: Rules = {
 
           switch (meeple.state.target.roleId) {
             case RoleId.Asteroid:
-              meeple.addToInventory(MiningType.Ore, 1);
-              meeple.state.target.removeFromInventory(MiningType.Ore, 1);
+              meeple.addToInventory(MiningType.Ore, UNIT);
+              meeple.state.target.removeFromInventory(MiningType.Ore, UNIT);
               break;
             case RoleId.SpaceStore:
               break;
@@ -88,14 +90,14 @@ const MINER_RULES: Rules = {
             switch (meeple.state.target.roleId) {
               case RoleId.SpaceStore:
                 // transfer ore from space store to miner
-                meeple.state.target.addToInventory(MiningType.Ore, 1);
+                meeple.state.target.addToInventory(MiningType.Ore, UNIT);
                 // transfer ore from miner to space store
-                meeple.removeFromInventory(MiningType.Ore, 1);
+                meeple.removeFromInventory(MiningType.Ore, UNIT);
 
                 // transfer money from space store to miner
-                meeple.state.target.removeFromInventory(CurrencyType.Money, 1);
+                meeple.state.target.removeFromInventory(CurrencyType.Money, UNIT);
                 // transfer money from miner to space store
-                meeple.addToInventory(CurrencyType.Money, 1);
+                meeple.addToInventory(CurrencyType.Money, UNIT);
                 break;
             }
           }
@@ -116,8 +118,8 @@ const SPACE_STORE_RULES: Rules = {
       value: 1,
       actions: [
         (meeple, _game) => {
-          meeple.addToInventory(CurrencyType.Money, 2);
-          meeple.removeFromInventory(MiningType.Ore, 1);
+          meeple.addToInventory(CurrencyType.Money, UNIT * 2);
+          meeple.removeFromInventory(MiningType.Ore, UNIT);
         },
       ],
     },
@@ -137,7 +139,7 @@ const ASTEROID_RULES: Rules = {
       value: 100,
       actions: [
         (meeple, _game) => {
-          meeple.addToInventory(MiningType.Ore, 1);
+          meeple.addToInventory(MiningType.Ore, UNIT);
         },
       ],
     },
@@ -149,8 +151,18 @@ const ASTEROID_RULES: Rules = {
 
 const RULES = {
   [RoleId.Miner]: MINER_RULES,
-  [RoleId.Asteroid]: ASTEROID_RULES,
-  [RoleId.SpaceStore]: SPACE_STORE_RULES,
+  [RoleId.Asteroid]: {
+    idle: [],
+    traveling: [],
+    visiting: [],
+    transacting: [],
+  },
+  [RoleId.SpaceStore]: {
+    idle: [],
+    traveling: [],
+    visiting: [],
+    transacting: [],
+  },
   [RoleId.SpaceBar]: {
     idle: [],
     traveling: [],
@@ -164,6 +176,7 @@ const RULES = {
     transacting: [],
   },
 };
+
 export function meepleActionsRule(meeple: Meeple, engine: Game) {
   if (meeple.actions.getQueue().hasNext()) {
     return;
@@ -181,6 +194,50 @@ export function meepleActionsRule(meeple: Meeple, engine: Game) {
       for (const action of rule.actions) {
         action(meeple, engine);
       }
+    }
+  }
+}
+
+const GENERATORS = {
+  [RoleId.Miner]: {
+    idle: [],
+    traveling: [],
+    visiting: [],
+    transacting: [],
+  },
+  [RoleId.Asteroid]: ASTEROID_RULES,
+  [RoleId.SpaceStore]: SPACE_STORE_RULES,
+  [RoleId.SpaceBar]: {
+    idle: [],
+    traveling: [],
+    visiting: [],
+    transacting: [],
+  },
+  [RoleId.SpaceApartments]: {
+    idle: [],
+    traveling: [],
+    visiting: [],
+    transacting: [],
+  },
+};
+
+export function meepleGeneratorRule(meeple: Meeple, engine: Game) {
+  if (meeple.actions.getQueue().hasNext()) {
+    return;
+  }
+  for (const rule of GENERATORS[meeple.roleId][meeple.state.name]) {
+    if (
+      evaluateCondition(
+        rule.property,
+        rule.operator,
+        rule.value,
+        meeple.state.inventory,
+        meeple.state.stats
+      )
+    ) {
+    }
+    for (const action of rule.actions) {
+      action(meeple, engine);
     }
   }
 }

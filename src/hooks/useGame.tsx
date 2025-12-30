@@ -21,13 +21,15 @@ import {
 import { generateSpaceName } from "../utils/generateSpaceName";
 import { Meeple, type MeepleState } from "../entities/Meeple";
 
+const GAME_SPEED = 2;
+
 export const GAME_WIDTH = 2500;
 export const GAME_HEIGHT = 2500;
 
 const COUNTS = {
   MINER: 17,
-  ASTEROID: 32,
-  SPACE_STORE: 7,
+  ASTEROID: 17,
+  SPACE_STORE: 4,
   SPACE_BAR: 2,
   SPACE_APARTMENT: 2,
 };
@@ -49,7 +51,7 @@ const initialMeeplState: MeepleState = {
   },
   speed:
     Math.random() * (MAX_SHIP_DEFAULT_SPEED - MIN_SHIP_DEFAULT_SPEED) +
-    MIN_SHIP_DEFAULT_SPEED,
+    MIN_SHIP_DEFAULT_SPEED * GAME_SPEED,
   name: "idle",
 };
 

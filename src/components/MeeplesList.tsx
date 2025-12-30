@@ -67,24 +67,24 @@ export const MeeplesList = () => {
   }, [filteredMeeples, id]);
 
   const aggregatedMiningStats = useMemo(() => {
-    return displayMeeples.reduce((acc: Record<MiningType, number>, meeple) => {
+    return meeples.reduce((acc: Record<MiningType, number>, meeple) => {
       for (const goodType of Object.values(MiningType)) {
         acc[goodType] =
           (acc[goodType] || 0) + (meeple.state.inventory[goodType] || 0);
       }
       return acc;
     }, {} as Record<GoodType, number>);
-  }, [displayMeeples]);
+  }, [meeples]);
 
   const aggregatedProductStats = useMemo(() => {
-    return displayMeeples.reduce((acc: Record<ProductType, number>, meeple) => {
+    return meeples.reduce((acc: Record<ProductType, number>, meeple) => {
       for (const goodType of Object.values(ProductType)) {
         acc[goodType] =
           (acc[goodType] || 0) + (meeple.state.inventory[goodType] || 0);
       }
       return acc;
     }, {} as Record<ProductType, number>);
-  }, [displayMeeples]);
+  }, [meeples]);
 
   const aggregatedCurrencyStats = useMemo(() => {
     return meeples.reduce((acc: Record<CurrencyType, number>, meeple) => {

@@ -7,9 +7,9 @@ import {
   RoleId,
   VitalsType,
 } from "./types";
-import { meepleActionsRule } from "./rules";
+import { meepleActionsRule, meepleGeneratorRule } from "./rules";
 
-export const DEFAULT_DELAY = 3000;
+export const DEFAULT_DELAY = 1000;
 
 export type Stats = {
   [key in VitalsType]: number;
@@ -52,24 +52,28 @@ export type MeepleState =
   | MeepleStateVisiting
   | MeepleStateTransacting;
 
+export type MeepleActionTravelTo = {
+  name: "travel-to";
+  target: Meeple;
+};
+export type MeepleActionFinish = {
+  name: "finish";
+};
+export type MeepleActionVisit = {
+  name: "visit";
+  target: Meeple;
+};
+export type MeepleActionTransactInventory = {
+  name: "transact-inventory";
+  good: MiningType | ProductType | CurrencyType;
+  quantity: number;
+  transactionType: "add" | "remove";
+};
 export type MeepleAction =
-  | {
-      name: "travel-to";
-      target: Meeple;
-    }
-  | {
-      name: "finish";
-    }
-  | {
-      name: "visit";
-      target: Meeple;
-    }
-  | {
-      name: "transact-inventory";
-      good: MiningType | ProductType | CurrencyType;
-      quantity: number;
-      transactionType: "add" | "remove";
-    };
+  | MeepleActionTravelTo
+  | MeepleActionFinish
+  | MeepleActionVisit
+  | MeepleActionTransactInventory;
 
 export type MeepleProps = {
   position: Vector;
@@ -95,13 +99,7 @@ export class Meeple extends Actor {
   // Internal/Private Properties
   private timers: Timer[] = [];
 
-  constructor({
-    position,
-    graphic,
-    name,
-    roleId,
-    state,
-  }: MeepleProps) {
+  constructor({ position, graphic, name, roleId, state }: MeepleProps) {
     super({
       pos: position,
     });
@@ -119,6 +117,7 @@ export class Meeple extends Actor {
 
   onInitialize(game: Game): void {
     this.initRulesTimer(game);
+    this.initGeneraterTimer(game);
   }
 
   onDestroy(): void {
@@ -156,6 +155,7 @@ export class Meeple extends Actor {
           good: action.good,
           quantity: action.quantity,
           transactionType: action.transactionType,
+          // update inventory
           inventory: {
             ...this.state.inventory,
             [action.good]:
@@ -181,6 +181,18 @@ export class Meeple extends Actor {
     const timer = new Timer({
       fcn: async () => {
         meepleActionsRule(this, game);
+      },
+      repeats: true,
+      interval: 500,
+    });
+    game.currentScene.add(timer);
+    timer.start();
+  }
+
+  initGeneraterTimer(game: Game): void {
+    const timer = new Timer({
+      fcn: async () => {
+        meepleGeneratorRule(this, game);
       },
       repeats: true,
       interval: 500,
