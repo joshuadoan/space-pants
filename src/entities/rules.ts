@@ -106,20 +106,51 @@ const MINER_RULES: Rules = {
   transacting: [],
 };
 
+// Space Store Rules - for every ore generate 2 money for the space store
+const SPACE_STORE_RULES: Rules = {
+  idle: [
+    {
+      name: "generate-money",
+      property: MiningType.Ore,
+      operator: Operator.GreaterThanOrEqual,
+      value: 1,
+      actions: [
+        (meeple, _game) => {
+          meeple.addToInventory(CurrencyType.Money, 2);
+          meeple.removeFromInventory(MiningType.Ore, 1);
+        },
+      ],
+    },
+  ],
+  traveling: [],
+  visiting: [],
+  transacting: [],
+};
+
+// Asteroid Rules - if ore below 100 generate 1 ore for the asteroid
+const ASTEROID_RULES: Rules = {
+  idle: [
+    {
+      name: "generate-ore",
+      property: MiningType.Ore,
+      operator: Operator.LessThan,
+      value: 100,
+      actions: [
+        (meeple, _game) => {
+          meeple.addToInventory(MiningType.Ore, 1);
+        },
+      ],
+    },
+  ],
+  traveling: [],
+  visiting: [],
+  transacting: [],
+};
+
 const RULES = {
   [RoleId.Miner]: MINER_RULES,
-  [RoleId.Asteroid]: {
-    idle: [],
-    traveling: [],
-    visiting: [],
-    transacting: [],
-  },
-  [RoleId.SpaceStore]: {
-    idle: [],
-    traveling: [],
-    visiting: [],
-    transacting: [],
-  },
+  [RoleId.Asteroid]: ASTEROID_RULES,
+  [RoleId.SpaceStore]: SPACE_STORE_RULES,
   [RoleId.SpaceBar]: {
     idle: [],
     traveling: [],
