@@ -1,124 +1,65 @@
 # Space Pants
 
-A real-time space economy simulation game built with React, TypeScript, and Excalibur.js. Watch autonomous entities mine, trade, socialize, and interact in a dynamic space economy with customizable behavior rules.
-
-![Zight Recording 2025-12-12 at 08 25 38 AM](https://github.com/user-attachments/assets/4c30ae58-b49b-43ea-af79-4fd282f5a193)
+A real-time space economy simulation game built with React, TypeScript, and Excalibur.js. Watch autonomous entities mine, trade, and interact in a dynamic space economy with rule-based AI behavior.
 
 ## 🚀 Features
 
 ### Core Gameplay
-- **Real-time Space Economy Simulation**: Watch miners, traders, space stations, and other entities interact autonomously
-- **Entity Management**: View and manage all entities in the game world through an intuitive tabbed interface
-- **Customizable Behavior**: Edit logic rules for entities to control their actions based on resource conditions
-- **Drag-and-Drop Rule Reordering**: Reorder entity rules by dragging them in the rules editor to change priority
+- **Real-time Space Economy Simulation**: Watch miners, space stations, and other entities interact autonomously
+- **Entity Management**: View and filter all entities in the game world through an intuitive tabbed interface
+- **Rule-Based AI**: Entities follow state-based rules that determine their behavior based on inventory and stats
 - **Interactive Camera**: Click on any entity name to zoom and follow it with the camera
-- **FPS Monitoring**: Real-time performance metrics displayed on screen
+- **Zoom Controls**: Adjustable camera zoom slider for better viewing
 
 ### Economic Systems
-- **Dynamic Production**: Space stations convert ore into various products (Gruffle, Druffle, Klintzpaw, Grogin, Fizz) at a rate of 1 product per 1 ore, with production checks every 0.5 seconds
-- **Trading System**: Entities buy and sell goods at space stations
-- **Social System**: Entities visit space bars and space apartments to socialize and spend money
-- **Resource Management**: Visual indicators show goods carried by entities (followers display goods quantities)
+- **Mining System**: Miners extract ore from asteroids
+- **Trading System**: Miners sell ore to space stations for money
+- **Space Stations**: Trading hubs that accept ore and may produce products
+- **Resource Management**: Visual indicators show inventory (ore, money, products) and stats (health, energy, happiness) for each entity
 
 ### UI Features
-- **Tabbed Interface**: Filter entities by type (Traders, Miners, Stations, Space Bars, Space Apartments, Asteroids, Player, All)
-- **Entity Cards**: Expandable cards showing entity stats, goods, and editable rules
-- **Built-in Documentation**: View the README directly in the app via the Readme tab
-- **Toast Notifications**: Visual feedback for rule updates and entity actions
+- **Tabbed Interface**: Filter entities by type (Miners, Asteroids, Space Stores, Space Bars, Space Apartments, All)
+- **Entity Cards**: Cards showing entity name, role, current state, and detailed stats/inventory
+- **State Visualization**: Visual badges showing entity state (idle, traveling, visiting, transacting)
+- **Aggregated Stats**: View total resources across all filtered entities
+- **Hide/Show UI**: Toggle UI visibility for a cleaner view
 
 ## 🎮 Game Entities
-
-### Player
-- Controllable character that can move around the space world
-- Starts with 0 money
-- Keyboard controls: WASD or Arrow keys
-- Camera automatically follows the player
-- Speed: 100 units/second (configurable via `DEFAULT_SHIP_SPEED`)
 
 ### Miners
 - Mine ore from asteroids
 - Trade ore for money at space stations
-- Visit space bars when they have enough money (≥50)
-- Rest at apartments when energy is depleted
-- Default behavior cycle: Mine → Trade → Socialize → Rest
-- Default rules (after required health/energy checks):
-  - If Money ≥ 50 → Socialize
-  - If Ore ≥ 10 → Trade Ore For Money
-  - If Ore < 10 → Mine Ore From Asteroid
-- Starting resources: 0 ore, 0 money
+- Rule-based behavior system that evaluates conditions every 500ms
+- Default behavior cycle: Mine → Trade
+- Rules are evaluated based on state (idle, traveling, visiting, transacting)
+- Starting resources: 0 ore, 0 money, 100 health, 100 energy, 100 happiness
+- Speed: Random between 50-150 units/second
 
-### Traders
-- Buy products from space stations when they have money
-- Sell products to space stations when they run out of money
-- Visit space bars when they have enough money (≥50)
-- Rest at apartments when energy is depleted
-- Each trader specializes in one product type
-- Default rules (after required health/energy checks):
-  - If Money ≥ 50 → Socialize
-  - If product > 0 (of trader's type) → Sell Product To Station
-  - If Money ≥ 1 → Buy Product From Station
-- Starting resources: 1 money
-
-### Space Stations
-- Stationary trading hubs (60x60 units)
-- Accept ore and produce various products
-- Production rate: 1 product per 1 ore, with production checks every 0.5 seconds
-- Products include: Gruffle, Druffle, Klintzpaw, Grogin, Fizz
-- Each station specializes in producing one product type
-- Randomly colored with unique designs
+### Space Stores (Space Stations)
+- Stationary trading hubs
+- Accept ore from miners
 - Handle transactions with visiting entities
+- Named with randomly generated space names
 
 ### Space Bars
 - Social gathering spots
-- Entities spend money here to socialize
-- Visitors are tracked and displayed
-- Stock Fizz drinks for sale
 - Named with randomly generated space names
-- Bartenders work here to earn money
+- Stationary structures
 
 ### Space Apartments
-- Residential buildings where entities can rest
-- Maximum capacity of 5 visitors at once
-- Visual design with lit windows and doors
+- Residential buildings
 - Named with randomly generated space names
-- Provide free energy restoration
-
-### Bartenders
-- Work at space bars to earn money (3 money per work session)
-- Buy products from stations when they have enough money (≥50)
-- Rest at apartments when energy is depleted
-- Default rules (after required health/energy checks):
-  - If Money ≥ 50 → Buy Product From Station
-  - If Energy > 0 → Work At Bar
-- Starting resources: 0 ore, 0 money
-
-### Pirates
-- Patrol the space and chase traders
-- Steal money from traders when close enough
-- Fire lasers during chases
-- Rest at pirate dens when energy is depleted
-- Default rules (after required health/energy checks):
-  - If Energy > 0 → Chase Target (nearby traders)
-  - If Energy > 0 → Patrol
-- Starting resources: 0 ore, 0 money
-
-### Pirate Dens
-- Rest and recovery facilities for pirates
-- Stationary structures (40x40 units)
-- Pirates return here to restore energy
-- Named with randomly generated space names
+- Stationary structures
 
 ### Asteroids
 - Source of ore for miners
 - Randomly distributed across the world
-- Varying sizes (15-30 units)
 - Stationary resource nodes
-- Regenerate ore when depleted
+- Named with randomly generated space names
 
 ### Stars
 - Background decorative elements
 - Grid-based distribution across the world
-- Viewport culling for performance optimization
 - Creates immersive space atmosphere
 
 ## 🛠️ Tech Stack
@@ -139,10 +80,10 @@ A real-time space economy simulation game built with React, TypeScript, and Exca
 - **@tanstack/react-virtual v3.13.13** - Virtual scrolling (available but not actively used)
 
 ### UI Components & Utilities
-- **react-dnd v16.0.1** - Drag and drop functionality for rule reordering
-- **react-dnd-html5-backend v16.0.1** - HTML5 backend for react-dnd
-- **react-fps v1.0.6** - Performance monitoring
-- **react-markdown v10.1.0** - Markdown rendering for documentation
+- **react-router v7.11.0** - Client-side routing
+- **react-router-dom v7.11.0** - React Router DOM bindings
+- **classnames v2.5.1** - Conditional CSS class names
+- **motion v12.23.26** - Animation library
 
 ### Development Tools
 - **ESLint** - Code linting
@@ -197,77 +138,51 @@ pnpm lint
 ## 🎯 How to Play
 
 1. **Observe**: Watch the autonomous entities go about their business in real-time
-2. **Navigate**: Use WASD or Arrow keys to move your player character around the world
-3. **Explore**: Click on any entity name in the sidebar to zoom the camera to it
-4. **Customize**: Expand an entity card to view and edit its rules editor
-5. **Reorder Rules**: Drag and drop rules to change their priority order
-6. **Monitor**: Use the tabs to filter entities by type (Traders, Miners, Stations, Space Bars, Space Apartments, Asteroids, Pirates, Pirate Dens, Player, All)
-7. **Read Docs**: Click the "Readme" tab to view this documentation in the app
+2. **Explore**: Click on any entity name in the sidebar to zoom the camera to it
+3. **Filter**: Use the tabs to filter entities by type (Miners, Asteroids, Space Stores, Space Bars, Space Apartments, All)
+4. **Inspect**: Click on an entity to view detailed stats and inventory
+5. **Zoom**: Use the zoom slider to adjust camera zoom level
+6. **Toggle UI**: Use the "Hide UI" button to toggle UI visibility for a cleaner view
 
 ## 🧩 Entity Rules System
 
-Each entity follows a set of logic rules that determine its behavior. Rules are evaluated every second and executed when conditions are met.
+Each entity follows a set of logic rules that determine its behavior. Rules are evaluated every 500ms based on the entity's current state.
+
+### Entity States
+Entities can be in one of four states:
+- **idle**: Entity is not performing any action
+- **traveling**: Entity is moving towards a target
+- **visiting**: Entity has reached its target and is interacting
+- **transacting**: Entity is performing an inventory transaction (adding/removing goods)
 
 ### Rule Format
 Each rule consists of:
-- **ID**: Unique identifier for the rule
-- **Good**: The resource to check (Ore, Money, or any Product)
-- **Operator**: Comparison operator (=, <, >, <=, >=, !=)
-- **Value**: Threshold value to compare against
-- **Action**: What to do when condition is met
-- **Destination Type** (optional): Target a specific entity type (e.g., SpaceStation, Asteroid)
-- **Destination Name** (optional): Target a specific entity by name for precise routing
+- **name**: Human-readable rule identifier
+- **property**: The resource to check (Ore, Money, Products, or Vitals like Health/Energy/Happiness)
+- **operator**: Comparison operator (=, <, >, <=, >=, !=)
+- **value**: Threshold value to compare against
+- **actions**: Array of functions to execute when condition is met
 
-### Available Actions
-- **Mine Ore From Asteroid**: Travel to an asteroid and mine ore
-- **Sell Ore To Station**: Sell ore at a space station
-- **Socialize At Bar**: Visit a space bar and spend money
-- **Work At Bar**: Work at a space bar (bartenders only)
-- **Buy Product From Station**: Buy products from a space station
-- **Sell Product To Station**: Sell products to a space station
-- **Rest At Apartments**: Rest and restore energy at space apartments
-- **Patrol**: Patrol to random points (pirates only)
-- **Go To Pirate Den**: Rest at a pirate den (pirates only)
-- **Chase Target**: Chase nearby traders (pirates only)
-- **Set Broken**: Set entity to broken state when health ≤ 0 (automatic)
+### Rule Evaluation
+- Rules are evaluated based on the entity's current state
+- Rules are checked every 500ms via a timer
+- The first matching rule's actions are executed
+- Rules can check inventory (ore, money, products) or stats (health, energy, happiness)
 
-### Destination Selection
-Rules can optionally specify destinations for more precise control:
-- **Destination Type**: Select a specific entity type (e.g., only target SpaceStations)
-- **Destination Name**: Select a specific entity by name from a dropdown list
-- **Random Selection**: If no destination is specified, entities choose randomly from valid targets
-- **Smart Filtering**: Destination options are automatically filtered based on the action type
-- **Disabled State**: Destination name selection is disabled when "Any (random)" is selected for destination type
+### Current Miner Rules
+Miners have rules defined for different states:
+- **idle state**: 
+  - If Ore < 1 → Travel to random asteroid
+  - If Ore ≥ 1 → Travel to random space store
+- **visiting state**:
+  - If Ore < 1 and visiting asteroid → Mine ore (add 1 ore, remove 1 from asteroid)
+  - If Ore ≥ 1 and visiting space store → Trade ore for money (transfer ore to store, receive money)
 
-### Default Rules
-All entities have two required default rules that are always evaluated first and cannot be edited or removed:
-1. **Health Check**: If health ≤ 0 → Set Broken (entity stops moving and can't do anything)
-2. **Energy Check**: If energy ≤ 0 → Rest at apartments (or Go To Pirate Den for pirates)
-
-These default rules ensure entities maintain their health and energy levels.
-
-### Rule Priority
-Rules are evaluated in order from top to bottom. The first rule whose condition is met will be executed. Default rules are always evaluated first, followed by custom rules. You can drag and drop custom rules to reorder them and change their priority.
-
-### Rule Behaviors
-The game includes pre-built rule behaviors:
-- **Miner Behavior**: Default mining and trading behavior
-- **Trader Behavior**: Default buying and selling behavior
-- **Bartender Behavior**: Default working and shopping behavior
-- **Pirate Behavior**: Default patrolling and chasing behavior
-
-You can apply these behaviors or create custom rules from scratch.
-
-### Example Rules
-A miner's custom rules (after default health/energy checks):
-- If Money ≥ 50 → Socialize At Bar
-- If Ore ≥ 10 → Sell Ore To Station
-- If Ore < 10 → Mine Ore From Asteroid
-
-A trader's custom rules (after default health/energy checks):
-- If Money ≥ 50 → Socialize At Bar
-- If product > 0 (of trader's type) → Sell Product To Station
-- If Money ≥ 1 → Buy Product From Station
+### Resources & Products
+- **Mining Types**: Ore
+- **Products**: Gruffle, Fizzy
+- **Currency**: Money
+- **Vitals**: Health, Energy, Happiness
 
 ## 📁 Project Structure
 
@@ -275,48 +190,45 @@ A trader's custom rules (after default health/energy checks):
 space-pants/
 ├── src/
 │   ├── components/          # React UI components
-│   │   ├── GoodsDisplay.tsx  # Goods visualization component
-│   │   ├── MeepleCard.tsx    # Entity card display component
-│   │   ├── RulesForm.tsx     # Rules editor with drag-and-drop
-│   │   ├── RulesReadOnly.tsx # Read-only rules display
-│   │   ├── StatBasic.tsx     # Basic stat display component
-│   │   ├── Tabs.tsx          # Tab navigation component
-│   │   ├── Toast.tsx         # Toast notification system
-│   │   └── ValueDisplays.tsx # Value display utilities
+│   │   ├── MeepleDetail.tsx      # Entity detail card component
+│   │   ├── MeepleExtraDetail.tsx # Extended entity details (stats/inventory)
+│   │   ├── MeeplesList.tsx       # Main entity list with filtering
+│   │   ├── Toast.tsx             # Toast notification system
+│   │   └── ZoomSlider.tsx        # Camera zoom control
 │   ├── entities/             # Game entity classes
 │   │   ├── Game.ts           # Excalibur game engine wrapper
-│   │   ├── Meeple.ts         # Base entity class with AI logic
-│   │   ├── Player.ts         # Player-controlled entity
-│   │   ├── Miner.ts          # Miner entity
-│   │   ├── Trader.ts         # Trader entity
-│   │   ├── SpaceStation.ts   # Space station entity
-│   │   ├── SpaceBar.ts       # Space bar entity
-│   │   ├── SpaceApartments.ts # Space apartment entity
-│   │   ├── Asteroid.ts       # Asteroid resource node
-│   │   ├── Star.ts           # Background star entities
-│   │   ├── ruleTemplates.ts  # Default rule behaviors
-│   │   ├── types.ts          # Entity type definitions
-│   │   └── utils/            # Entity utilities
-│   │       ├── createSpaceShipOutOfShapes.ts
-│   │       └── generateSpaceName.ts
+│   │   ├── Meeple.ts         # Base entity class with state management
+│   │   ├── rules.ts          # Rule evaluation system
+│   │   └── types.ts          # Entity type definitions and enums
 │   ├── hooks/                # React hooks
-│   │   └── useGame.tsx       # Game initialization and setup
+│   │   ├── useGame.tsx       # Game initialization and state management
+│   │   └── useMeepleFilters.tsx  # Entity filtering logic
 │   ├── utils/                # Utility functions
-│   │   ├── createStarTilemap.ts # Star generation utility
-│   │   ├── goodsMetadata.tsx # Goods metadata and icons
-│   │   ├── goodsUtils.ts     # Goods manipulation utilities
-│   │   ├── keyboardControls.ts # Keyboard control utilities
-│   │   └── ruleUtils.ts      # Rule evaluation utilities
-│   ├── App.tsx               # Main application component
+│   │   ├── createStarTilemap.ts  # Star background generation
+│   │   ├── generateSpaceName.ts  # Random name generation
+│   │   ├── iconMap.ts            # Icon component mapping
+│   │   ├── instruction-templates.ts # Instruction templates
+│   │   ├── keyboardControls.ts   # Keyboard control utilities
+│   │   └── graphics/             # Entity graphics
+│   │       ├── index.ts          # Graphics factory
+│   │       ├── types.ts          # Graphic style types
+│   │       ├── asteroid.ts       # Asteroid graphics
+│   │       ├── bartender.ts      # Bartender graphics
+│   │       ├── buildings.ts      # Building graphics
+│   │       ├── default.ts        # Default ship graphics
+│   │       ├── miner.ts          # Miner graphics
+│   │       ├── special.ts        # Special entity graphics
+│   │       └── trader.ts         # Trader graphics
+│   ├── App.tsx               # Main application component with routing
 │   ├── main.tsx              # Application entry point
-│   ├── consts.ts             # Application constants (re-exports from game-config)
-│   ├── App.css               # Application styles
 │   └── index.css             # Global styles
+├── src_old/                  # Legacy code (old implementation)
 ├── public/                   # Static assets
-│   └── vite.svg
 ├── dist/                     # Production build output
 ├── docs.md                   # Additional documentation
+├── improve.md                # Code improvement notes
 ├── presentation.md           # Presentation notes
+├── rule-report.md            # Rule system analysis
 ├── package.json              # Project dependencies and scripts
 ├── pnpm-lock.yaml            # Dependency lock file
 ├── pnpm-workspace.yaml       # pnpm workspace configuration
@@ -331,26 +243,21 @@ space-pants/
 ## 🎨 Customization
 
 ### World Configuration
-Edit `src/entities/game-config.ts` to modify:
-- World size (`WORLD_WIDTH`, `WORLD_HEIGHT`) - Default: 5000x5000
-- Number of entities (in `ENTITY_COUNTS`):
-  - `TRADERS` - Default: 14
-  - `MINERS` - Default: 14
-  - `SPACE_STATIONS` - Default: 5 (one per product type)
-  - `ASTEROIDS` - Default: 10
-  - `SPACE_BARS` - Default: 10
-  - `SPACE_APARTMENTS` - Default: 10
-  - `BARTENDERS_PER_BAR` - Default: 2
-  - `PIRATES` - Default: 5
-  - `PIRATE_DENS` - Default: 1
-- Player speed - Default: 100 (configurable via `DEFAULT_SHIP_SPEED` in `src/entities/game-config.ts`)
-- Camera zoom level - Default: 2x
+Edit `src/hooks/useGame.tsx` to modify:
+- World size (`GAME_WIDTH`, `GAME_HEIGHT`) - Default: 2500x2500
+- Number of entities (in `COUNTS`):
+  - `MINER` - Default: 42
+  - `ASTEROID` - Default: 7
+  - `SPACE_STORE` - Default: 2
+  - `SPACE_BAR` - Default: 2
+  - `SPACE_APARTMENT` - Default: 2
+- Entity speed range - Default: 50-150 units/second (configurable via `MIN_SHIP_DEFAULT_SPEED` and `MAX_SHIP_DEFAULT_SPEED`)
 - Star distribution and spacing (in `src/utils/createStarTilemap.ts`)
 
 ### Entity Behavior
-- Modify entity classes in `src/entities/` to change default rules and starting conditions
-- Edit rule behaviors in `src/entities/ruleTemplates.ts` (includes Miner, Trader, and Bartender behaviors)
-- Customize entity appearance in entity constructors
+- Modify rules in `src/entities/rules.ts` to change entity behavior
+- Edit entity state management in `src/entities/Meeple.ts`
+- Customize entity appearance in `src/utils/graphics/`
 
 ### Styling
 - Modify `src/index.css` for global styles
@@ -359,18 +266,19 @@ Edit `src/entities/game-config.ts` to modify:
 
 ## ⚡ Performance
 
-The game uses React's automatic memoization to maintain smooth performance:
-- State updates occur every 1000ms (1 second)
-- 20+ entities update simultaneously
+The game uses React's automatic memoization and efficient state management:
+- Game state updates every 500ms
+- 50+ entities update simultaneously
 - React compares component output automatically
 - Only components with changed output re-render
-- This enables smooth 60 FPS gameplay even with frequent updates
+- React 19's automatic memoization optimizes re-renders
 
 ### Performance Optimizations
 - Viewport culling for stars (only render visible stars)
-- Efficient entity state management
+- Efficient entity state management via Excalibur.js
 - React's built-in output comparison prevents unnecessary re-renders
-- FPS monitoring helps identify performance issues
+- Memoized filters and computed values using `useMemo`
+- React Router for efficient navigation
 
 ## 🐛 Development
 
@@ -389,8 +297,8 @@ The game uses React's automatic memoization to maintain smooth performance:
 ### Debugging
 - Use browser DevTools for React debugging
 - Check Excalibur.js console logs for game engine issues
-- Monitor FPS counter for performance issues
 - Use entity cards to inspect entity state
+- Check React DevTools for component re-render analysis
 
 ## 🤝 Contributing
 
@@ -407,14 +315,15 @@ This is a private repository. Contributions and collaboration are welcome from a
 ### Areas for Contribution
 
 - Bug fixes
-- New entity types
+- New entity types (Traders, Pirates, Bartenders, etc.)
 - UI/UX improvements
 - Performance optimizations
 - Documentation improvements
 - New game mechanics
-- Additional rule actions
+- Enhanced rule system (editable rules, drag-and-drop)
 - New products or resources
 - Enhanced visualization features
+- Player-controlled entity
 
 ## 📝 License
 
