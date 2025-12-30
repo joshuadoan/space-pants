@@ -44,13 +44,8 @@ export const MeeplesList = () => {
   const [state, dispatch] = useReducer(reducer, initialState);
 
   const { id } = useParams<{ id: string }>();
-  const {
-    isLoading,
-    game,
-    zoomToEntity,
-    centerCameraInGame,
-    setZoom,
-  } = useGame();
+  const { isLoading, game, zoomToEntity, centerCameraInGame, setZoom } =
+    useGame();
   const navigate = useNavigate();
 
   const meeples =
@@ -92,17 +87,14 @@ export const MeeplesList = () => {
   }, [displayMeeples]);
 
   const aggregatedCurrencyStats = useMemo(() => {
-    return displayMeeples.reduce(
-      (acc: Record<CurrencyType, number>, meeple) => {
-        for (const goodType of Object.values(CurrencyType)) {
-          acc[goodType] =
-            (acc[goodType] || 0) + (meeple.state.inventory[goodType] || 0);
-        }
-        return acc;
-      },
-      {} as Record<CurrencyType, number>
-    );
-  }, [displayMeeples]);
+    return meeples.reduce((acc: Record<CurrencyType, number>, meeple) => {
+      for (const goodType of Object.values(CurrencyType)) {
+        acc[goodType] =
+          (acc[goodType] || 0) + (meeple.state.inventory[goodType] || 0);
+      }
+      return acc;
+    }, {} as Record<CurrencyType, number>);
+  }, [meeples]);
 
   useEffect(() => {
     if (selectedMeeple) {
