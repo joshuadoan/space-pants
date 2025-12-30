@@ -3,21 +3,17 @@ import type {
   MiningType,
   ProductType,
   VitalsType,
-  Instruction,
 } from "../entities/types";
 import type { Stats, Inventory } from "../entities/Meeple";
-import { evaluateCondition } from "../utils/evaluateCondition";
 import { IconComponent } from "../utils/iconMap";
 import cx from "classnames";
 
 export const MeepleExtraDetail = ({
   stats,
   inventory,
-  instructions,
 }: {
   stats: Stats;
   inventory: Inventory;
-  instructions: Instruction[];
 }) => {
   return (
     <div>
@@ -53,37 +49,6 @@ export const MeepleExtraDetail = ({
             })}
           </MeepleExtraDetailCardItemList>
         </MeepleExtraDetailsCard>
-
-        {instructions.map((instruction) => (
-          <MeepleExtraDetailsCard key={instruction.id}>
-            <MeepleExtraDetailCardInstructions>
-              {instruction.conditions.map((condition, conditionIndex) => {
-                const isMet = evaluateCondition(condition, inventory);
-                return (
-                  <MeepleExtraDetailCardInstruction
-                    key={conditionIndex}
-                    isMet={isMet}
-                  >
-                    <span className="text-sm text-base-content flex-1">
-                      <span className="text-base-content/70">if</span>{" "}
-                      <span className="font-medium">{condition.good}</span>{" "}
-                      <span className="text-base-content/70">
-                        {condition.operator}
-                      </span>{" "}
-                      <span className="font-semibold text-primary">
-                        {condition.value}
-                      </span>{" "}
-                      <span className="text-base-content/70">then</span>{" "}
-                      <span className="text-base-content/70">
-                        {instruction.name}
-                      </span>
-                    </span>
-                  </MeepleExtraDetailCardInstruction>
-                );
-              })}
-            </MeepleExtraDetailCardInstructions>
-          </MeepleExtraDetailsCard>
-        ))}
       </MeepleExtraDetails>
     </div>
   );

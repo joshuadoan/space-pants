@@ -6,12 +6,10 @@ import { Meeple } from "../entities/Meeple";
 import {
   CurrencyType,
   MiningType,
-  Operator,
   ProductType,
   RoleId,
   UserActionType,
   type GoodType,
-  type Instruction,
 } from "../entities/types";
 import { useGame } from "../hooks/useGame";
 import { useMeepleFilters } from "../hooks/useMeepleFilters";
@@ -52,7 +50,6 @@ export const MeeplesList = () => {
     zoomToEntity,
     centerCameraInGame,
     setZoom,
-    setInstructions,
   } = useGame();
   const navigate = useNavigate();
 
@@ -78,7 +75,7 @@ export const MeeplesList = () => {
     return displayMeeples.reduce((acc: Record<MiningType, number>, meeple) => {
       for (const goodType of Object.values(MiningType)) {
         acc[goodType] =
-          (acc[goodType] || 0) + (meeple.inventory[goodType] || 0);
+          (acc[goodType] || 0) + (meeple.state.inventory[goodType] || 0);
       }
       return acc;
     }, {} as Record<GoodType, number>);
@@ -88,7 +85,7 @@ export const MeeplesList = () => {
     return displayMeeples.reduce((acc: Record<ProductType, number>, meeple) => {
       for (const goodType of Object.values(ProductType)) {
         acc[goodType] =
-          (acc[goodType] || 0) + (meeple.inventory[goodType] || 0);
+          (acc[goodType] || 0) + (meeple.state.inventory[goodType] || 0);
       }
       return acc;
     }, {} as Record<ProductType, number>);
@@ -99,7 +96,7 @@ export const MeeplesList = () => {
       (acc: Record<CurrencyType, number>, meeple) => {
         for (const goodType of Object.values(CurrencyType)) {
           acc[goodType] =
-            (acc[goodType] || 0) + (meeple.inventory[goodType] || 0);
+            (acc[goodType] || 0) + (meeple.state.inventory[goodType] || 0);
         }
         return acc;
       },
@@ -237,122 +234,20 @@ export const MeeplesList = () => {
             name={meeple.name}
             roleId={meeple.roleId}
             state={meeple.state}
-            stats={{ ...meeple.stats }}
-            inventory={{ ...meeple.inventory }}
-            instructions={meeple.instructions}
+            stats={{ ...meeple.state.stats }}
+            inventory={{ ...meeple.state.inventory }}
             isSelected={id === String(meeple.id)}
           />
         ))}
         {selectedMeeple ? (
           <>
             <MeepleExtraDetail
-              stats={{ ...selectedMeeple.stats }}
-              inventory={{ ...selectedMeeple.inventory }}
-              instructions={selectedMeeple.instructions}
+              stats={{ ...selectedMeeple.state.stats }}
+              inventory={{ ...selectedMeeple.state.inventory }}
             />
-            {selectedMeeple.instructions.map((instruction) => (
-              <MeepleInstructionForm
-                key={instruction.id}
-                instruction={instruction}
-                onChange={(instruction) => {
-                  // replace by id
-                  const newInstructions = selectedMeeple.instructions.map((i) =>
-                    i.id === instruction.id ? instruction : i
-                  );
-                  setInstructions(selectedMeeple.id, newInstructions);
-                }}
-              />
-            ))}
           </>
         ) : null}
       </div>
     </div>
-  );
-};
-
-export const MeepleInstructionForm = ({
-  instruction,
-  onChange,
-  className,
-}: {
-  instruction: Instruction;
-  onChange: (instruction: Instruction) => void;
-  className?: string;
-}) => {
-  function onSubmit(e: React.FormEvent<HTMLFormElement>) {
-    e.preventDefault();
-    const formData = new FormData(e.target as HTMLFormElement);
-    const name = formData.get("name") as string;
-    const conditions = instruction.conditions.map((condition) => {
-      const good = formData.get("good") as MiningType | ProductType | CurrencyType;
-      const operator = formData.get("operator") as Operator;
-      const value = formData.get("value") as  unknown as number;
-      return { ...condition, good, operator, value };
-    });
-    console.log("conditions", conditions);
-    onChange({ ...instruction, name, conditions });
-  }
-  return (
-    <form
-      className={cx(
-        "flex flex-col gap-4 card card-compact bg-base-200 shadow-sm p-3",
-        className
-      )}
-      onSubmit={onSubmit}
-    >
-      <fieldset className="fieldset">
-        <legend className="fieldset-legend">Name</legend>
-        <input
-          type="text"
-          className="input"
-          placeholder="Type here"
-          defaultValue={instruction.name}
-          name="name"
-        />
-      </fieldset>
-      <fieldset className="fieldset">
-        <legend className="fieldset-legend">Conditions</legend>
-        <div className="flex flex-col gap-2">
-          {instruction.conditions.map((condition, i) => (
-            <div key={i} className="flex items-center gap-2">
-              {/* {condition.good} {condition.operator} {condition.value} */}
-              <select defaultValue={condition.good} className="select" name="good">
-                <option disabled={true}>Pick a good</option>
-                {Object.values(MiningType).map((good: MiningType) => (
-                  <option key={good} value={good}>
-                    {good}
-                  </option>
-                ))}
-                {Object.values(ProductType).map((good: ProductType) => (
-                  <option key={good} value={good}>
-                    {good}
-                  </option>
-                ))}
-              </select>
-              <select defaultValue={condition.operator} className="select" name="operator">
-                <option disabled={true}>Pick an operator</option>
-                {Object.values(Operator).map((operator: Operator) => (
-                  <option key={operator} value={operator}>
-                    {operator}
-                  </option>
-                ))}
-              </select>
-              <input
-                type="number"
-                className="input"
-                placeholder="Value"
-                defaultValue={condition.value}
-                name="value"
-              />
-            </div>
-          ))}
-        </div>
-      </fieldset>
-      <footer className="flex justify-end">
-        <button type="submit" className="btn btn-primary">
-          Save
-        </button>
-      </footer>
-    </form>
   );
 };

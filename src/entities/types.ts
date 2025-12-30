@@ -1,5 +1,3 @@
-import type { MeepleAction, Meeple } from "./Meeple";
-
 export enum RoleId {
   Asteroid = "Asteroid",
   Miner = "Miner",
@@ -7,12 +5,6 @@ export enum RoleId {
   SpaceBar = "SpaceBar",
   SpaceApartments = "SpaceApartments",
 }
-export type Instruction = {
-  id: string;
-  name: string;
-  conditions: Condition[];
-  actions: MeepleAction[];
-};
 
 export enum Operator {
   Equal = "=",
@@ -27,22 +19,6 @@ export enum UserActionType {
   Back = "back",
   HideUi = "hide-ui",
 }
-
-export type Condition = {
-  good: MiningType | ProductType | CurrencyType;
-  operator: Operator;
-  value: number;
-  target: () => Meeple;
-};
-
-// take from source and add to target
-export type Transaction = {
-  good: MiningType | ProductType | CurrencyType;
-  quantity: number;
-  source: Meeple;
-  target: Meeple;
-  transactionType: "buy" | "sell" | "add-self" | "remove-self";
-};
 
 export enum MiningType {
   Ore = "ore",
