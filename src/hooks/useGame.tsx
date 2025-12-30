@@ -20,14 +20,15 @@ import {
 } from "../entities/types";
 import { generateSpaceName } from "../utils/generateSpaceName";
 import { Meeple, type MeepleState } from "../entities/Meeple";
+import { GENERATORS, RULES } from "../rules/rules";
 
-const GAME_SPEED = 2;
+const GAME_SPEED = 1;
 
 export const GAME_WIDTH = 2500;
 export const GAME_HEIGHT = 2500;
 
 const COUNTS = {
-  MINER: 17,
+  MINER: 42,
   ASTEROID: 17,
   SPACE_STORE: 4,
   SPACE_BAR: 2,
@@ -169,6 +170,8 @@ export function GameProvider({ children }: { children: ReactNode }) {
         name: generateSpaceName(),
         state: initialMeeplState,
         roleId: RoleId.SpaceApartments,
+        rulesMapGenerator: GENERATORS,
+        rulesMapRules: RULES,
       });
       game.currentScene.add(spaceApartment);
     }
@@ -183,6 +186,8 @@ export function GameProvider({ children }: { children: ReactNode }) {
         name: generateSpaceName(),
         state: initialMeeplState,
         roleId: RoleId.Asteroid,
+        rulesMapGenerator: GENERATORS,
+        rulesMapRules: RULES,
       });
 
       game.currentScene.add(asteroid);
@@ -199,6 +204,8 @@ export function GameProvider({ children }: { children: ReactNode }) {
         name: generateSpaceName(),
         state: initialMeeplState,
         roleId: RoleId.SpaceStore,
+        rulesMapGenerator: GENERATORS,
+        rulesMapRules: RULES,
       });
       game.currentScene.add(spaceStore);
     }
@@ -214,6 +221,8 @@ export function GameProvider({ children }: { children: ReactNode }) {
         name: generateSpaceName(),
         state: initialMeeplState,
         roleId: RoleId.SpaceBar,
+        rulesMapGenerator: GENERATORS,
+        rulesMapRules: RULES,
       });
 
       game.currentScene.add(spaceBar);
@@ -229,6 +238,8 @@ export function GameProvider({ children }: { children: ReactNode }) {
         name: generateSpaceName(),
         state: initialMeeplState,
         roleId: RoleId.Miner,
+        rulesMapGenerator: GENERATORS,
+        rulesMapRules: RULES,
       });
 
       game.currentScene.add(miner);

@@ -1,5 +1,5 @@
-import type { Game } from "./Game";
-import type { Inventory, Meeple, MeepleState, Stats } from "./Meeple";
+import type { Game } from "../entities/Game";
+import type { Inventory, Meeple, MeepleState, Stats } from "../entities/Meeple";
 import {
   CurrencyType,
   MiningType,
@@ -7,7 +7,7 @@ import {
   ProductType,
   RoleId,
   VitalsType,
-} from "./types";
+} from "../entities/types";
 
 const UNIT = 1;
 
@@ -23,7 +23,7 @@ type Rules = {
   [key in MeepleState["name"]]: Rule[];
 };
 
-const MINER_RULES: Rules = {
+export const MINER_RULES: Rules = {
   idle: [
     {
       name: "need-ore",
@@ -63,7 +63,6 @@ const MINER_RULES: Rules = {
       value: 1,
       actions: [
         (meeple, _game) => {
-          // TODO FIX THIS WEIRD TYPE CHECK
           if (meeple.state.name !== "visiting") {
             return;
           }
@@ -89,14 +88,9 @@ const MINER_RULES: Rules = {
           if (meeple.state.name === "visiting") {
             switch (meeple.state.target.roleId) {
               case RoleId.SpaceStore:
-                // transfer ore from space store to miner
                 meeple.state.target.addToInventory(MiningType.Ore, UNIT);
-                // transfer ore from miner to space store
                 meeple.removeFromInventory(MiningType.Ore, UNIT);
-
-                // transfer money from space store to miner
                 meeple.state.target.removeFromInventory(CurrencyType.Money, UNIT);
-                // transfer money from miner to space store
                 meeple.addToInventory(CurrencyType.Money, UNIT);
                 break;
             }
@@ -109,7 +103,7 @@ const MINER_RULES: Rules = {
 };
 
 // Space Store Rules - for every ore generate 2 money for the space store
-const SPACE_STORE_RULES: Rules = {
+export const SPACE_STORE_RULES: Rules = {
   idle: [
     {
       name: "generate-money",
@@ -130,7 +124,7 @@ const SPACE_STORE_RULES: Rules = {
 };
 
 // Asteroid Rules - if ore below 100 generate 1 ore for the asteroid
-const ASTEROID_RULES: Rules = {
+export const ASTEROID_RULES: Rules = {
   idle: [
     {
       name: "generate-ore",
@@ -149,7 +143,7 @@ const ASTEROID_RULES: Rules = {
   transacting: [],
 };
 
-const RULES = {
+export const RULES = {
   [RoleId.Miner]: MINER_RULES,
   [RoleId.Asteroid]: {
     idle: [],
@@ -177,28 +171,7 @@ const RULES = {
   },
 };
 
-export function meepleActionsRule(meeple: Meeple, engine: Game) {
-  if (meeple.actions.getQueue().hasNext()) {
-    return;
-  }
-  for (const rule of RULES[meeple.roleId][meeple.state.name]) {
-    if (
-      evaluateCondition(
-        rule.property,
-        rule.operator,
-        rule.value,
-        meeple.state.inventory,
-        meeple.state.stats
-      )
-    ) {
-      for (const action of rule.actions) {
-        action(meeple, engine);
-      }
-    }
-  }
-}
-
-const GENERATORS = {
+export const GENERATORS = {
   [RoleId.Miner]: {
     idle: [],
     traveling: [],
@@ -221,11 +194,19 @@ const GENERATORS = {
   },
 };
 
-export function meepleGeneratorRule(meeple: Meeple, engine: Game) {
+type RulesMap = {
+  [key in RoleId]: Rules;
+};
+
+export function applyMeepleRules(
+  meeple: Meeple,
+  engine: Game,
+  rulesMap: RulesMap
+) {
   if (meeple.actions.getQueue().hasNext()) {
     return;
   }
-  for (const rule of GENERATORS[meeple.roleId][meeple.state.name]) {
+  for (const rule of rulesMap[meeple.roleId][meeple.state.name]) {
     if (
       evaluateCondition(
         rule.property,
@@ -235,14 +216,14 @@ export function meepleGeneratorRule(meeple: Meeple, engine: Game) {
         meeple.state.stats
       )
     ) {
-    }
-    for (const action of rule.actions) {
-      action(meeple, engine);
+      for (const action of rule.actions) {
+        action(meeple, engine);
+      }
     }
   }
 }
 
-function evaluateCondition(
+export function evaluateCondition(
   property: MiningType | ProductType | CurrencyType | VitalsType,
   operator: Operator,
   value: number,

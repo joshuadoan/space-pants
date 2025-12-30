@@ -7,7 +7,7 @@ import {
   RoleId,
   VitalsType,
 } from "./types";
-import { meepleActionsRule, meepleGeneratorRule } from "./rules";
+import { GENERATORS, RULES, applyMeepleRules } from "../rules/rules";
 
 export const DEFAULT_DELAY = 1000;
 
@@ -81,6 +81,8 @@ export type MeepleProps = {
   name: string;
   state: MeepleState;
   roleId: RoleId;
+  rulesMapGenerator: typeof GENERATORS;
+  rulesMapRules: typeof RULES;
 };
 
 /**
@@ -92,14 +94,15 @@ export class Meeple extends Actor {
   // Identity & State
   roleId: RoleId;
   state: MeepleState;
-
+  rulesMapGenerator: typeof GENERATORS;
+  rulesMapRules: typeof RULES;
   // Gameplay Properties
   readonly game: Game;
 
   // Internal/Private Properties
   private timers: Timer[] = [];
 
-  constructor({ position, graphic, name, roleId, state }: MeepleProps) {
+  constructor({ position, graphic, name, roleId, state, rulesMapGenerator, rulesMapRules }: MeepleProps) {
     super({
       pos: position,
     });
@@ -111,7 +114,8 @@ export class Meeple extends Actor {
     // Identity & State
     this.roleId = roleId;
     this.state = state;
-
+    this.rulesMapGenerator = rulesMapGenerator;
+    this.rulesMapRules = rulesMapRules;
     this.game = this.scene?.engine as Game;
   }
 
@@ -180,7 +184,7 @@ export class Meeple extends Actor {
   initRulesTimer(game: Game): void {
     const timer = new Timer({
       fcn: async () => {
-        meepleActionsRule(this, game);
+        applyMeepleRules(this, game, this.rulesMapRules);
       },
       repeats: true,
       interval: 500,
@@ -192,7 +196,7 @@ export class Meeple extends Actor {
   initGeneraterTimer(game: Game): void {
     const timer = new Timer({
       fcn: async () => {
-        meepleGeneratorRule(this, game);
+        applyMeepleRules(this, game, this.rulesMapGenerator);
       },
       repeats: true,
       interval: 500,
