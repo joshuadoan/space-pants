@@ -68,11 +68,20 @@ export type MeepleActionTransactInventory = {
   quantity: number;
   transactionType: "add" | "remove";
 };
+
+export type MeepleActionTransactVitals = {
+  name: "transact-vitals";
+  vitals: VitalsType;
+  quantity: number;
+  transactionType: "add" | "remove";
+};
+
 export type MeepleAction =
   | MeepleActionTravelTo
   | MeepleActionFinish
   | MeepleActionVisit
-  | MeepleActionTransactInventory;
+  | MeepleActionTransactInventory
+  | MeepleActionTransactVitals;
 
 export type MeepleProps = {
   position: Vector;
@@ -194,6 +203,23 @@ export class Meeple extends Actor {
         };
         break;
       }
+      case "transact-vitals": {
+        nextState = {
+          ...this.state,
+          name: "transacting",
+          good: action.vitals,
+          quantity: action.quantity,
+          transactionType: action.transactionType,
+          stats: {
+            ...this.state.stats,
+            [action.vitals]:
+              action.transactionType === "add"
+                ? this.state.stats[action.vitals] + action.quantity
+                : this.state.stats[action.vitals] - action.quantity,
+          },
+        };
+        break;
+      }
       case "finish": {
         nextState = {
           ...this.state,
@@ -231,7 +257,7 @@ export class Meeple extends Actor {
         applyMeepleRules(this, game, this.rulesMapGenerator, "generator");
       },
       repeats: true,
-      interval: 500,
+      interval: 1000,
     });
     game.currentScene.add(timer);
     timer.start();
@@ -292,4 +318,31 @@ export class Meeple extends Actor {
       })
       .delay(DEFAULT_DELAY)
   }
+
+  addToVitals(vitals: VitalsType, quantity: number, source?: "rule" | "generator"): ActionContext {
+    return this.actions
+      .callMethod(() => {
+        this.dispatch({
+          name: "transact-vitals",
+          vitals,
+          quantity,
+          transactionType: "add",
+        }, source);
+      })
+      .delay(DEFAULT_DELAY)
+  }
+
+  removeFromVitals(vitals: VitalsType, quantity: number, source?: "rule" | "generator"): ActionContext {
+    return this.actions
+      .callMethod(() => {
+        this.dispatch({
+          name: "transact-vitals",
+          vitals,
+          quantity,
+          transactionType: "remove",
+        }, source);
+      })
+      .delay(DEFAULT_DELAY)
+  }
 }
+

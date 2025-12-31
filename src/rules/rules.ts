@@ -131,7 +131,29 @@ export const MINER_RULES: Rules = {
       ],
     },
   ],
-  transacting: [],
+  transacting: [
+    // lose one health per transaction
+    {
+      name: "Lose Health per Transaction",
+      description:
+        "When the miner is transacting, they will lose 1 health per transaction.",
+      property: VitalsType.Health,
+      operator: Operator.GreaterThan,
+      value: 0,
+      actions: [
+        (meeple, _game) => {
+          meeple
+            .removeFromVitals(VitalsType.Health, UNIT)
+            .callMethod(() => {
+              meeple.dispatch({
+                name: "finish",
+              });
+            })
+            .delay(DEFAULT_DELAY);
+        },
+      ],
+    },
+  ],
 };
 
 // Space Store Rules - for every ore generate 2 money for the space store
