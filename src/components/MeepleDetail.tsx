@@ -23,6 +23,8 @@ type JournalEntry = {
   source?: "rule" | "generator";
 };
 
+const MEEPLE_STATE_NAMES = ["idle", "traveling", "visiting", "transacting"] as const;
+
 export const MeepleDetails = (props: {
   className?: string;
   name: string;
@@ -155,7 +157,7 @@ const StateRulesTimeLine = ({
     let globalIndex = 0;
     
     // Iterate through all states
-    (["idle", "traveling", "visiting", "transacting"] as const).forEach((stateName) => {
+    MEEPLE_STATE_NAMES.forEach((stateName) => {
       const stateRules = rulesMap[stateName] || [];
       stateRules.forEach((rule, ruleIndex) => {
         for (let i = 0; i < rule.actions.length; i++) {

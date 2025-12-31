@@ -1,5 +1,6 @@
-import { useEffect, useMemo, useReducer, useState } from "react";
+import { useEffect, useMemo, useReducer, useRef, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
+import { useVirtualizer } from "@tanstack/react-virtual";
 import cx from "classnames";
 
 import { Meeple } from "../entities/Meeple";
@@ -19,6 +20,7 @@ import { MeepleExtraDetail } from "./MeepleExtraDetail";
 import { DEFAULT_ZOOM_VALUE, ZoomSlider } from "./ZoomSlider";
 import { RulesVisualizer } from "./RulesVisualizer";
 import { JournalVisualizer } from "./JournalVisualizer";
+import { Help } from "./Help";
 
 type State = {
   showUi: boolean;
@@ -44,6 +46,7 @@ const reducer = (state: State, action: Action): State => {
 
 export const MeeplesList = () => {
   const [state, dispatch] = useReducer(reducer, initialState);
+  const [mainTab, setMainTab] = useState<"meeples" | "help">("meeples");
   const [activeTab, setActiveTab] = useState<"stats" | "rules" | "journal">("stats");
 
   const { id } = useParams<{ id: string }>();
@@ -58,6 +61,19 @@ export const MeeplesList = () => {
 
   const { filteredMeeples, selectedFilter, setFilter } =
     useMeepleFilters(meeples);
+
+  const parentRef = useRef<HTMLDivElement>(null);
+
+  const virtualizer = useVirtualizer({
+    count: filteredMeeples.length,
+    getScrollElement: () => parentRef.current,
+    estimateSize: () => 200, // Estimated height of each MeepleDetails item (will be measured dynamically)
+    overscan: 5, // Render 5 extra items above and below viewport for smooth scrolling
+    measureElement:
+      typeof window !== "undefined" && navigator.userAgent.indexOf("Firefox") === -1
+        ? (element) => element?.getBoundingClientRect().height
+        : undefined, // Dynamic sizing for smooth scrolling (not supported in Firefox)
+  });
 
   const selectedMeeple = useMemo(() => {
     return meeples.find((meeple) => String(meeple.id) === id);
@@ -173,64 +189,114 @@ export const MeeplesList = () => {
           hidden: !state.showUi,
         })}
       >
-        <div className="p-2">
-          {id ? (
-            <Link
-              to="/"
-              className="btn btn-sm btn-outline flex items-center gap-1.5"
+        <div className="p-2 flex flex-col gap-2">
+          <div className="tabs tabs-boxed">
+            <button
+              onClick={() => setMainTab("meeples")}
+              className={cx("tab flex items-center gap-1.5", {
+                "tab-active": mainTab === "meeples",
+              })}
             >
-              <IconComponent icon={UserActionType.Back} size={14} />
-              <span>Back</span>
-            </Link>
-          ) : (
-            <div className="tabs tabs-boxed">
-              <button
-                onClick={() => setFilter(null)}
-                className={cx("tab flex items-center gap-1.5", {
-                  "tab-active": selectedFilter === null,
-                })}
-              >
-                <span>All</span>
-              </button>
-              {Object.values(RoleId).map((roleId) => {
-                const isActive = selectedFilter === roleId;
-                return (
+              <span>Meeples</span>
+            </button>
+            <button
+              onClick={() => setMainTab("help")}
+              className={cx("tab flex items-center gap-1.5", {
+                "tab-active": mainTab === "help",
+              })}
+            >
+              <span>Help</span>
+            </button>
+          </div>
+          {mainTab === "meeples" && (
+            <>
+              {id ? (
+                <Link
+                  to="/"
+                  className="btn btn-sm btn-outline flex items-center gap-1.5"
+                >
+                  <IconComponent icon={UserActionType.Back} size={14} />
+                  <span>Back</span>
+                </Link>
+              ) : (
+                <div className="tabs tabs-boxed">
                   <button
-                    key={roleId}
-                    onClick={() => setFilter(roleId)}
+                    onClick={() => setFilter(null)}
                     className={cx("tab flex items-center gap-1.5", {
-                      "tab-active": isActive,
+                      "tab-active": selectedFilter === null,
                     })}
                   >
-                    <IconComponent icon={roleId} size={14} />
-                    <span>{roleId}</span>
+                    <span>All</span>
                   </button>
-                );
-              })}
-            </div>
+                  {Object.values(RoleId).map((roleId) => {
+                    const isActive = selectedFilter === roleId;
+                    return (
+                      <button
+                        key={roleId}
+                        onClick={() => setFilter(roleId)}
+                        className={cx("tab flex items-center gap-1.5", {
+                          "tab-active": isActive,
+                        })}
+                      >
+                        <IconComponent icon={roleId} size={14} />
+                        <span>{roleId}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
+            </>
           )}
         </div>
       </div>
       <div
-        className={cx("flex-1 p-2  overflow-y-auto flex flex-col gap-2", {
+        className={cx("flex-1 p-2 overflow-y-auto", {
           hidden: !state.showUi,
         })}
+        ref={!id && mainTab === "meeples" ? parentRef : undefined}
       >
-        {!id &&
-          filteredMeeples.map((meeple) => (
-            <MeepleDetails
-              className="w-sm"
-              key={meeple.id}
-              id={meeple.id}
-              name={meeple.name}
-              roleId={meeple.roleId}
-              state={meeple.state}
-              stats={{ ...meeple.state.stats }}
-              inventory={{ ...meeple.state.inventory }}
-              isSelected={id === String(meeple.id)}
-            />
-          ))}
-        {selectedMeeple ? (
+        {mainTab === "help" && <Help />}
+        {mainTab === "meeples" && !id && (
+          <div
+            style={{
+              height: `${virtualizer.getTotalSize()}px`,
+              width: "100%",
+              position: "relative",
+            }}
+          >
+            {virtualizer.getVirtualItems().map((virtualItem) => {
+              const meeple = filteredMeeples[virtualItem.index];
+              return (
+                <div
+                  key={virtualItem.key}
+                  data-index={virtualItem.index}
+                  ref={virtualizer.measureElement}
+                  style={{
+                    position: "absolute",
+                    top: 0,
+                    left: 0,
+                    width: "100%",
+                    transform: `translateY(${virtualItem.start}px)`,
+                  }}
+                  className="mb-2"
+                >
+                  <MeepleDetails
+                    className="w-sm"
+                    key={meeple.id}
+                    id={meeple.id}
+                    name={meeple.name}
+                    roleId={meeple.roleId}
+                    state={meeple.state}
+                    stats={{ ...meeple.state.stats }}
+                    inventory={{ ...meeple.state.inventory }}
+                    isSelected={id === String(meeple.id)}
+                  />
+                </div>
+              );
+            })}
+          </div>
+        )}
+        {mainTab === "meeples" && selectedMeeple ? (
           <div className="flex flex-col h-full">
             <MeepleDetails
               className="w-sm"
