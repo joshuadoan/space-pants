@@ -1,5 +1,5 @@
 import type { Game } from "../entities/Game";
-import type { Inventory, Meeple, MeepleState, Stats } from "../entities/Meeple";
+import { DEFAULT_DELAY, type Inventory, type Meeple, type MeepleState, type Stats } from "../entities/Meeple";
 import {
   CurrencyType,
   MiningType,
@@ -79,7 +79,8 @@ export const MINER_RULES: Rules = {
                 meeple.dispatch({
                   name: "finish",
                 });
-              });
+              })
+              .delay(DEFAULT_DELAY);
               break;
             case RoleId.SpaceStore:
               break;
@@ -106,7 +107,8 @@ export const MINER_RULES: Rules = {
                   meeple.dispatch({
                     name: "finish",
                   });
-                });
+                })
+                .delay(DEFAULT_DELAY);
                 break;
             }
           }
@@ -134,7 +136,8 @@ export const SPACE_STORE_RULES: Rules = {
             meeple.dispatch({
               name: "finish",
             });
-          });
+          })
+          .delay(DEFAULT_DELAY);
         },
       ],
     },
@@ -160,7 +163,8 @@ export const ASTEROID_RULES: Rules = {
             meeple.dispatch({
               name: "finish",
             });
-          });
+          })
+          .delay(DEFAULT_DELAY);
         },
       ],
     },
