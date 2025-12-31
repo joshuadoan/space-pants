@@ -9,14 +9,16 @@ import { IconComponent } from "../utils/iconMap";
 import cx from "classnames";
 
 export const MeepleExtraDetail = ({
+  className,
   stats,
   inventory,
 }: {
+  className?: string;
   stats: Stats;
   inventory: Inventory;
 }) => {
   return (
-    <div>
+    <div className={className}>
       <MeepleExtraDetails className="flex flex-col gap-4">
         <MeepleExtraDetailsCard>
           <MeepleExtraDetailCardTitle>Stats</MeepleExtraDetailCardTitle>

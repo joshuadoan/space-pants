@@ -8,8 +8,7 @@ import {
   VitalsType,
 } from "./types";
 import { applyMeepleRules, type Rules } from "../rules/rules";
-
-export const DEFAULT_DELAY = 3000;
+import { DEFAULT_DELAY } from "../consts";
 
 export type Stats = {
   [key in VitalsType]: number;

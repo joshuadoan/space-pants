@@ -231,8 +231,9 @@ export const MeeplesList = () => {
             />
           ))}
         {selectedMeeple ? (
-          <div className="w-sm flex flex-col h-full">
+          <div className="flex flex-col h-full">
             <MeepleDetails
+              className="w-sm"
               key={selectedMeeple.id}
               id={selectedMeeple.id}
               name={selectedMeeple.name}
@@ -272,6 +273,7 @@ export const MeeplesList = () => {
               {activeTab === "stats" && (
                 <>
                   <MeepleExtraDetail
+                    className="w-sm"
                     stats={{ ...selectedMeeple.state.stats }}
                     inventory={{ ...selectedMeeple.state.inventory }}
                   />
@@ -303,7 +305,7 @@ export const MeeplesList = () => {
                 />
               )}
               {activeTab === "journal" && (
-                <JournalVisualizer journal={selectedMeeple.journal} />
+                <JournalVisualizer journal={[...selectedMeeple.journal]} className="w-sm" />
               )}
             </div>
           </div>

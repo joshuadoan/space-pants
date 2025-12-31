@@ -22,22 +22,22 @@ export const RulesVisualizer = ({
   currentStateName: "idle" | "traveling" | "visiting" | "transacting";
 }) => {
   return (
-    <div className="flex flex-col gap-4 p-2">
+    <div className="flex flex-col md:flex-row gap-4 p-2">
       {Object.entries(rules).map(([stateName, stateRules]) => {
-        if (stateRules.length === 0) return null;
 
+        if (stateRules.length === 0) return null;
         return (
           <div key={stateName} className="flex flex-col gap-2">
             <h5 className="text-sm font-semibold text-secondary uppercase tracking-wide flex items-center gap-2">
               <div
-                className={cx("w-2 h-2 rounded-full mt-1.5 shrink-0", {
+                className={cx("w-2 h-2 rounded-full shrink-0", {
                   "bg-success animate-pulse": stateName === currentStateName,
                   "bg-gray-400": stateName !== currentStateName,
                 })}
               />{" "}
               {stateName}
             </h5>
-            <div className="flex flex-col gap-2">
+            <div className="flex flex-col gap-2 w-xs">
               {stateRules.map((rule) => {
                 const conditionMet = evaluateCondition(
                   rule.property,

@@ -17,6 +17,9 @@ export default App;
 const Layout = () => {
   return (
     <div className="w-screen h-screen flex flex-col">
+      <div className="block md:hidden bg-yellow-400 text-black text-center py-2 px-4 font-semibold z-50">
+        desktop is better
+      </div>
       <main className="flex-1 flex h-full">
         <canvas id="game-canvas" className="absolute inset-0 w-full h-full" />
         <div className="h-full w-full opacity-80">
