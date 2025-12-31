@@ -26,13 +26,21 @@ Entities can be in one of four states:
 - Rules are state-based (different rules for idle, traveling, visiting, transacting)
 - Rules check inventory (ore, money, products) or stats (health, energy, happiness)
 - First matching rule's actions are executed
+- Two types of rules:
+  - **RULES**: Behavior rules that control entity actions (travel, visit, transact)
+  - **GENERATORS**: Resource generation rules that create resources over time
+- Rules can be visualized in the UI with active state highlighting
 
 ### Interactive Features
 - Tabbed interface to filter entities by type
 - Click entity name to zoom camera to it
 - View detailed stats and inventory for selected entities
+- Rules Visualizer: See all rules for an entity, which are active, and condition evaluation
+- Journal System: Track entity actions and state changes with timestamps
+- Detail tabs: Switch between Stats, Rules, and Journal views
 - Zoom slider for camera control
 - Hide/Show UI toggle
+- Aggregated resource stats in navigation bar
 
 ## Architecture
 
@@ -61,15 +69,19 @@ Entities can be in one of four states:
 - **TailwindCSS v4.1.18**: Utility-first CSS
 - **DaisyUI v5.5.14**: Component library
 - **React Router v7.11.0**: Client-side routing
+- **XState v5.25.0**: State machine library
+- **@tabler/icons-react v3.36.0**: Icon library
 
 ## Code Structure
 
 ### Key Files
-- `src/entities/Meeple.ts`: Base entity class with state management
-- `src/entities/rules.ts`: Rule evaluation system
+- `src/entities/Meeple.ts`: Base entity class with state management and journal system
+- `src/rules/rules.ts`: Rule definitions (RULES and GENERATORS) and evaluation system
 - `src/entities/Game.ts`: Excalibur engine wrapper
 - `src/hooks/useGame.tsx`: Game initialization and state
-- `src/components/MeeplesList.tsx`: Main UI component
+- `src/components/MeeplesList.tsx`: Main UI component with filtering and detail views
+- `src/components/RulesVisualizer.tsx`: Component for visualizing entity rules
+- `src/components/JournalVisualizer.tsx`: Component for viewing entity action history
 
 ### Entity Lifecycle
 1. Entity created with initial state (idle, empty inventory)
@@ -77,7 +89,24 @@ Entities can be in one of four states:
 3. Rules check conditions based on current state
 4. Matching rule executes actions (travel, visit, transact)
 5. State transitions occur via `dispatch()` method
-6. React UI updates reflect state changes
+6. Actions and state changes are logged to entity journal
+7. React UI updates reflect state changes
+
+### Journal System
+- Each entity maintains a journal of actions and state changes
+- Journal entries include:
+  - Timestamp of the action
+  - Previous state before action
+  - Action taken (travel-to, visit, finish, transact-inventory)
+- Journal entries are displayed in reverse chronological order (newest first)
+- Useful for debugging entity behavior and understanding decision history
+
+## Current Entity Counts
+- Miners: 42
+- Asteroids: 17
+- Space Stores: 4
+- Space Bars: 2
+- Space Apartments: 2
 
 ## Future Enhancements
 - Editable rules system with UI
@@ -86,3 +115,4 @@ Entities can be in one of four states:
 - More complex economic interactions
 - Save/load game state
 - Enhanced visualization features
+- Journal export/analysis features

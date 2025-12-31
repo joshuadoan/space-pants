@@ -8,8 +8,7 @@ import {
   VitalsType,
 } from "./types";
 import { applyMeepleRules, type Rules } from "../rules/rules";
-
-export const DEFAULT_DELAY = 3000;
+import { DEFAULT_DELAY } from "../consts";
 
 export type Stats = {
   [key in VitalsType]: number;
@@ -90,6 +89,7 @@ type JorunalEntry = {
   timestamp: number;
   state: MeepleState;
   action: MeepleAction;
+  source?: "rule" | "generator";
 };
 
 /**
@@ -152,11 +152,12 @@ export class Meeple extends Actor {
     this.state = state;
   }
 
-  dispatch(action: MeepleAction): void {
+  dispatch(action: MeepleAction, source?: "rule" | "generator"): void {
     this.addToJournal({
       timestamp: Date.now(),
       state: this.state,
       action,
+      source,
     });
     let nextState: MeepleState;
     switch (action.name) {
@@ -207,7 +208,7 @@ export class Meeple extends Actor {
   initRulesTimer(game: Game): void {
     const timer = new Timer({
       fcn: async () => {
-        applyMeepleRules(this, game, this.rulesMapRules);
+        applyMeepleRules(this, game, this.rulesMapRules, "rule");
       },
       repeats: true,
       interval: 500,
@@ -227,7 +228,7 @@ export class Meeple extends Actor {
   initGeneraterTimer(game: Game): void {
     const timer = new Timer({
       fcn: async () => {
-        applyMeepleRules(this, game, this.rulesMapGenerator);
+        applyMeepleRules(this, game, this.rulesMapGenerator, "generator");
       },
       repeats: true,
       interval: 500,
@@ -256,8 +257,11 @@ export class Meeple extends Actor {
 
   addToInventory(
     good: MiningType | ProductType | CurrencyType,
-    quantity: number
+    quantity: number,
+    source?: "rule" | "generator"
   ): ActionContext {
+    // If source not provided, try to get it from current rule context
+    const actualSource = source ?? (this as any).__currentRuleSource ?? "rule";
     return this.actions
       .callMethod(() => {
         this.dispatch({
@@ -265,15 +269,18 @@ export class Meeple extends Actor {
           good,
           quantity,
           transactionType: "add",
-        });
+        }, actualSource);
       })
       .delay(DEFAULT_DELAY)
   }
 
   removeFromInventory(
     good: MiningType | ProductType | CurrencyType,
-    quantity: number
+    quantity: number,
+    source?: "rule" | "generator"
   ): ActionContext {
+    // If source not provided, try to get it from current rule context
+    const actualSource = source ?? (this as any).__currentRuleSource ?? "rule";
     return this.actions
       .callMethod(() => {
         this.dispatch({
@@ -281,7 +288,7 @@ export class Meeple extends Actor {
           good,
           quantity,
           transactionType: "remove",
-        });
+        }, actualSource);
       })
       .delay(DEFAULT_DELAY)
   }

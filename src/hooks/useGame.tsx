@@ -21,22 +21,14 @@ import {
 import { generateSpaceName } from "../utils/generateSpaceName";
 import { Meeple, type MeepleState } from "../entities/Meeple";
 import { GENERATORS, RULES } from "../rules/rules";
-
-const GAME_SPEED = 1;
-
-export const GAME_WIDTH = 2500;
-export const GAME_HEIGHT = 2500;
-
-const COUNTS = {
-  MINER: 42,
-  ASTEROID: 17,
-  SPACE_STORE: 4,
-  SPACE_BAR: 2,
-  SPACE_APARTMENT: 2,
-};
-
-const MIN_SHIP_DEFAULT_SPEED = 50;
-const MAX_SHIP_DEFAULT_SPEED = 150;
+import {
+  MAX_SHIP_DEFAULT_SPEED,
+  MIN_SHIP_DEFAULT_SPEED,
+  GAME_SPEED,
+  GAME_WIDTH,
+  GAME_HEIGHT,
+  COUNTS,
+} from "../consts";
 
 const initialMeeplState: MeepleState = {
   inventory: {
