@@ -170,8 +170,8 @@ export function GameProvider({ children }: { children: ReactNode }) {
         name: generateSpaceName(),
         state: initialMeeplState,
         roleId: RoleId.SpaceApartments,
-        rulesMapGenerator: GENERATORS,
-        rulesMapRules: RULES,
+        rulesMapGenerator: GENERATORS[RoleId.SpaceApartments],
+        rulesMapRules: RULES[RoleId.SpaceApartments],
       });
       game.currentScene.add(spaceApartment);
     }
@@ -186,8 +186,8 @@ export function GameProvider({ children }: { children: ReactNode }) {
         name: generateSpaceName(),
         state: initialMeeplState,
         roleId: RoleId.Asteroid,
-        rulesMapGenerator: GENERATORS,
-        rulesMapRules: RULES,
+        rulesMapGenerator: GENERATORS[RoleId.Asteroid],
+        rulesMapRules: RULES[RoleId.Asteroid],
       });
 
       game.currentScene.add(asteroid);
@@ -204,8 +204,8 @@ export function GameProvider({ children }: { children: ReactNode }) {
         name: generateSpaceName(),
         state: initialMeeplState,
         roleId: RoleId.SpaceStore,
-        rulesMapGenerator: GENERATORS,
-        rulesMapRules: RULES,
+        rulesMapGenerator: GENERATORS[RoleId.SpaceStore],
+        rulesMapRules: RULES[RoleId.SpaceStore],
       });
       game.currentScene.add(spaceStore);
     }
@@ -221,8 +221,8 @@ export function GameProvider({ children }: { children: ReactNode }) {
         name: generateSpaceName(),
         state: initialMeeplState,
         roleId: RoleId.SpaceBar,
-        rulesMapGenerator: GENERATORS,
-        rulesMapRules: RULES,
+        rulesMapGenerator: GENERATORS[RoleId.SpaceBar],
+        rulesMapRules: RULES[RoleId.SpaceBar],
       });
 
       game.currentScene.add(spaceBar);
@@ -238,8 +238,8 @@ export function GameProvider({ children }: { children: ReactNode }) {
         name: generateSpaceName(),
         state: initialMeeplState,
         roleId: RoleId.Miner,
-        rulesMapGenerator: GENERATORS,
-        rulesMapRules: RULES,
+        rulesMapGenerator: GENERATORS[RoleId.Miner],
+        rulesMapRules: RULES[RoleId.Miner],
       });
 
       game.currentScene.add(miner);

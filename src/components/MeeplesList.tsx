@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useReducer } from "react";
+import { useEffect, useMemo, useReducer, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import cx from "classnames";
 
@@ -17,6 +17,7 @@ import { IconComponent } from "../utils/iconMap";
 import { MeepleDetails } from "./MeepleDetail";
 import { MeepleExtraDetail } from "./MeepleExtraDetail";
 import { DEFAULT_ZOOM_VALUE, ZoomSlider } from "./ZoomSlider";
+import { RulesVisualizer } from "./RulesVisualizer";
 
 type State = {
   showUi: boolean;
@@ -42,6 +43,7 @@ const reducer = (state: State, action: Action): State => {
 
 export const MeeplesList = () => {
   const [state, dispatch] = useReducer(reducer, initialState);
+  const [activeTab, setActiveTab] = useState<"stats" | "rules">("stats");
 
   const { id } = useParams<{ id: string }>();
   const { isLoading, game, zoomToEntity, centerCameraInGame, setZoom } =
@@ -59,12 +61,6 @@ export const MeeplesList = () => {
   const selectedMeeple = useMemo(() => {
     return meeples.find((meeple) => String(meeple.id) === id);
   }, [id, meeples]);
-
-  const displayMeeples = useMemo(() => {
-    return filteredMeeples.filter((meeple) =>
-      id ? String(meeple.id) === id : true
-    );
-  }, [filteredMeeples, id]);
 
   const aggregatedMiningStats = useMemo(() => {
     return meeples.reduce((acc: Record<MiningType, number>, meeple) => {
@@ -215,29 +211,90 @@ export const MeeplesList = () => {
         </div>
       </div>
       <div
-        className={cx("flex-1 p-2 w-sm overflow-y-auto", {
+        className={cx("flex-1 p-2  overflow-y-auto flex flex-col gap-2", {
           hidden: !state.showUi,
         })}
       >
-        {displayMeeples.map((meeple) => (
-          <MeepleDetails
-            key={meeple.id}
-            id={meeple.id}
-            name={meeple.name}
-            roleId={meeple.roleId}
-            state={meeple.state}
-            stats={{ ...meeple.state.stats }}
-            inventory={{ ...meeple.state.inventory }}
-            isSelected={id === String(meeple.id)}
-          />
-        ))}
-        {selectedMeeple ? (
-          <>
-            <MeepleExtraDetail
-              stats={{ ...selectedMeeple.state.stats }}
-              inventory={{ ...selectedMeeple.state.inventory }}
+        {!id &&
+          filteredMeeples.map((meeple) => (
+            <MeepleDetails
+              className="w-sm"
+              key={meeple.id}
+              id={meeple.id}
+              name={meeple.name}
+              roleId={meeple.roleId}
+              state={meeple.state}
+              stats={{ ...meeple.state.stats }}
+              inventory={{ ...meeple.state.inventory }}
+              isSelected={id === String(meeple.id)}
             />
-          </>
+          ))}
+        {selectedMeeple ? (
+          <div className="w-sm flex flex-col h-full">
+            <div className="tabs tabs-boxed mb-2 shrink-0">
+              <button
+                onClick={() => setActiveTab("stats")}
+                className={cx("tab flex items-center gap-1.5", {
+                  "tab-active": activeTab === "stats",
+                })}
+              >
+                <span>Stats</span>
+              </button>
+              <button
+                onClick={() => setActiveTab("rules")}
+                className={cx("tab flex items-center gap-1.5", {
+                  "tab-active": activeTab === "rules",
+                })}
+              >
+                <span>Rules</span>
+              </button>
+            </div>
+            <div className="flex-1 overflow-y-auto">
+              {activeTab === "stats" && (
+                <>
+                  <MeepleDetails
+                    key={selectedMeeple.id}
+                    id={selectedMeeple.id}
+                    name={selectedMeeple.name}
+                    roleId={selectedMeeple.roleId}
+                    state={selectedMeeple.state}
+                    stats={{ ...selectedMeeple.state.stats }}
+                    inventory={{ ...selectedMeeple.state.inventory }}
+                    isSelected={id === String(selectedMeeple.id)}
+                  />
+                  <MeepleExtraDetail
+                    stats={{ ...selectedMeeple.state.stats }}
+                    inventory={{ ...selectedMeeple.state.inventory }}
+                  />
+                </>
+              )}
+              {activeTab === "rules" && (
+                <RulesVisualizer
+                  rules={{
+                    idle: [
+                      ...selectedMeeple.rulesMapRules.idle,
+                      ...selectedMeeple.rulesMapGenerator.idle,
+                    ],
+                    traveling: [
+                      ...selectedMeeple.rulesMapRules.traveling,
+                      ...selectedMeeple.rulesMapGenerator.traveling,
+                    ],
+                    visiting: [
+                      ...selectedMeeple.rulesMapRules.visiting,
+                      ...selectedMeeple.rulesMapGenerator.visiting,
+                    ],
+                    transacting: [
+                      ...selectedMeeple.rulesMapRules.transacting,
+                      ...selectedMeeple.rulesMapGenerator.transacting,
+                    ],
+                  }}
+                  stats={{ ...selectedMeeple.state.stats }}
+                  inventory={{ ...selectedMeeple.state.inventory }}
+                  currentStateName={selectedMeeple.state.name}
+                />
+              )}
+            </div>
+          </div>
         ) : null}
       </div>
     </div>

@@ -2,8 +2,8 @@ import type {
   CurrencyType,
   MiningType,
   ProductType,
-  VitalsType,
 } from "../entities/types";
+import { VitalsType } from "../entities/types";
 import type { Stats, Inventory } from "../entities/Meeple";
 import { IconComponent } from "../utils/iconMap";
 import cx from "classnames";
@@ -17,7 +17,7 @@ export const MeepleExtraDetail = ({
 }) => {
   return (
     <div>
-      <MeepleExtraDetails className="mb-4">
+      <MeepleExtraDetails className="flex flex-col gap-4">
         <MeepleExtraDetailsCard>
           <MeepleExtraDetailCardTitle>Stats</MeepleExtraDetailCardTitle>
           <MeepleExtraDetailCardItemList>
@@ -64,10 +64,12 @@ export const MeepleExtraDetails = ({
 
 export const MeepleExtraDetailsCard = ({
   children,
+  className,
 }: {
+  className?: string;
   children: React.ReactNode;
 }) => (
-  <div className="card card-compact bg-base-200 shadow-sm p-3">{children}</div>
+  <div className={cx("card card-compact bg-base-200 shadow-sm p-3", className)}>{children}</div>
 );
 
 export const MeepleExtraDetailCardTitle = ({
@@ -119,3 +121,4 @@ export const MeepleExtraDetailCardInstruction = ({
     {children}
   </div>
 );
+

@@ -7,7 +7,7 @@ import {
   RoleId,
   VitalsType,
 } from "./types";
-import { GENERATORS, RULES, applyMeepleRules } from "../rules/rules";
+import { GENERATORS, RULES, applyMeepleRules, type Rules } from "../rules/rules";
 
 export const DEFAULT_DELAY = 1000;
 
@@ -81,8 +81,8 @@ export type MeepleProps = {
   name: string;
   state: MeepleState;
   roleId: RoleId;
-  rulesMapGenerator: typeof GENERATORS;
-  rulesMapRules: typeof RULES;
+  rulesMapGenerator: Rules;
+  rulesMapRules: Rules;
 };
 
 /**
@@ -94,8 +94,8 @@ export class Meeple extends Actor {
   // Identity & State
   roleId: RoleId;
   state: MeepleState;
-  rulesMapGenerator: typeof GENERATORS;
-  rulesMapRules: typeof RULES;
+  rulesMapGenerator: Rules;
+  rulesMapRules: Rules;
   // Gameplay Properties
   readonly game: Game;
 

@@ -11,15 +11,16 @@ import {
 
 const UNIT = 1;
 
-type Rule = {
+export type Rule = {
   name: string;
+  description: string;
   property: MiningType | ProductType | CurrencyType | VitalsType;
   operator: Operator;
   value: number;
-  actions: ((meeple: Meeple, game: Game) => void)[];
+  actions: ((meeple: Meeple, game: Game,) => void)[];
 };
 
-type Rules = {
+export type Rules = {
   [key in MeepleState["name"]]: Rule[];
 };
 
@@ -27,6 +28,7 @@ export const MINER_RULES: Rules = {
   idle: [
     {
       name: "need-ore",
+      description: "If the miner has less than 1 ore, it will travel to the asteroid.",
       property: MiningType.Ore,
       operator: Operator.LessThan,
       value: 1,
@@ -41,6 +43,7 @@ export const MINER_RULES: Rules = {
     },
     {
       name: "have-ore",
+      description: "If the miner has more than or equal to 1 ore, it will travel to the space store.",
       property: MiningType.Ore,
       operator: Operator.GreaterThanOrEqual,
       value: 1,
@@ -58,6 +61,7 @@ export const MINER_RULES: Rules = {
   visiting: [
     {
       name: "mine-ore",
+      description: "If the miner is visiting an asteroid and has less than 1 ore, it will mine 1 ore.",
       property: MiningType.Ore,
       operator: Operator.LessThan,
       value: 1,
@@ -80,6 +84,7 @@ export const MINER_RULES: Rules = {
     },
     {
       name: "have-ore",
+      description: "If the miner is visiting a space store and has more than or equal to 1 ore, it will add 1 ore to the space store and remove 1 ore from the miner.",
       property: MiningType.Ore,
       operator: Operator.GreaterThanOrEqual,
       value: 1,
@@ -107,6 +112,7 @@ export const SPACE_STORE_RULES: Rules = {
   idle: [
     {
       name: "generate-money",
+      description: "If the space store has more than or equal to 1 ore, it will generate 2 money.",
       property: MiningType.Ore,
       operator: Operator.GreaterThanOrEqual,
       value: 1,
@@ -128,6 +134,7 @@ export const ASTEROID_RULES: Rules = {
   idle: [
     {
       name: "generate-ore",
+      description: "If the asteroid has less than 100 ore, it will generate 1 ore.",
       property: MiningType.Ore,
       operator: Operator.LessThan,
       value: 100,
@@ -143,7 +150,7 @@ export const ASTEROID_RULES: Rules = {
   transacting: [],
 };
 
-export const RULES = {
+export const RULES: Record<RoleId, Rules> = {
   [RoleId.Miner]: MINER_RULES,
   [RoleId.Asteroid]: {
     idle: [],
@@ -171,7 +178,7 @@ export const RULES = {
   },
 };
 
-export const GENERATORS = {
+export const GENERATORS: Record<RoleId, Rules> = {
   [RoleId.Miner]: {
     idle: [],
     traveling: [],
@@ -194,19 +201,15 @@ export const GENERATORS = {
   },
 };
 
-type RulesMap = {
-  [key in RoleId]: Rules;
-};
-
 export function applyMeepleRules(
   meeple: Meeple,
   engine: Game,
-  rulesMap: RulesMap
+  rulesMap: Rules
 ) {
   if (meeple.actions.getQueue().hasNext()) {
     return;
   }
-  for (const rule of rulesMap[meeple.roleId][meeple.state.name]) {
+  for (const rule of rulesMap[meeple.state.name]) {
     if (
       evaluateCondition(
         rule.property,
