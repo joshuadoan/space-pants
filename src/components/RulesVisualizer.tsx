@@ -24,7 +24,7 @@ export const RulesVisualizer = ({
   return (
     <div className="flex flex-col gap-4 p-2">
       {Object.entries(rules).map(([stateName, stateRules]) => {
-        // if (stateRules.length === 0) return null;
+        if (stateRules.length === 0) return null;
 
         return (
           <div key={stateName} className="flex flex-col gap-2">
@@ -38,26 +38,6 @@ export const RulesVisualizer = ({
               {stateName}
             </h5>
             <div className="flex flex-col gap-2">
-              {stateRules.length === 0 && (
-                <div
-                  className={cx(
-                    "p-2 rounded-lg border-2 transition-all duration-200",
-                    {
-                      "bg-success/20 border-success/50 shadow-sm shadow-success/20":
-                        stateName === currentStateName,
-                      "bg-base-100 border-base-300 opacity-60": stateName !== currentStateName,
-                    }
-                  )}
-                >
-                  <div className="flex items-start gap-2 mb-2">
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2 mb-1">
-                        <span className="font-semibold text-sm">empty</span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              )}
               {stateRules.map((rule) => {
                 const conditionMet = evaluateCondition(
                   rule.property,

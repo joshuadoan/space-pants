@@ -74,7 +74,12 @@ export const MINER_RULES: Rules = {
           switch (meeple.state.target.roleId) {
             case RoleId.Asteroid:
               meeple.addToInventory(MiningType.Ore, UNIT);
-              meeple.state.target.removeFromInventory(MiningType.Ore, UNIT);
+              meeple.state.target.removeFromInventory(MiningType.Ore, UNIT)
+              .callMethod(() => {
+                meeple.dispatch({
+                  name: "finish",
+                });
+              });
               break;
             case RoleId.SpaceStore:
               break;
@@ -96,7 +101,12 @@ export const MINER_RULES: Rules = {
                 meeple.state.target.addToInventory(MiningType.Ore, UNIT);
                 meeple.removeFromInventory(MiningType.Ore, UNIT);
                 meeple.state.target.removeFromInventory(CurrencyType.Money, UNIT);
-                meeple.addToInventory(CurrencyType.Money, UNIT);
+                meeple.addToInventory(CurrencyType.Money, UNIT)
+                .callMethod(() => {
+                  meeple.dispatch({
+                    name: "finish",
+                  });
+                });
                 break;
             }
           }
@@ -119,7 +129,12 @@ export const SPACE_STORE_RULES: Rules = {
       actions: [
         (meeple, _game) => {
           meeple.addToInventory(CurrencyType.Money, UNIT * 2);
-          meeple.removeFromInventory(MiningType.Ore, UNIT);
+          meeple.removeFromInventory(MiningType.Ore, UNIT)
+          .callMethod(() => {
+            meeple.dispatch({
+              name: "finish",
+            });
+          });
         },
       ],
     },
@@ -140,7 +155,12 @@ export const ASTEROID_RULES: Rules = {
       value: 100,
       actions: [
         (meeple, _game) => {
-          meeple.addToInventory(MiningType.Ore, UNIT);
+          meeple.addToInventory(MiningType.Ore, UNIT)
+          .callMethod(() => {
+            meeple.dispatch({
+              name: "finish",
+            });
+          });
         },
       ],
     },

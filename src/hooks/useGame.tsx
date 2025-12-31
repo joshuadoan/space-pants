@@ -172,6 +172,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
         roleId: RoleId.SpaceApartments,
         rulesMapGenerator: GENERATORS[RoleId.SpaceApartments],
         rulesMapRules: RULES[RoleId.SpaceApartments],
+        journal: [],
       });
       game.currentScene.add(spaceApartment);
     }
@@ -188,6 +189,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
         roleId: RoleId.Asteroid,
         rulesMapGenerator: GENERATORS[RoleId.Asteroid],
         rulesMapRules: RULES[RoleId.Asteroid],
+        journal: [],
       });
 
       game.currentScene.add(asteroid);
@@ -206,6 +208,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
         roleId: RoleId.SpaceStore,
         rulesMapGenerator: GENERATORS[RoleId.SpaceStore],
         rulesMapRules: RULES[RoleId.SpaceStore],
+        journal: [],
       });
       game.currentScene.add(spaceStore);
     }
@@ -223,6 +226,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
         roleId: RoleId.SpaceBar,
         rulesMapGenerator: GENERATORS[RoleId.SpaceBar],
         rulesMapRules: RULES[RoleId.SpaceBar],
+        journal: [],
       });
 
       game.currentScene.add(spaceBar);
@@ -240,6 +244,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
         roleId: RoleId.Miner,
         rulesMapGenerator: GENERATORS[RoleId.Miner],
         rulesMapRules: RULES[RoleId.Miner],
+        journal: [],
       });
 
       game.currentScene.add(miner);

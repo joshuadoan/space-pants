@@ -18,6 +18,7 @@ import { MeepleDetails } from "./MeepleDetail";
 import { MeepleExtraDetail } from "./MeepleExtraDetail";
 import { DEFAULT_ZOOM_VALUE, ZoomSlider } from "./ZoomSlider";
 import { RulesVisualizer } from "./RulesVisualizer";
+import { JournalVisualizer } from "./JournalVisualizer";
 
 type State = {
   showUi: boolean;
@@ -43,7 +44,7 @@ const reducer = (state: State, action: Action): State => {
 
 export const MeeplesList = () => {
   const [state, dispatch] = useReducer(reducer, initialState);
-  const [activeTab, setActiveTab] = useState<"stats" | "rules">("stats");
+  const [activeTab, setActiveTab] = useState<"stats" | "rules" | "journal">("stats");
 
   const { id } = useParams<{ id: string }>();
   const { isLoading, game, zoomToEntity, centerCameraInGame, setZoom } =
@@ -231,6 +232,16 @@ export const MeeplesList = () => {
           ))}
         {selectedMeeple ? (
           <div className="w-sm flex flex-col h-full">
+            <MeepleDetails
+              key={selectedMeeple.id}
+              id={selectedMeeple.id}
+              name={selectedMeeple.name}
+              roleId={selectedMeeple.roleId}
+              state={selectedMeeple.state}
+              stats={{ ...selectedMeeple.state.stats }}
+              inventory={{ ...selectedMeeple.state.inventory }}
+              isSelected={id === String(selectedMeeple.id)}
+            />
             <div className="tabs tabs-boxed mb-2 shrink-0">
               <button
                 onClick={() => setActiveTab("stats")}
@@ -248,20 +259,18 @@ export const MeeplesList = () => {
               >
                 <span>Rules</span>
               </button>
+              <button
+                onClick={() => setActiveTab("journal")}
+                className={cx("tab flex items-center gap-1.5", {
+                  "tab-active": activeTab === "journal",
+                })}
+              >
+                <span>Journal</span>
+              </button>
             </div>
             <div className="flex-1 overflow-y-auto">
               {activeTab === "stats" && (
                 <>
-                  <MeepleDetails
-                    key={selectedMeeple.id}
-                    id={selectedMeeple.id}
-                    name={selectedMeeple.name}
-                    roleId={selectedMeeple.roleId}
-                    state={selectedMeeple.state}
-                    stats={{ ...selectedMeeple.state.stats }}
-                    inventory={{ ...selectedMeeple.state.inventory }}
-                    isSelected={id === String(selectedMeeple.id)}
-                  />
                   <MeepleExtraDetail
                     stats={{ ...selectedMeeple.state.stats }}
                     inventory={{ ...selectedMeeple.state.inventory }}
@@ -292,6 +301,9 @@ export const MeeplesList = () => {
                   inventory={{ ...selectedMeeple.state.inventory }}
                   currentStateName={selectedMeeple.state.name}
                 />
+              )}
+              {activeTab === "journal" && (
+                <JournalVisualizer journal={selectedMeeple.journal} />
               )}
             </div>
           </div>
