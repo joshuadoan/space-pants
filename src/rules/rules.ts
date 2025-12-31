@@ -172,7 +172,7 @@ export const SPACE_STORE_RULES: Rules = {
 export const ASTEROID_RULES: Rules = {
   idle: [
     {
-      name: "Replenish Ore",
+      name: "Replenish Ore while idle",
       description:
         "When the asteroid has less than 100 ore, it will naturally regenerate 1 ore over time.",
       property: MiningType.Ore,
@@ -196,9 +196,9 @@ export const ASTEROID_RULES: Rules = {
   visiting: [],
   transacting: [
     {
-      name: "Replenish Ore",
+      name: "Replenish Ore while transacting",
       description:
-        "When the asteroid has less than 100 ore, it will naturally regenerate 1 ore over time.",
+        "We need to generate while transacting to avoid running out of ore if the asteroid is popular.",
       property: MiningType.Ore,
       operator: Operator.LessThan,
       value: 100,
