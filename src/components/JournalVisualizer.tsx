@@ -10,6 +10,7 @@ type JournalEntry = {
   timestamp: number;
   state: MeepleState;
   action: MeepleAction;
+  source?: "rule" | "generator";
 };
 
 type JournalEntryItemProps = {
@@ -46,34 +47,36 @@ const JournalEntryItem = ({ entry, isNew }: JournalEntryItemProps) => {
 
 export const JournalVisualizer = ({ journal, className }: { journal: JournalEntry[], className?: string }) => {
   const seenTimestampsRef = useRef<Set<number>>(new Set());
-  const [newEntryTimestamps, setNewEntryTimestamps] = useState<Set<number>>(new Set());
+  const [latestEntryTimestamp, setLatestEntryTimestamp] = useState<number | null>(null);
 
-  // Detect new entries
+  // Detect new entries and only animate the latest one
   useEffect(() => {
-    const newTimestamps = new Set<number>();
-    journal.forEach((entry) => {
-      if (!seenTimestampsRef.current.has(entry.timestamp)) {
-        newTimestamps.add(entry.timestamp);
-        seenTimestampsRef.current.add(entry.timestamp);
-      }
-    });
+    if (journal.length === 0) {
+      setLatestEntryTimestamp(null);
+      return;
+    }
 
-    if (newTimestamps.size > 0) {
-      setNewEntryTimestamps(newTimestamps);
-      // Clear the "new" flag after animation completes (roughly 30ms * text length)
-      // Calculate max length only for new entries
-      const newEntries = journal.filter(e => newTimestamps.has(e.timestamp));
-      const maxTextLength = newEntries.length > 0 
-        ? Math.max(...newEntries.map(e => formatJournalEntry(e).text.length))
-        : 0;
+    // Find the latest entry (highest timestamp)
+    const latestEntry = journal.reduce((latest, entry) => 
+      entry.timestamp > latest.timestamp ? entry : latest
+    );
+
+    // Check if this is a new entry we haven't seen before
+    const isNewEntry = !seenTimestampsRef.current.has(latestEntry.timestamp);
+    
+    if (isNewEntry) {
+      seenTimestampsRef.current.add(latestEntry.timestamp);
+      setLatestEntryTimestamp(latestEntry.timestamp);
+      
+      // Clear the "new" flag after animation completes
+      const formattedEntry = formatJournalEntry(latestEntry);
       const timer = setTimeout(() => {
-        setNewEntryTimestamps(prev => {
-          const updated = new Set(prev);
-          newTimestamps.forEach(ts => updated.delete(ts));
-          return updated;
-        });
-      }, maxTextLength * 30 + 1000); // Add more buffer time
+        setLatestEntryTimestamp(null);
+      }, formattedEntry.text.length * 30 + 1000);
       return () => clearTimeout(timer);
+    } else {
+      // If it's not a new entry, don't animate
+      setLatestEntryTimestamp(null);
     }
   }, [journal]);
 
@@ -96,7 +99,8 @@ export const JournalVisualizer = ({ journal, className }: { journal: JournalEntr
       </div>
       <div className="flex flex-col gap-2 max-h-[600px] overflow-y-auto">
         {sortedJournal.map((entry) => {
-          const isNew = newEntryTimestamps.has(entry.timestamp);
+          // Only animate the latest entry
+          const isNew = latestEntryTimestamp === entry.timestamp;
           return (
             <JournalEntryItem
               key={entry.timestamp}

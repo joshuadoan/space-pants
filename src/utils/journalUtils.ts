@@ -5,6 +5,7 @@ type JournalEntry = {
   timestamp: number;
   state: MeepleState;
   action: MeepleAction;
+  source?: "rule" | "generator";
 };
 
 export type IconKey = 
@@ -56,7 +57,8 @@ const formatTransactionText = (
   quantity: number,
   transactionType: "add" | "remove",
   goodName: string,
-  icons: IconKey[]
+  icons: IconKey[],
+  source?: "rule" | "generator"
 ): FormattedJournalEntry => {
   // Handle transactions while visiting another meeple
   if (state.name === "visiting" && "target" in state) {
@@ -79,7 +81,7 @@ const formatTransactionText = (
   }
   
   // Handle transactions when not visiting (internal operations)
-  return formatInternalTransaction(good, quantity, transactionType, goodName, icons);
+  return formatInternalTransaction(good, quantity, transactionType, goodName, icons, source);
 };
 
 /**
@@ -194,22 +196,53 @@ const formatInternalTransaction = (
   quantity: number,
   transactionType: "add" | "remove",
   goodName: string,
-  icons: IconKey[]
+  icons: IconKey[],
+  source?: "rule" | "generator"
 ): FormattedJournalEntry => {
+  // Generator-based transactions are internal generation/processing
+  if (source === "generator") {
+    switch (good) {
+      case MiningType.Ore:
+        icons.push(MiningType.Ore);
+        if (transactionType === "add") {
+          return {
+            text: `Generated ${quantity} ${goodName}`,
+            icons,
+          };
+        } else {
+          return {
+            text: `Processed ${quantity} ${goodName}`,
+            icons,
+          };
+        }
+      
+      case CurrencyType.Money:
+        icons.push(CurrencyType.Money);
+        return {
+          text: `Generated ${quantity} ${goodName}`,
+          icons,
+        };
+      
+      default:
+        return formatGenericTransaction(good, quantity, transactionType, goodName, icons);
+    }
+  }
+  
+  // Rule-based transactions when not visiting are typically receiving goods
   switch (good) {
     case MiningType.Ore:
       if (transactionType === "remove") {
-        // Ore being extracted/lost (e.g., asteroid being mined, store converting)
+        // Ore being extracted (asteroid being mined)
         icons.push(MiningType.Ore);
         return {
           text: `Ore was extracted: lost ${quantity} ${goodName}`,
           icons,
         };
       } else if (transactionType === "add") {
-        // Ore being generated (e.g., asteroid regenerating)
+        // Ore being received (store purchasing from miner)
         icons.push(MiningType.Ore);
         return {
-          text: `Generated ${quantity} ${goodName}`,
+          text: `Received ${quantity} ${goodName}`,
           icons,
         };
       }
@@ -217,14 +250,14 @@ const formatInternalTransaction = (
     
     case CurrencyType.Money:
       if (transactionType === "add") {
-        // Money being generated (e.g., store converting ore to money)
+        // Money being received (miner earning from sale)
         icons.push(CurrencyType.Money);
         return {
-          text: `Generated ${quantity} ${goodName}`,
+          text: `Received ${quantity} ${goodName}`,
           icons,
         };
       } else if (transactionType === "remove") {
-        // Money being spent/paid (e.g., store paying for ore)
+        // Money being paid (store paying for ore)
         icons.push(CurrencyType.Money);
         return {
           text: `Paid ${quantity} ${goodName}`,
@@ -353,7 +386,7 @@ export const formatJournalEntry = (entry: JournalEntry): FormattedJournalEntry =
       const { good, quantity, transactionType } = action;
       const goodName = formatGoodName(good);
       
-      return formatTransactionText(state, good, quantity, transactionType, goodName, icons);
+      return formatTransactionText(state, good, quantity, transactionType, goodName, icons, entry.source);
     }
 
     case "finish": {

@@ -149,7 +149,10 @@ export const SPACE_STORE_RULES: Rules = {
       value: 1,
       actions: [
         (meeple, _game) => {
-          meeple.addToInventory(CurrencyType.Money, EXCHANGE_RATE_TO_MONEY[MiningType.Ore]);
+          meeple.addToInventory(
+            CurrencyType.Money,
+            EXCHANGE_RATE_TO_MONEY[MiningType.Ore]
+          );
           console.log("generate-money", meeple.id);
           meeple
             .removeFromInventory(MiningType.Ore, UNIT)
@@ -191,7 +194,28 @@ export const ASTEROID_RULES: Rules = {
   ],
   traveling: [],
   visiting: [],
-  transacting: [],
+  transacting: [
+    {
+      name: "Replenish Ore",
+      description:
+        "When the asteroid has less than 100 ore, it will naturally regenerate 1 ore over time.",
+      property: MiningType.Ore,
+      operator: Operator.LessThan,
+      value: 100,
+      actions: [
+        (meeple, _game) => {
+          meeple
+            .addToInventory(MiningType.Ore, UNIT)
+            .callMethod(() => {
+              meeple.dispatch({
+                name: "finish",
+              });
+            })
+            .delay(DEFAULT_DELAY);
+        },
+      ],
+    },
+  ],
 };
 
 export const RULES: Record<RoleId, Rules> = {
@@ -248,25 +272,32 @@ export const GENERATORS: Record<RoleId, Rules> = {
 export function applyMeepleRules(
   meeple: Meeple,
   engine: Game,
-  rulesMap: Rules
+  rulesMap: Rules,
+  source: "rule" | "generator" = "rule"
 ) {
   if (meeple.actions.getQueue().hasNext()) {
     return;
   }
-  for (const rule of rulesMap[meeple.state.name]) {
-    if (
-      evaluateCondition(
-        rule.property,
-        rule.operator,
-        rule.value,
-        meeple.state.inventory,
-        meeple.state.stats
-      )
-    ) {
-      for (const action of rule.actions) {
-        action(meeple, engine);
+  // Store source on meeple temporarily so rule actions can access it
+  (meeple as any).__currentRuleSource = source;
+  try {
+    for (const rule of rulesMap[meeple.state.name]) {
+      if (
+        evaluateCondition(
+          rule.property,
+          rule.operator,
+          rule.value,
+          meeple.state.inventory,
+          meeple.state.stats
+        )
+      ) {
+        for (const action of rule.actions) {
+          action(meeple, engine);
+        }
       }
     }
+  } finally {
+    delete (meeple as any).__currentRuleSource;
   }
 }
 

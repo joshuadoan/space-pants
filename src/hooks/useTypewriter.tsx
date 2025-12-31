@@ -11,7 +11,7 @@ import { useState, useEffect, useRef } from "react";
 export function useTypewriter(text: string, speed: number = 30, enabled: boolean = true) {
   const [displayedText, setDisplayedText] = useState(enabled ? "" : text);
   const [isTyping, setIsTyping] = useState(enabled);
-  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const timeoutRef = useRef<number | null>(null);
   const indexRef = useRef(0);
   const textRef = useRef(text);
   const enabledRef = useRef(enabled);
