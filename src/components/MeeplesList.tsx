@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useReducer, useRef, useState } from "react";
+import { useEffect, useMemo, useReducer, useRef } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { useVirtualizer } from "@tanstack/react-virtual";
 import cx from "classnames";
@@ -16,7 +16,6 @@ import { useGame } from "../hooks/useGame";
 import { useMeepleFilters } from "../hooks/useMeepleFilters";
 import { IconComponent } from "../utils/iconMap";
 import { MeepleDetails } from "./MeepleDetail";
-import { MeepleExtraDetail } from "./MeepleExtraDetail";
 import { DEFAULT_ZOOM_VALUE, ZoomSlider } from "./ZoomSlider";
 import { RulesVisualizer } from "./RulesVisualizer";
 import { JournalVisualizer } from "./JournalVisualizer";
@@ -46,12 +45,19 @@ const reducer = (state: State, action: Action): State => {
 
 export const MeeplesList = () => {
   const [state, dispatch] = useReducer(reducer, initialState);
-  const [mainTab, setMainTab] = useState<"meeples" | "help">("meeples");
-  const [activeTab, setActiveTab] = useState<"stats" | "rules" | "journal">("stats");
 
   const { id } = useParams<{ id: string }>();
-  const { isLoading, game, zoomToEntity, centerCameraInGame, setZoom } =
-    useGame();
+  const {
+    isLoading,
+    game,
+    zoomToEntity,
+    centerCameraInGame,
+    setZoom,
+    mainTab,
+    activeTab,
+    setMainTab,
+    setActiveTab,
+  } = useGame();
   const navigate = useNavigate();
 
   const meeples =
@@ -311,14 +317,6 @@ export const MeeplesList = () => {
             />
             <div className="tabs tabs-boxed mb-2 shrink-0">
               <button
-                onClick={() => setActiveTab("stats")}
-                className={cx("tab flex items-center gap-1.5", {
-                  "tab-active": activeTab === "stats",
-                })}
-              >
-                <span>Stats</span>
-              </button>
-              <button
                 onClick={() => setActiveTab("rules")}
                 className={cx("tab flex items-center gap-1.5", {
                   "tab-active": activeTab === "rules",
@@ -336,40 +334,17 @@ export const MeeplesList = () => {
               </button>
             </div>
             <div className="flex-1 overflow-y-auto">
-              {activeTab === "stats" && (
-                <>
-                  <MeepleExtraDetail
-                    className="w-sm"
-                    stats={{ ...selectedMeeple.state.stats }}
-                    inventory={{ ...selectedMeeple.state.inventory }}
-                  />
-                </>
-              )}
-              {activeTab === "rules" && (
+              {/* {activeTab === "rules" && (
                 <RulesVisualizer
                   rules={{
-                    idle: [
-                      ...selectedMeeple.rulesMapRules.idle,
-                      ...selectedMeeple.rulesMapGenerator.idle,
-                    ],
-                    traveling: [
-                      ...selectedMeeple.rulesMapRules.traveling,
-                      ...selectedMeeple.rulesMapGenerator.traveling,
-                    ],
-                    visiting: [
-                      ...selectedMeeple.rulesMapRules.visiting,
-                      ...selectedMeeple.rulesMapGenerator.visiting,
-                    ],
-                    transacting: [
-                      ...selectedMeeple.rulesMapRules.transacting,
-                      ...selectedMeeple.rulesMapGenerator.transacting,
-                    ],
+                    rules: selectedMeeple.rulesMapRules,
+                    generators: selectedMeeple.rulesMapGenerator,
                   }}
                   stats={{ ...selectedMeeple.state.stats }}
                   inventory={{ ...selectedMeeple.state.inventory }}
                   currentStateName={selectedMeeple.state.name}
                 />
-              )}
+              )} */}
               {activeTab === "journal" && (
                 <JournalVisualizer journal={[...selectedMeeple.journal]} className="w-sm" />
               )}

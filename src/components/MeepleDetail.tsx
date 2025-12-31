@@ -9,6 +9,7 @@ import type { RoleId } from "../entities/types";
 import { IconPlayerPause, IconRoute } from "@tabler/icons-react";
 import { IconArrowsExchange } from "@tabler/icons-react";
 import cx from "classnames";
+import { MeepleExtraDetail } from "./MeepleExtraDetail";
 
 const MEEPLE_STATE_NAMES = ["idle", "traveling", "visiting", "transacting"] as const;
 
@@ -26,15 +27,23 @@ export const MeepleDetails = (props: {
 
   return (
     <MeepleDetail className={className}>
-      <Link
-        className="cursor-pointer hover:text-primary underline"
-        to={`/meeple/${id}`}
-      >
-        {meeple.name}
-      </Link>
+      <div className="flex items-center justify-between">
+        <Link
+          className="cursor-pointer hover:text-primary underline"
+          to={`/meeple/${id}`}
+        >
+          {meeple.name}
+        </Link>
+        <StateRulesTimeLine state={meeple.state} />
+      </div>
       <MeepleRoleBadge roleId={meeple.roleId} />
       <MeepleStateBadge state={meeple.state} />
-      <StateRulesTimeLine state={meeple.state} />
+      {isSelected && (
+        <MeepleExtraDetail
+          stats={{ ...meeple.state.stats }}
+          inventory={{ ...meeple.state.inventory }}
+        />
+      )}
     </MeepleDetail>
   );
 };
@@ -94,8 +103,7 @@ const StateRulesTimeLine = ({
   state: MeepleState;
 }) => {
   return (
-    <div className="flex items-center gap-1.5 mt-2 pt-2 border-t border-gray-200">
-      <span className="text-xs text-gray-500 mr-1 shrink-0">States:</span>
+    <div className="flex items-center gap-1">
       <div className="flex items-center gap-1 flex-wrap">
         {MEEPLE_STATE_NAMES.map((stateName, index) => {
           const isActiveState = stateName === state.name;

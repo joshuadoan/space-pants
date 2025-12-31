@@ -7,7 +7,7 @@ import {
   RoleId,
   VitalsType,
 } from "./types";
-import { applyMeepleRules, type Rules } from "../rules/rules";
+import { applyMeepleRules, type Rule, type Rules } from "../rules/rules";
 import { DEFAULT_DELAY } from "../consts";
 
 export type Stats = {
@@ -89,8 +89,7 @@ export type MeepleProps = {
   name: string;
   state: MeepleState;
   roleId: RoleId;
-  rulesMapGenerator: Rules;
-  rulesMapRules: Rules;
+  rulesMapRules: Rule[];
   journal: JorunalEntry[];
 };
 
@@ -111,8 +110,7 @@ export class Meeple extends Actor {
   roleId: RoleId;
   state: MeepleState;
   journal: JorunalEntry[];
-  rulesMapGenerator: Rules;
-  rulesMapRules: Rules;
+  rulesMapRules: Rule[];
   // Gameplay Properties
   readonly game: Game;
 
@@ -125,7 +123,6 @@ export class Meeple extends Actor {
     name,
     roleId,
     state,
-    rulesMapGenerator,
     rulesMapRules,
     journal,
   }: MeepleProps) {
@@ -141,14 +138,12 @@ export class Meeple extends Actor {
     // Identity & State
     this.roleId = roleId;
     this.state = state;
-    this.rulesMapGenerator = rulesMapGenerator;
     this.rulesMapRules = rulesMapRules;
     this.game = this.scene?.engine as Game;
   }
 
   onInitialize(game: Game): void {
     this.initRulesTimer(game);
-    this.initGeneraterTimer(game);
   }
 
   onDestroy(): void {
@@ -249,18 +244,6 @@ export class Meeple extends Actor {
     if (this.journal.length > 100) {
       this.journal.shift();
     }
-  }
-
-  initGeneraterTimer(game: Game): void {
-    const timer = new Timer({
-      fcn: async () => {
-        applyMeepleRules(this, game, this.rulesMapGenerator, "generator");
-      },
-      repeats: true,
-      interval: 1000,
-    });
-    game.currentScene.add(timer);
-    timer.start();
   }
 
   travelTo(target: Meeple): ActionContext {
