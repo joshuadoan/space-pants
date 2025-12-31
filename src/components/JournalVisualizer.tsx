@@ -4,6 +4,7 @@ import { formatRelativeTime } from "../utils/dateUtils";
 import { formatJournalEntry } from "../utils/journalUtils";
 import { useTypewriter } from "../hooks/useTypewriter";
 import { useEffect, useRef, useState } from "react";
+import { IconComponent } from "../utils/iconMap";
 
 type JournalEntry = {
   timestamp: number;
@@ -17,15 +18,27 @@ type JournalEntryItemProps = {
 };
 
 const JournalEntryItem = ({ entry, isNew }: JournalEntryItemProps) => {
-  const fullText = formatJournalEntry(entry);
-  const { displayedText, isTyping } = useTypewriter(fullText, 30, isNew);
+  const formattedEntry = formatJournalEntry(entry);
+  const { displayedText, isTyping } = useTypewriter(formattedEntry.text, 30, isNew);
 
   return (
     <div className="p-2 border-b border-base-300 last:border-b-0">
-      <p className="text-sm font-medium">
-        {displayedText}
-        {isTyping && <span className="animate-pulse">|</span>}
-      </p>
+      <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1 shrink-0">
+          {formattedEntry.icons.map((icon, idx) => (
+            <IconComponent 
+              key={idx} 
+              icon={icon as any} 
+              size={16} 
+              className="text-base-content/70" 
+            />
+          ))}
+        </div>
+        <p className="text-sm font-medium flex-1">
+          {displayedText}
+          {isTyping && <span className="animate-pulse">|</span>}
+        </p>
+      </div>
       <p className="text-xs text-gray-500 mt-1">{formatRelativeTime(entry.timestamp)}</p>
     </div>
   );
@@ -51,7 +64,7 @@ export const JournalVisualizer = ({ journal, className }: { journal: JournalEntr
       // Calculate max length only for new entries
       const newEntries = journal.filter(e => newTimestamps.has(e.timestamp));
       const maxTextLength = newEntries.length > 0 
-        ? Math.max(...newEntries.map(e => formatJournalEntry(e).length))
+        ? Math.max(...newEntries.map(e => formatJournalEntry(e).text.length))
         : 0;
       const timer = setTimeout(() => {
         setNewEntryTimestamps(prev => {
