@@ -20,14 +20,17 @@ import {
 } from "../entities/types";
 import { generateSpaceName } from "../utils/generateSpaceName";
 import { Meeple, type MeepleState } from "../entities/Meeple";
+import { GENERATORS, RULES } from "../rules/rules";
+
+const GAME_SPEED = 1;
 
 export const GAME_WIDTH = 2500;
 export const GAME_HEIGHT = 2500;
 
 const COUNTS = {
-  MINER: 17,
-  ASTEROID: 32,
-  SPACE_STORE: 7,
+  MINER: 42,
+  ASTEROID: 17,
+  SPACE_STORE: 4,
   SPACE_BAR: 2,
   SPACE_APARTMENT: 2,
 };
@@ -49,7 +52,7 @@ const initialMeeplState: MeepleState = {
   },
   speed:
     Math.random() * (MAX_SHIP_DEFAULT_SPEED - MIN_SHIP_DEFAULT_SPEED) +
-    MIN_SHIP_DEFAULT_SPEED,
+    MIN_SHIP_DEFAULT_SPEED * GAME_SPEED,
   name: "idle",
 };
 
@@ -167,6 +170,9 @@ export function GameProvider({ children }: { children: ReactNode }) {
         name: generateSpaceName(),
         state: initialMeeplState,
         roleId: RoleId.SpaceApartments,
+        rulesMapGenerator: GENERATORS[RoleId.SpaceApartments],
+        rulesMapRules: RULES[RoleId.SpaceApartments],
+        journal: [],
       });
       game.currentScene.add(spaceApartment);
     }
@@ -181,6 +187,9 @@ export function GameProvider({ children }: { children: ReactNode }) {
         name: generateSpaceName(),
         state: initialMeeplState,
         roleId: RoleId.Asteroid,
+        rulesMapGenerator: GENERATORS[RoleId.Asteroid],
+        rulesMapRules: RULES[RoleId.Asteroid],
+        journal: [],
       });
 
       game.currentScene.add(asteroid);
@@ -197,6 +206,9 @@ export function GameProvider({ children }: { children: ReactNode }) {
         name: generateSpaceName(),
         state: initialMeeplState,
         roleId: RoleId.SpaceStore,
+        rulesMapGenerator: GENERATORS[RoleId.SpaceStore],
+        rulesMapRules: RULES[RoleId.SpaceStore],
+        journal: [],
       });
       game.currentScene.add(spaceStore);
     }
@@ -212,6 +224,9 @@ export function GameProvider({ children }: { children: ReactNode }) {
         name: generateSpaceName(),
         state: initialMeeplState,
         roleId: RoleId.SpaceBar,
+        rulesMapGenerator: GENERATORS[RoleId.SpaceBar],
+        rulesMapRules: RULES[RoleId.SpaceBar],
+        journal: [],
       });
 
       game.currentScene.add(spaceBar);
@@ -227,6 +242,9 @@ export function GameProvider({ children }: { children: ReactNode }) {
         name: generateSpaceName(),
         state: initialMeeplState,
         roleId: RoleId.Miner,
+        rulesMapGenerator: GENERATORS[RoleId.Miner],
+        rulesMapRules: RULES[RoleId.Miner],
+        journal: [],
       });
 
       game.currentScene.add(miner);

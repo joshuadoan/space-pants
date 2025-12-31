@@ -1,5 +1,5 @@
-import type { Game } from "./Game";
-import type { Inventory, Meeple, MeepleState, Stats } from "./Meeple";
+import type { Game } from "../entities/Game";
+import { DEFAULT_DELAY, type Inventory, type Meeple, type MeepleState, type Stats } from "../entities/Meeple";
 import {
   CurrencyType,
   MiningType,
@@ -7,24 +7,28 @@ import {
   ProductType,
   RoleId,
   VitalsType,
-} from "./types";
+} from "../entities/types";
 
-type Rule = {
+const UNIT = 1;
+
+export type Rule = {
   name: string;
+  description: string;
   property: MiningType | ProductType | CurrencyType | VitalsType;
   operator: Operator;
   value: number;
-  actions: ((meeple: Meeple, game: Game) => void)[];
+  actions: ((meeple: Meeple, game: Game,) => void)[];
 };
 
-type Rules = {
+export type Rules = {
   [key in MeepleState["name"]]: Rule[];
 };
 
-const MINER_RULES: Rules = {
+export const MINER_RULES: Rules = {
   idle: [
     {
       name: "need-ore",
+      description: "If the miner has less than 1 ore, it will travel to the asteroid.",
       property: MiningType.Ore,
       operator: Operator.LessThan,
       value: 1,
@@ -39,6 +43,7 @@ const MINER_RULES: Rules = {
     },
     {
       name: "have-ore",
+      description: "If the miner has more than or equal to 1 ore, it will travel to the space store.",
       property: MiningType.Ore,
       operator: Operator.GreaterThanOrEqual,
       value: 1,
@@ -56,20 +61,26 @@ const MINER_RULES: Rules = {
   visiting: [
     {
       name: "mine-ore",
+      description: "If the miner is visiting an asteroid and has less than 1 ore, it will mine 1 ore.",
       property: MiningType.Ore,
       operator: Operator.LessThan,
       value: 1,
       actions: [
         (meeple, _game) => {
-          // TODO FIX THIS WEIRD TYPE CHECK
           if (meeple.state.name !== "visiting") {
             return;
           }
 
           switch (meeple.state.target.roleId) {
             case RoleId.Asteroid:
-              meeple.addToInventory(MiningType.Ore, 1);
-              meeple.state.target.removeFromInventory(MiningType.Ore, 1);
+              meeple.addToInventory(MiningType.Ore, UNIT);
+              meeple.state.target.removeFromInventory(MiningType.Ore, UNIT)
+              .callMethod(() => {
+                meeple.dispatch({
+                  name: "finish",
+                });
+              })
+              .delay(DEFAULT_DELAY);
               break;
             case RoleId.SpaceStore:
               break;
@@ -79,6 +90,7 @@ const MINER_RULES: Rules = {
     },
     {
       name: "have-ore",
+      description: "If the miner is visiting a space store and has more than or equal to 1 ore, it will add 1 ore to the space store and remove 1 ore from the miner.",
       property: MiningType.Ore,
       operator: Operator.GreaterThanOrEqual,
       value: 1,
@@ -87,15 +99,16 @@ const MINER_RULES: Rules = {
           if (meeple.state.name === "visiting") {
             switch (meeple.state.target.roleId) {
               case RoleId.SpaceStore:
-                // transfer ore from space store to miner
-                meeple.state.target.addToInventory(MiningType.Ore, 1);
-                // transfer ore from miner to space store
-                meeple.removeFromInventory(MiningType.Ore, 1);
-
-                // transfer money from space store to miner
-                meeple.state.target.removeFromInventory(CurrencyType.Money, 1);
-                // transfer money from miner to space store
-                meeple.addToInventory(CurrencyType.Money, 1);
+                meeple.state.target.addToInventory(MiningType.Ore, UNIT);
+                meeple.removeFromInventory(MiningType.Ore, UNIT);
+                meeple.state.target.removeFromInventory(CurrencyType.Money, UNIT);
+                meeple.addToInventory(CurrencyType.Money, UNIT)
+                .callMethod(() => {
+                  meeple.dispatch({
+                    name: "finish",
+                  });
+                })
+                .delay(DEFAULT_DELAY);
                 break;
             }
           }
@@ -107,17 +120,24 @@ const MINER_RULES: Rules = {
 };
 
 // Space Store Rules - for every ore generate 2 money for the space store
-const SPACE_STORE_RULES: Rules = {
+export const SPACE_STORE_RULES: Rules = {
   idle: [
     {
       name: "generate-money",
+      description: "If the space store has more than or equal to 1 ore, it will generate 2 money.",
       property: MiningType.Ore,
       operator: Operator.GreaterThanOrEqual,
       value: 1,
       actions: [
         (meeple, _game) => {
-          meeple.addToInventory(CurrencyType.Money, 2);
-          meeple.removeFromInventory(MiningType.Ore, 1);
+          meeple.addToInventory(CurrencyType.Money, UNIT * 2);
+          meeple.removeFromInventory(MiningType.Ore, UNIT)
+          .callMethod(() => {
+            meeple.dispatch({
+              name: "finish",
+            });
+          })
+          .delay(DEFAULT_DELAY);
         },
       ],
     },
@@ -128,16 +148,23 @@ const SPACE_STORE_RULES: Rules = {
 };
 
 // Asteroid Rules - if ore below 100 generate 1 ore for the asteroid
-const ASTEROID_RULES: Rules = {
+export const ASTEROID_RULES: Rules = {
   idle: [
     {
       name: "generate-ore",
+      description: "If the asteroid has less than 100 ore, it will generate 1 ore.",
       property: MiningType.Ore,
       operator: Operator.LessThan,
       value: 100,
       actions: [
         (meeple, _game) => {
-          meeple.addToInventory(MiningType.Ore, 1);
+          meeple.addToInventory(MiningType.Ore, UNIT)
+          .callMethod(() => {
+            meeple.dispatch({
+              name: "finish",
+            });
+          })
+          .delay(DEFAULT_DELAY);
         },
       ],
     },
@@ -147,8 +174,41 @@ const ASTEROID_RULES: Rules = {
   transacting: [],
 };
 
-const RULES = {
+export const RULES: Record<RoleId, Rules> = {
   [RoleId.Miner]: MINER_RULES,
+  [RoleId.Asteroid]: {
+    idle: [],
+    traveling: [],
+    visiting: [],
+    transacting: [],
+  },
+  [RoleId.SpaceStore]: {
+    idle: [],
+    traveling: [],
+    visiting: [],
+    transacting: [],
+  },
+  [RoleId.SpaceBar]: {
+    idle: [],
+    traveling: [],
+    visiting: [],
+    transacting: [],
+  },
+  [RoleId.SpaceApartments]: {
+    idle: [],
+    traveling: [],
+    visiting: [],
+    transacting: [],
+  },
+};
+
+export const GENERATORS: Record<RoleId, Rules> = {
+  [RoleId.Miner]: {
+    idle: [],
+    traveling: [],
+    visiting: [],
+    transacting: [],
+  },
   [RoleId.Asteroid]: ASTEROID_RULES,
   [RoleId.SpaceStore]: SPACE_STORE_RULES,
   [RoleId.SpaceBar]: {
@@ -164,11 +224,16 @@ const RULES = {
     transacting: [],
   },
 };
-export function meepleActionsRule(meeple: Meeple, engine: Game) {
+
+export function applyMeepleRules(
+  meeple: Meeple,
+  engine: Game,
+  rulesMap: Rules
+) {
   if (meeple.actions.getQueue().hasNext()) {
     return;
   }
-  for (const rule of RULES[meeple.roleId][meeple.state.name]) {
+  for (const rule of rulesMap[meeple.state.name]) {
     if (
       evaluateCondition(
         rule.property,
@@ -185,7 +250,7 @@ export function meepleActionsRule(meeple: Meeple, engine: Game) {
   }
 }
 
-function evaluateCondition(
+export function evaluateCondition(
   property: MiningType | ProductType | CurrencyType | VitalsType,
   operator: Operator,
   value: number,

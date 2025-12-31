@@ -8,8 +8,10 @@ import { IconComponent } from "../utils/iconMap";
 import type { RoleId } from "../entities/types";
 import { IconPlayerPause, IconRoute } from "@tabler/icons-react";
 import { IconArrowsExchange } from "@tabler/icons-react";
+import cx from "classnames";
 
 export const MeepleDetails = (props: {
+  className?: string;
   name: string;
   roleId: RoleId;
   state: MeepleState;
@@ -18,9 +20,9 @@ export const MeepleDetails = (props: {
   id: number;
   isSelected: boolean;
 }) => {
-  const { id, isSelected, ...meeple } = props;
+  const { className, id, isSelected, ...meeple } = props;
   return (
-    <MeepleDetail>
+    <MeepleDetail className={className}>
       <Link
         className="cursor-pointer hover:text-primary underline"
         to={`/meeple/${id}`}
@@ -33,8 +35,8 @@ export const MeepleDetails = (props: {
   );
 };
 
-export const MeepleDetail = ({ children }: { children: React.ReactNode }) => (
-  <div className="flex flex-col gap-2 p-3 border border-gray-300 rounded-md mb-2">
+export const MeepleDetail = ({ children, className }: { children: React.ReactNode, className?: string }) => (
+  <div className={cx("flex flex-col gap-2 p-3 border border-gray-300 rounded-md mb-2", className)}>
     {children}
   </div>
 );

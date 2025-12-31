@@ -1,4 +1,4 @@
-import { Actor, Vector, Graphic, Timer } from "excalibur";
+import { Actor, Vector, Graphic, Timer, ActionContext } from "excalibur";
 import type { Game } from "./Game";
 import {
   CurrencyType,
@@ -7,7 +7,7 @@ import {
   RoleId,
   VitalsType,
 } from "./types";
-import { meepleActionsRule } from "./rules";
+import { applyMeepleRules, type Rules } from "../rules/rules";
 
 export const DEFAULT_DELAY = 3000;
 
@@ -52,24 +52,28 @@ export type MeepleState =
   | MeepleStateVisiting
   | MeepleStateTransacting;
 
+export type MeepleActionTravelTo = {
+  name: "travel-to";
+  target: Meeple;
+};
+export type MeepleActionFinish = {
+  name: "finish";
+};
+export type MeepleActionVisit = {
+  name: "visit";
+  target: Meeple;
+};
+export type MeepleActionTransactInventory = {
+  name: "transact-inventory";
+  good: MiningType | ProductType | CurrencyType;
+  quantity: number;
+  transactionType: "add" | "remove";
+};
 export type MeepleAction =
-  | {
-      name: "travel-to";
-      target: Meeple;
-    }
-  | {
-      name: "finish";
-    }
-  | {
-      name: "visit";
-      target: Meeple;
-    }
-  | {
-      name: "transact-inventory";
-      good: MiningType | ProductType | CurrencyType;
-      quantity: number;
-      transactionType: "add" | "remove";
-    };
+  | MeepleActionTravelTo
+  | MeepleActionFinish
+  | MeepleActionVisit
+  | MeepleActionTransactInventory;
 
 export type MeepleProps = {
   position: Vector;
@@ -77,6 +81,15 @@ export type MeepleProps = {
   name: string;
   state: MeepleState;
   roleId: RoleId;
+  rulesMapGenerator: Rules;
+  rulesMapRules: Rules;
+  journal: JorunalEntry[];
+};
+
+type JorunalEntry = {
+  timestamp: number;
+  state: MeepleState;
+  action: MeepleAction;
 };
 
 /**
@@ -88,7 +101,9 @@ export class Meeple extends Actor {
   // Identity & State
   roleId: RoleId;
   state: MeepleState;
-
+  journal: JorunalEntry[];
+  rulesMapGenerator: Rules;
+  rulesMapRules: Rules;
   // Gameplay Properties
   readonly game: Game;
 
@@ -101,6 +116,9 @@ export class Meeple extends Actor {
     name,
     roleId,
     state,
+    rulesMapGenerator,
+    rulesMapRules,
+    journal,
   }: MeepleProps) {
     super({
       pos: position,
@@ -109,16 +127,19 @@ export class Meeple extends Actor {
     // Base Actor setup
     this.graphics.add(graphic);
     this.name = name;
+    this.journal = journal;
 
     // Identity & State
     this.roleId = roleId;
     this.state = state;
-
+    this.rulesMapGenerator = rulesMapGenerator;
+    this.rulesMapRules = rulesMapRules;
     this.game = this.scene?.engine as Game;
   }
 
   onInitialize(game: Game): void {
     this.initRulesTimer(game);
+    this.initGeneraterTimer(game);
   }
 
   onDestroy(): void {
@@ -132,6 +153,11 @@ export class Meeple extends Actor {
   }
 
   dispatch(action: MeepleAction): void {
+    this.addToJournal({
+      timestamp: Date.now(),
+      state: this.state,
+      action,
+    });
     let nextState: MeepleState;
     switch (action.name) {
       case "travel-to": {
@@ -156,6 +182,7 @@ export class Meeple extends Actor {
           good: action.good,
           quantity: action.quantity,
           transactionType: action.transactionType,
+          // update inventory
           inventory: {
             ...this.state.inventory,
             [action.good]:
@@ -180,7 +207,7 @@ export class Meeple extends Actor {
   initRulesTimer(game: Game): void {
     const timer = new Timer({
       fcn: async () => {
-        meepleActionsRule(this, game);
+        applyMeepleRules(this, game, this.rulesMapRules);
       },
       repeats: true,
       interval: 500,
@@ -189,8 +216,28 @@ export class Meeple extends Actor {
     timer.start();
   }
 
-  travelTo(target: Meeple): void {
-    this.actions
+  // journal nust not exceed 100 entries  
+  addToJournal(entry: JorunalEntry): void {
+    this.journal.push(entry);
+    if (this.journal.length > 100) {
+      this.journal.shift();
+    }
+  }
+
+  initGeneraterTimer(game: Game): void {
+    const timer = new Timer({
+      fcn: async () => {
+        applyMeepleRules(this, game, this.rulesMapGenerator);
+      },
+      repeats: true,
+      interval: 500,
+    });
+    game.currentScene.add(timer);
+    timer.start();
+  }
+
+  travelTo(target: Meeple): ActionContext {
+    return this.actions
       .callMethod(() => {
         this.dispatch({
           name: "travel-to",
@@ -210,8 +257,8 @@ export class Meeple extends Actor {
   addToInventory(
     good: MiningType | ProductType | CurrencyType,
     quantity: number
-  ): void {
-    this.actions
+  ): ActionContext {
+    return this.actions
       .callMethod(() => {
         this.dispatch({
           name: "transact-inventory",
@@ -221,18 +268,13 @@ export class Meeple extends Actor {
         });
       })
       .delay(DEFAULT_DELAY)
-      .callMethod(() => {
-        this.dispatch({
-          name: "finish",
-        });
-      });
   }
 
   removeFromInventory(
     good: MiningType | ProductType | CurrencyType,
     quantity: number
-  ): void {
-    this.actions
+  ): ActionContext {
+    return this.actions
       .callMethod(() => {
         this.dispatch({
           name: "transact-inventory",
@@ -242,10 +284,5 @@ export class Meeple extends Actor {
         });
       })
       .delay(DEFAULT_DELAY)
-      .callMethod(() => {
-        this.dispatch({
-          name: "finish",
-        });
-      });
   }
 }
