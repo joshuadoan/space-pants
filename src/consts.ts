@@ -16,7 +16,7 @@ export const COUNTS = {
 };
 
 export const MIN_SHIP_DEFAULT_SPEED = 50;
-export const MAX_SHIP_DEFAULT_SPEED = 300;
+export const MAX_SHIP_DEFAULT_SPEED = 150;
 
 // 1 to 10 ore to money (example)
 export const EXCHANGE_RATE_TO_MONEY = {
