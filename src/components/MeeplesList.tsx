@@ -329,7 +329,7 @@ export const MeeplesList = () => {
               inventory={{ ...selectedMeeple.state.inventory }}
               isSelected={id === String(selectedMeeple.id)}
             />
-            <div className="tabs tabs-boxed mb-2 shrink-0">
+            <div className="tabs tabs-boxed shrink-0">
               <button
                 onClick={() => dispatch({ type: "set-active-tab", payload: "rules" })}
                 className={cx("tab flex items-center gap-1.5", {

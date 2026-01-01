@@ -11,13 +11,6 @@ import { IconArrowsExchange } from "@tabler/icons-react";
 import cx from "classnames";
 import { MeepleStatsAndInventory } from "./MeepleStatsAndInventory";
 
-const MEEPLE_STATE_NAMES = [
-  "idle",
-  "traveling",
-  "visiting",
-  "transacting",
-] as const;
-
 export const MeepleDetails = (props: {
   className?: string;
   name: string;
@@ -125,36 +118,36 @@ export const MeepleStateBadge = ({ state }: { state: MeepleState }) => (
   </div>
 );
 
-const StateRulesTimeLine = ({ state }: { state: MeepleState }) => {
-  return (
-    <div className="flex items-center gap-1">
-      <div className="flex items-center gap-1 flex-wrap">
-        {MEEPLE_STATE_NAMES.map((stateName, index) => {
-          const isActiveState = stateName === state.name;
+// const StateTimeLine = ({ state }: { state: MeepleState }) => {
+//   return (
+//     <div className="flex items-center gap-1">
+//       <div className="flex items-center gap-1 flex-wrap">
+//         {MEEPLE_STATE_NAMES.map((stateName, index) => {
+//           const isActiveState = stateName === state.name;
 
-          return (
-            <div key={stateName} className="flex items-center gap-1">
-              <div
-                className={cx(
-                  "rounded-full transition-all duration-200 w-2 h-2",
-                  isActiveState
-                    ? "bg-primary"
-                    : "bg-gray-200 border border-gray-300 opacity-40"
-                )}
-                title={stateName}
-              />
-              {index < MEEPLE_STATE_NAMES.length - 1 && (
-                <div
-                  className={cx(
-                    "w-1 h-px transition-colors",
-                    isActiveState ? "bg-gray-400" : "bg-gray-200 opacity-30"
-                  )}
-                />
-              )}
-            </div>
-          );
-        })}
-      </div>
-    </div>
-  );
-};
+//           return (
+//             <div key={stateName} className="flex items-center gap-1">
+//               <div
+//                 className={cx(
+//                   "rounded-full transition-all duration-200 w-2 h-2",
+//                   isActiveState
+//                     ? "bg-primary"
+//                     : "bg-gray-200 border border-gray-300 opacity-40"
+//                 )}
+//                 title={stateName}
+//               />
+//               {index < MEEPLE_STATE_NAMES.length - 1 && (
+//                 <div
+//                   className={cx(
+//                     "w-1 h-px transition-colors",
+//                     isActiveState ? "bg-gray-400" : "bg-gray-200 opacity-30"
+//                   )}
+//                 />
+//               )}
+//             </div>
+//           );
+//         })}
+//       </div>
+//     </div>
+//   );
+// };

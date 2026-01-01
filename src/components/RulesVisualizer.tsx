@@ -10,7 +10,6 @@ type RuleItemProps = {
 };
 
 const RuleItem = ({ rule, isActive }: RuleItemProps) => {
-
   return (
     <div
       className={cx(
@@ -53,9 +52,14 @@ type RulesSectionProps = {
   inventory: Inventory;
 };
 
-const RulesSection = ({ title, rules, stats, inventory }: RulesSectionProps) => {
+const RulesSection = ({
+  title,
+  rules,
+  stats,
+  inventory,
+}: RulesSectionProps) => {
   const rulesArray = rules || [];
-  
+
   // Find the first rule that passes its condition
   let firstActiveIndex = -1;
   for (let i = 0; i < rulesArray.length; i++) {
@@ -73,7 +77,7 @@ const RulesSection = ({ title, rules, stats, inventory }: RulesSectionProps) => 
       break;
     }
   }
-  
+
   if (rulesArray.length === 0) {
     return (
       <div className="flex flex-col gap-2">
@@ -86,19 +90,14 @@ const RulesSection = ({ title, rules, stats, inventory }: RulesSectionProps) => 
   }
 
   return (
-    <div className="flex flex-col gap-2">
-      <h2 className="text-sm font-semibold text-base-content/70">
-        {title} ({rulesArray.length})
-      </h2>
-      <div className="flex flex-col gap-2">
-        {rulesArray.map((rule, index) => (
-          <RuleItem
-            key={index}
-            rule={rule}
-            isActive={index === firstActiveIndex}
-          />
-        ))}
-      </div>
+    <div className="flex flex-col gap-4">
+      {rulesArray.map((rule, index) => (
+        <RuleItem
+          key={index}
+          rule={rule}
+          isActive={index === firstActiveIndex}
+        />
+      ))}
     </div>
   );
 };
@@ -108,16 +107,20 @@ export const RulesVisualizer = ({
   rules = [],
   stats,
   inventory,
-  currentStateName,
 }: {
   className?: string;
   rules: Rule[];
   stats: Stats;
   inventory: Inventory;
-  currentStateName: "idle" | "traveling" | "visiting" | "transacting" | "resting";
+  currentStateName:
+    | "idle"
+    | "traveling"
+    | "visiting"
+    | "transacting"
+    | "resting";
 }) => {
   return (
-    <div className={cx("flex flex-col gap-4 p-2", className)}>
+    <div className={cx("flex flex-col gap-4", className)}>
       <RulesSection
         title="Rules"
         rules={rules}

@@ -30,6 +30,10 @@ import {
   COUNTS,
 } from "../consts";
 
+function getRandomSpeed(): number {
+  return Math.random() * (MAX_SHIP_DEFAULT_SPEED - MIN_SHIP_DEFAULT_SPEED) + MIN_SHIP_DEFAULT_SPEED * GAME_SPEED;
+}
+
 const initialMeeplState: MeepleState = {
   inventory: {
     [MiningType.Ore]: 0,
@@ -42,9 +46,7 @@ const initialMeeplState: MeepleState = {
     [VitalsType.Energy]: 100,
     [VitalsType.Happiness]: 100,
   },
-  speed:
-    Math.random() * (MAX_SHIP_DEFAULT_SPEED - MIN_SHIP_DEFAULT_SPEED) +
-    MIN_SHIP_DEFAULT_SPEED * GAME_SPEED,
+  speed: 0,
   name: "idle",
 };
 
@@ -258,7 +260,10 @@ export function GameProvider({ children }: { children: ReactNode }) {
         ),
         graphic: createEntityGraphic(EntityGraphicStyle.Miner),
         name: generateSpaceName(),
-        state: initialMeeplState,
+        state: {
+          ...initialMeeplState,
+          speed: getRandomSpeed(),
+        },
         roleId: RoleId.Miner,
         rulesMapRules: RULES[RoleId.Miner],
         journal: [],
