@@ -365,7 +365,7 @@ export const formatJournalEntry = (entry: JournalEntry): FormattedJournalEntry =
         icons.push(targetRole);
       }
       return {
-        text: `Started traveling to ${targetName}`,
+        text: `Started traveling to ${targetName} (${targetRole})`,
         icons,
       };
     }
@@ -377,7 +377,7 @@ export const formatJournalEntry = (entry: JournalEntry): FormattedJournalEntry =
         icons.push(targetRole);
       }
       return {
-        text: `Started visiting ${targetName}`,
+        text: `Started visiting ${targetName} (${targetRole})`,
         icons,
       };
     }
@@ -389,6 +389,34 @@ export const formatJournalEntry = (entry: JournalEntry): FormattedJournalEntry =
       return formatTransactionText(state, good, quantity, transactionType, goodName, icons, entry.source);
     }
 
+    case "transact-vitals": {
+      const { vitals, quantity, transactionType } = action;
+      const vitalsName = formatGoodName(vitals);
+      
+      // Handle vitals transactions with context
+      if (state.name === "visiting" && "target" in state) {
+        const targetRole = getTargetRole(state.target);
+        
+        // Special handling for resting at apartments (gaining energy)
+        if (targetRole === RoleId.SpaceApartments && vitals === VitalsType.Energy && transactionType === "add") {
+          icons.push(VitalsType.Energy);
+          icons.push(RoleId.SpaceApartments);
+          return {
+            text: `Resting: regained ${quantity} ${vitalsName}`,
+            icons,
+          };
+        }
+      }
+      
+      // Generic vitals transaction formatting
+      const actionVerb = transactionType === "add" ? "gained" : "lost";
+      icons.push(vitals);
+      return {
+        text: `${actionVerb.charAt(0).toUpperCase() + actionVerb.slice(1)} ${quantity} ${vitalsName}`,
+        icons,
+      };
+    }
+
     case "finish": {
       // When finishing, describe what they were doing based on the state at that time
       if (state.name === "traveling" && "target" in state) {
@@ -398,7 +426,7 @@ export const formatJournalEntry = (entry: JournalEntry): FormattedJournalEntry =
           icons.push(targetRole);
         }
         return {
-          text: `Arrived at ${targetName}`,
+          text: `Arrived at ${targetName} (${targetRole})`,
           icons,
         };
       } else if (state.name === "visiting" && "target" in state) {
@@ -408,7 +436,7 @@ export const formatJournalEntry = (entry: JournalEntry): FormattedJournalEntry =
           icons.push(targetRole);
         }
         return {
-          text: `Finished visiting ${targetName}`,
+          text: `Finished visiting ${targetName} (${targetRole})`,
           icons,
         };
       } else if (state.name === "transacting" && "good" in state) {

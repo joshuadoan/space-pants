@@ -301,7 +301,7 @@ export const MeeplesList = () => {
                   className="mb-2"
                 >
                   <MeepleDetails
-                    className="w-sm"
+                    className="w-xs"
                     key={meeple.id}
                     id={meeple.id}
                     name={meeple.name}
@@ -319,7 +319,7 @@ export const MeeplesList = () => {
         {state.mainTab === "meeples" && selectedMeeple ? (
           <div className="flex flex-col h-full">
             <MeepleDetails
-              className="w-sm"
+              className="w-xs"
               key={selectedMeeple.id}
               id={selectedMeeple.id}
               name={selectedMeeple.name}
@@ -329,7 +329,7 @@ export const MeeplesList = () => {
               inventory={{ ...selectedMeeple.state.inventory }}
               isSelected={id === String(selectedMeeple.id)}
             />
-            <div className="tabs tabs-boxed mb-2 shrink-0">
+            <div className="tabs tabs-boxed shrink-0">
               <button
                 onClick={() => dispatch({ type: "set-active-tab", payload: "rules" })}
                 className={cx("tab flex items-center gap-1.5", {
@@ -350,7 +350,7 @@ export const MeeplesList = () => {
             <div className="flex-1 overflow-y-auto">
               {state.activeTab === "rules" && (
                 <RulesVisualizer
-                  className="w-sm"
+                  className="w-xs"
                   rules={selectedMeeple.rulesMapRules}
                   stats={{ ...selectedMeeple.state.stats }}
                   inventory={{ ...selectedMeeple.state.inventory }}
@@ -360,7 +360,7 @@ export const MeeplesList = () => {
               {state.activeTab === "journal" && (
                 <JournalVisualizer
                   journal={[...selectedMeeple.journal]}
-                  className="w-sm"
+                  className="w-xs"
                 />
               )}
             </div>

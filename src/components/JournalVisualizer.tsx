@@ -23,7 +23,7 @@ const JournalEntryItem = ({ entry, isNew }: JournalEntryItemProps) => {
   const { displayedText, isTyping } = useTypewriter(formattedEntry.text, 30, isNew);
 
   return (
-    <div className="p-2 flex gap-2">
+    <div className="p-2">
       <div className="flex items-center gap-2">
         <div className="flex items-center gap-1 shrink-0">
           {formattedEntry.icons.map((icon, idx) => (
@@ -92,11 +92,7 @@ export const JournalVisualizer = ({ journal, className }: { journal: JournalEntr
   const sortedJournal = [...journal].reverse();
 
   return (
-    <div className={cx("flex flex-col gap-2 p-2", className)}>
-      <div className="text-xs text-gray-500 mb-2">
-        Showing {journal.length} {journal.length === 1 ? "entry" : "entries"}{" "}
-        (newest first)
-      </div>
+    <div className={cx("flex flex-col gap-2", className)}>
       <div className="flex flex-col gap-2 max-h-[600px] overflow-y-auto">
         {sortedJournal.map((entry) => {
           // Only animate the latest entry

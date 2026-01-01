@@ -28,6 +28,11 @@ export type MeepleStateIdle = {
   name: "idle";
 } & SharedMeepleState;
 
+export type MeepleStateResting = {
+  name: "resting";
+  target: Meeple;
+} & SharedMeepleState;
+
 export type MeepleStateTraveling = {
   name: "traveling";
   target: Meeple;
@@ -47,6 +52,7 @@ export type MeepleStateTransacting = {
 
 export type MeepleState =
   | MeepleStateIdle
+  | MeepleStateResting
   | MeepleStateTraveling
   | MeepleStateVisiting
   | MeepleStateTransacting;
@@ -62,6 +68,12 @@ export type MeepleActionVisit = {
   name: "visit";
   target: Meeple;
 };
+
+export type MeepleActionRest = {
+  name: "rest";
+  target: Meeple;
+};
+
 export type MeepleActionTransactInventory = {
   name: "transact-inventory";
   good: MiningType | ProductType | CurrencyType;
@@ -81,7 +93,8 @@ export type MeepleAction =
   | MeepleActionFinish
   | MeepleActionVisit
   | MeepleActionTransactInventory
-  | MeepleActionTransactVitals;
+  | MeepleActionTransactVitals
+  | MeepleActionRest;
 
 export type MeepleProps = {
   position: Vector;
@@ -179,6 +192,18 @@ export class Meeple extends Actor {
           target: action.target,
         };
         break;
+      case "rest": {
+        nextState = {
+          ...this.state,
+          name: "resting",
+          target: action.target,
+          stats: {
+            ...this.state.stats,
+            [VitalsType.Energy]: this.state.stats[VitalsType.Energy] + 1,
+          },
+        };
+        break;
+      }
       case "transact-inventory": {
         nextState = {
           ...this.state,
@@ -195,14 +220,6 @@ export class Meeple extends Actor {
                 : this.state.inventory[action.good] - action.quantity,
           },
         };
-
-        // for every transact-inventory, the energy of the meeple will decrease by 1
-        switch (this.roleId) {
-          case RoleId.Miner: {
-            nextState.stats[VitalsType.Energy] -= 1;
-            break;
-          }
-        }
         break;
       }
       case "transact-vitals": {

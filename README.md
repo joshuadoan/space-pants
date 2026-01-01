@@ -25,7 +25,7 @@ A real-time space economy simulation game built with React, TypeScript, and Exca
 - **Hide/Show UI**: Toggle UI visibility for a cleaner view
 - **Rules Visualizer**: View all rules for a selected entity, see which rules are active, and understand rule conditions
 - **Journal System**: Track entity actions and state changes over time with timestamped journal entries
-- **Detail Tabs**: Switch between Stats, Rules, and Journal views for selected entities
+- **Detail Tabs**: Switch between Rules and Journal views for selected entities (stats are shown in the main detail view)
 
 ## 🎮 Game Entities
 
@@ -144,7 +144,7 @@ pnpm lint
 1. **Observe**: Watch the autonomous entities go about their business in real-time
 2. **Explore**: Click on any entity name in the sidebar to zoom the camera to it
 3. **Filter**: Use the tabs to filter entities by type (Miners, Asteroids, Space Stores, Space Bars, Space Apartments, All)
-4. **Inspect**: Click on an entity to view detailed stats and inventory
+4. **Inspect**: Click on an entity to view detailed stats and inventory (shown automatically when selected)
 5. **View Rules**: Switch to the "Rules" tab to see all rules for an entity and which ones are currently active
 6. **Check Journal**: Switch to "Journal" tab to see a history of entity actions and state changes
 7. **Zoom**: Use the zoom slider to adjust camera zoom level
@@ -211,7 +211,7 @@ space-pants/
 ├── src/
 │   ├── components/          # React UI components
 │   │   ├── MeepleDetail.tsx      # Entity detail card component
-│   │   ├── MeepleExtraDetail.tsx # Extended entity details (stats/inventory)
+│   │   ├── MeepleStatsAndInventory.tsx # Extended entity details (stats/inventory)
 │   │   ├── MeeplesList.tsx       # Main entity list with filtering
 │   │   ├── RulesVisualizer.tsx   # Rules visualization component
 │   │   ├── JournalVisualizer.tsx # Journal/action history viewer
@@ -269,11 +269,11 @@ space-pants/
 Edit `src/hooks/useGame.tsx` to modify:
 - World size (`GAME_WIDTH`, `GAME_HEIGHT`) - Default: 2500x2500
 - Number of entities (in `COUNTS`):
-  - `MINER` - Default: 42
-  - `ASTEROID` - Default: 17
-  - `SPACE_STORE` - Default: 4
-  - `SPACE_BAR` - Default: 2
-  - `SPACE_APARTMENT` - Default: 2
+  - `MINER` - Default: 6
+  - `ASTEROID` - Default: 3
+  - `SPACE_STORE` - Default: 1
+  - `SPACE_BAR` - Default: 1
+  - `SPACE_APARTMENT` - Default: 1
 - Entity speed range - Default: 50-150 units/second (configurable via `MIN_SHIP_DEFAULT_SPEED` and `MAX_SHIP_DEFAULT_SPEED`)
 - Star distribution and spacing (in `src/utils/createStarTilemap.ts`)
 
