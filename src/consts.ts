@@ -1,6 +1,6 @@
 import { MiningType } from "./entities/types";
 
-export const GAME_SPEED = 2;
+export const GAME_SPEED = 1;
 
 export const DEFAULT_DELAY = 1000;
 
@@ -8,11 +8,11 @@ export const GAME_WIDTH = 2500;
 export const GAME_HEIGHT = 2500;
 
 export const COUNTS = {
-  MINER: 17 ,
-  ASTEROID: 7,
-  SPACE_STORE: 4,
-  SPACE_BAR: 2,
-  SPACE_APARTMENT: 2,
+  MINER: 6 ,
+  ASTEROID: 3,
+  SPACE_STORE: 1,
+  SPACE_BAR: 1,
+  SPACE_APARTMENT: 1,
 };
 
 export const MIN_SHIP_DEFAULT_SPEED = 50;

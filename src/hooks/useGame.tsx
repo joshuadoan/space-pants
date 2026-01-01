@@ -20,7 +20,7 @@ import {
 } from "../entities/types";
 import { generateSpaceName } from "../utils/generateSpaceName";
 import { Meeple, type MeepleState } from "../entities/Meeple";
-import { GENERATORS, RULES } from "../rules/rules";
+import {  RULES } from "../rules/rules";
 import {
   MAX_SHIP_DEFAULT_SPEED,
   MIN_SHIP_DEFAULT_SPEED,
@@ -73,27 +73,45 @@ type ZoomToEntityAction = {
   payload: Meeple;
 };
 
+type SetMainTabAction = {
+  type: "set-main-tab";
+  payload: "meeples" | "help";
+};
+
+type SetActiveTabAction = {
+  type: "set-active-tab";
+  payload: "stats" | "rules" | "journal";
+};
+
 /** Union type of all possible game actions */
 type GameAction =
   | SetIsLoadingAction
   | SetGameAction
   | ZoomToEntityAction
-  | SetMeeplesAction;
+  | SetMeeplesAction
+  | SetMainTabAction
+  | SetActiveTabAction;
 
 /** State shape for the game context */
 type GameState = {
   game: Game | null;
   isLoading: boolean;
+  mainTab: "meeples" | "help";
+  activeTab: "stats" | "rules" | "journal";
 };
 
 /** Type for the game context value */
 type GameContextValue = {
   game: Game | null;
   isLoading: boolean;
+  mainTab: "meeples" | "help";
+  activeTab: "stats" | "rules" | "journal";
   zoomToEntity: (meeple: Meeple) => void;
   getMeepleById: (id: string) => Meeple | undefined;
   centerCameraInGame: () => void;
   setZoom: (zoom: number) => void;
+  setMainTab: (tab: "meeples" | "help") => void;
+  setActiveTab: (tab: "stats" | "rules" | "journal") => void;
 };
 
 // ============================================================================
@@ -103,6 +121,8 @@ type GameContextValue = {
 const initialState: GameState = {
   game: null,
   isLoading: true,
+  mainTab: "meeples",
+  activeTab: "rules",
 };
 
 // ============================================================================
@@ -124,6 +144,16 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       return {
         ...state,
         game: action.payload,
+      };
+    case "set-main-tab":
+      return {
+        ...state,
+        mainTab: action.payload,
+      };
+    case "set-active-tab":
+      return {
+        ...state,
+        activeTab: action.payload,
       };
     default:
       return state;
@@ -162,7 +192,6 @@ export function GameProvider({ children }: { children: ReactNode }) {
         name: generateSpaceName(),
         state: initialMeeplState,
         roleId: RoleId.SpaceApartments,
-        rulesMapGenerator: GENERATORS[RoleId.SpaceApartments],
         rulesMapRules: RULES[RoleId.SpaceApartments],
         journal: [],
       });
@@ -179,7 +208,6 @@ export function GameProvider({ children }: { children: ReactNode }) {
         name: generateSpaceName(),
         state: initialMeeplState,
         roleId: RoleId.Asteroid,
-        rulesMapGenerator: GENERATORS[RoleId.Asteroid],
         rulesMapRules: RULES[RoleId.Asteroid],
         journal: [],
       });
@@ -198,7 +226,6 @@ export function GameProvider({ children }: { children: ReactNode }) {
         name: generateSpaceName(),
         state: initialMeeplState,
         roleId: RoleId.SpaceStore,
-        rulesMapGenerator: GENERATORS[RoleId.SpaceStore],
         rulesMapRules: RULES[RoleId.SpaceStore],
         journal: [],
       });
@@ -216,7 +243,6 @@ export function GameProvider({ children }: { children: ReactNode }) {
         name: generateSpaceName(),
         state: initialMeeplState,
         roleId: RoleId.SpaceBar,
-        rulesMapGenerator: GENERATORS[RoleId.SpaceBar],
         rulesMapRules: RULES[RoleId.SpaceBar],
         journal: [],
       });
@@ -234,7 +260,6 @@ export function GameProvider({ children }: { children: ReactNode }) {
         name: generateSpaceName(),
         state: initialMeeplState,
         roleId: RoleId.Miner,
-        rulesMapGenerator: GENERATORS[RoleId.Miner],
         rulesMapRules: RULES[RoleId.Miner],
         journal: [],
       });
@@ -284,6 +309,14 @@ export function GameProvider({ children }: { children: ReactNode }) {
     gameState.game.currentScene.camera.zoom = zoom;
   };
 
+  const setMainTab = (tab: "meeples" | "help") => {
+    dispatch({ type: "set-main-tab", payload: tab });
+  };
+
+  const setActiveTab = (tab: "stats" | "rules" | "journal") => {
+    dispatch({ type: "set-active-tab", payload: tab });
+  };
+
   return (
     <GameContext.Provider
       value={{
@@ -292,6 +325,8 @@ export function GameProvider({ children }: { children: ReactNode }) {
         getMeepleById,
         centerCameraInGame,
         setZoom,
+        setMainTab,
+        setActiveTab,
       }}
     >
       {children}

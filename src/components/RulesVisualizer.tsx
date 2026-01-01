@@ -1,124 +1,132 @@
 import type { Inventory, Stats } from "../entities/Meeple";
-import type { Rules } from "../rules/rules";
+import type { Rule } from "../rules/rules";
 import { evaluateCondition } from "../rules/rules";
-import {
-  VitalsType,
-  MiningType,
-  ProductType,
-  CurrencyType,
-} from "../entities/types";
 import { IconComponent } from "../utils/iconMap";
 import cx from "classnames";
 
+type RuleItemProps = {
+  rule: Rule;
+  isActive: boolean;
+};
+
+const RuleItem = ({ rule, isActive }: RuleItemProps) => {
+
+  return (
+    <div
+      className={cx(
+        "p-3 border rounded-md transition-all",
+        isActive
+          ? "border-success bg-success/10"
+          : "border-base-300 bg-base-100"
+      )}
+    >
+      <div className="flex items-start justify-between gap-2 mb-2">
+        <h3 className="font-semibold text-sm flex-1">{rule.name}</h3>
+        {isActive && (
+          <div className="badge badge-sm badge-success gap-1">
+            <div className="w-1.5 h-1.5 rounded-full bg-success animate-pulse" />
+            <span>Active</span>
+          </div>
+        )}
+      </div>
+      <p className="text-xs text-base-content/70 mb-3">{rule.description}</p>
+      <div className="flex items-center gap-2 text-sm">
+        <div className="flex items-center gap-1.5">
+          <IconComponent
+            icon={rule.property as any}
+            size={16}
+            className="text-base-content/70"
+          />
+          <span className="font-medium">{rule.property}</span>
+        </div>
+        <span className="text-base-content/50">{rule.operator}</span>
+        <span className="font-semibold">{rule.value}</span>
+      </div>
+    </div>
+  );
+};
+
+type RulesSectionProps = {
+  title: string;
+  rules: Rule[];
+  stats: Stats;
+  inventory: Inventory;
+};
+
+const RulesSection = ({ title, rules, stats, inventory }: RulesSectionProps) => {
+  const rulesArray = rules || [];
+  
+  // Find the first rule that passes its condition
+  let firstActiveIndex = -1;
+  for (let i = 0; i < rulesArray.length; i++) {
+    const rule = rulesArray[i];
+    if (
+      evaluateCondition(
+        rule.property,
+        rule.operator,
+        rule.value,
+        inventory,
+        stats
+      )
+    ) {
+      firstActiveIndex = i;
+      break;
+    }
+  }
+  
+  if (rulesArray.length === 0) {
+    return (
+      <div className="flex flex-col gap-2">
+        <h2 className="text-sm font-semibold text-base-content/70">{title}</h2>
+        <div className="text-xs text-base-content/50 p-3 border border-base-300 rounded-md">
+          No {title.toLowerCase()} defined
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex flex-col gap-2">
+      <h2 className="text-sm font-semibold text-base-content/70">
+        {title} ({rulesArray.length})
+      </h2>
+      <div className="flex flex-col gap-2">
+        {rulesArray.map((rule, index) => (
+          <RuleItem
+            key={index}
+            rule={rule}
+            isActive={index === firstActiveIndex}
+          />
+        ))}
+      </div>
+    </div>
+  );
+};
+
 export const RulesVisualizer = ({
-  rules,
+  className,
+  rules = [],
   stats,
   inventory,
   currentStateName,
 }: {
-  rules: Rules;
+  className?: string;
+  rules: Rule[];
   stats: Stats;
   inventory: Inventory;
   currentStateName: "idle" | "traveling" | "visiting" | "transacting";
 }) => {
   return (
-    <div className="flex flex-col md:flex-row gap-4 p-2">
-      {Object.entries(rules).map(([stateName, stateRules]) => {
-
-        if (stateRules.length === 0) return null;
-        return (
-          <div key={stateName} className="flex flex-col gap-2">
-            <h5 className="text-sm font-semibold text-secondary uppercase tracking-wide flex items-center gap-2">
-              <div
-                className={cx("w-2 h-2 rounded-full shrink-0", {
-                  "bg-success animate-pulse": stateName === currentStateName,
-                  "bg-gray-400": stateName !== currentStateName,
-                })}
-              />{" "}
-              {stateName}
-            </h5>
-            <div className="flex flex-col gap-2 w-xs">
-              {stateRules.map((rule) => {
-                const conditionMet = evaluateCondition(
-                  rule.property,
-                  rule.operator,
-                  rule.value,
-                  inventory,
-                  stats
-                );
-                const isActive = conditionMet && stateName === currentStateName;
-
-                const currentValue = Object.values(VitalsType).includes(
-                  rule.property as VitalsType
-                )
-                  ? stats[rule.property as VitalsType]
-                  : inventory[
-                      rule.property as MiningType | ProductType | CurrencyType
-                    ];
-
-                return (
-                  <div
-                    key={rule.name}
-                    className={cx(
-                      "p-2 rounded-lg border-2 transition-all duration-200",
-                      {
-                        "bg-success/20 border-success/50 shadow-sm shadow-success/20":
-                          isActive,
-                        "bg-base-100 border-base-300 opacity-60": !isActive,
-                      }
-                    )}
-                  >
-                    <div className="flex items-start gap-2 mb-2">
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2 mb-1">
-                          <span
-                            className={cx("font-semibold text-sm", {
-                              "text-success": isActive,
-                              "": !isActive,
-                            })}
-                          >
-                            {rule.name}
-                          </span>
-                          {isActive && (
-                            <span className="badge badge-success badge-sm">
-                              Active
-                            </span>
-                          )}
-                        </div>
-
-                        <p className="text-xs  mb-2">{rule.description}</p>
-
-                        {/* Condition Display */}
-                        <div className="flex items-center gap-2 p-2 bg-base-200 rounded text-xs">
-                          <IconComponent
-                            icon={rule.property}
-                            size={14}
-                            className="text-secondary shrink-0"
-                          />
-                          <span className="font-mono font-semibold text-secondary">
-                            {currentValue}
-                          </span>
-                          <span
-                            className={cx("font-mono", {
-                              "text-success": isActive,
-                              "text-gray-500": !isActive,
-                            })}
-                          >
-                            {rule.operator}
-                          </span>
-                          <span className="font-mono text-gray-500">
-                            {rule.value}
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        );
-      })}
+    <div className={cx("flex flex-col gap-4 p-2", className)}>
+      <div className="text-xs text-base-content/50 mb-2">
+        Current state: <span className="font-semibold capitalize">{currentStateName}</span>
+      </div>
+      <RulesSection
+        title="Rules"
+        rules={rules}
+        stats={stats}
+        inventory={inventory}
+      />
     </div>
   );
 };
