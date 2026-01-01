@@ -39,7 +39,6 @@ export const MeepleDetails = (props: {
         >
           {meeple.name}
         </Link>
-        <StateRulesTimeLine state={meeple.state} />
         <MeepleRoleBadge roleId={meeple.roleId} />
       </div>
 
@@ -73,11 +72,15 @@ export const MeepleDetail = ({
   </div>
 );
 
-export const MeepleRoleBadge = ({ roleId }: { roleId: RoleId }) => (
-  <div className="flex items-center gap-1.5 text-sm text-base-content/70">
-    <IconComponent icon={roleId} size={14} />
-    <span>{roleId}</span>
-  </div>
+export const MeepleRoleBadge = ({
+  roleId,
+}: {
+  roleId: RoleId;
+}) => (
+    <div className="flex items-center gap-1.5 text-sm text-base-content/70">
+      <IconComponent icon={roleId} size={14} />
+      <span>{roleId}</span>
+    </div>
 );
 
 export const MeepleStateBadge = ({ state }: { state: MeepleState }) => (

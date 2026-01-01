@@ -32,11 +32,11 @@ export const Help = () => {
 
         <section>
           <h2 className="text-xl font-semibold mb-2">Inspecting Entities</h2>
-          <p className="text-sm mb-2">When viewing a selected entity, you can switch between three detail tabs:</p>
+          <p className="text-sm mb-2">When viewing a selected entity, you'll see:</p>
           <ul className="list-disc list-inside space-y-1 text-sm">
-            <li><strong>Stats:</strong> View detailed inventory (ore, money, products) and stats (health, energy, happiness)</li>
-            <li><strong>Rules:</strong> See all rules that control the entity's behavior and which rules are currently active</li>
-            <li><strong>Journal:</strong> View a history of the entity's actions and state changes over time</li>
+            <li><strong>Stats & Inventory:</strong> Detailed inventory (ore, money, products) and stats (health, energy, happiness) are shown automatically in the entity card</li>
+            <li><strong>Rules tab:</strong> See all rules that control the entity's behavior and which rules are currently active</li>
+            <li><strong>Journal tab:</strong> View a history of the entity's actions and state changes over time</li>
           </ul>
         </section>
 

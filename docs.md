@@ -37,7 +37,7 @@ Entities can be in one of four states:
 - View detailed stats and inventory for selected entities
 - Rules Visualizer: See all rules for an entity, which are active, and condition evaluation
 - Journal System: Track entity actions and state changes with timestamps
-- Detail tabs: Switch between Stats, Rules, and Journal views
+- Detail tabs: Switch between Rules and Journal views (stats are shown in the main detail view)
 - Zoom slider for camera control
 - Hide/Show UI toggle
 - Aggregated resource stats in navigation bar
@@ -102,11 +102,11 @@ Entities can be in one of four states:
 - Useful for debugging entity behavior and understanding decision history
 
 ## Current Entity Counts
-- Miners: 42
-- Asteroids: 17
-- Space Stores: 4
-- Space Bars: 2
-- Space Apartments: 2
+- Miners: 6
+- Asteroids: 3
+- Space Stores: 1
+- Space Bars: 1
+- Space Apartments: 1
 
 ## Future Enhancements
 - Editable rules system with UI
