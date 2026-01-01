@@ -46,7 +46,7 @@ export const MeepleDetails = (props: {
 
       {isSelected && (
         <MeepleStatsAndInventory
-          className="w-sm"
+          className="w-xs"
           stats={{ ...meeple.state.stats }}
           inventory={{ ...meeple.state.inventory }}
         />
@@ -96,7 +96,6 @@ export const MeepleStateBadge = ({ state }: { state: MeepleState }) => (
         <IconRoute size={14} />
         <span className="font-semibold capitalize">{state.name}</span>
         <span className="text-warning/70 text-xs">→ {state.target.name}</span>
-        <span className="text-warning/70 text-xs">→ {state.target.roleId}</span>
       </div>
     )}
     {state.name === "visiting" && (
@@ -111,10 +110,16 @@ export const MeepleStateBadge = ({ state }: { state: MeepleState }) => (
     {state.name === "transacting" && (
       <div className="badge badge-lg gap-1.5 bg-base-200 text-base-content border-base-content/30">
         <IconArrowsExchange size={14} />
-        <span className="font-semibold capitalize">{state.name}</span>
         <span className="text-base-content/70 text-xs">
           Transacting {state.transactionType} {state.quantity} {state.good}
         </span>
+      </div>
+    )}
+    {state.name === "resting" && (
+      <div className="badge badge-lg gap-1.5 bg-success/20 text-success border-success/30">
+        <IconPlayerPause size={14} />
+        <span className="font-semibold capitalize">{state.name}</span>
+        <span className="text-success/70 text-xs">Resting at {state.target.name}</span>
       </div>
     )}
   </div>

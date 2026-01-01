@@ -114,13 +114,10 @@ export const RulesVisualizer = ({
   rules: Rule[];
   stats: Stats;
   inventory: Inventory;
-  currentStateName: "idle" | "traveling" | "visiting" | "transacting";
+  currentStateName: "idle" | "traveling" | "visiting" | "transacting" | "resting";
 }) => {
   return (
     <div className={cx("flex flex-col gap-4 p-2", className)}>
-      <div className="text-xs text-base-content/50 mb-2">
-        Current state: <span className="font-semibold capitalize">{currentStateName}</span>
-      </div>
       <RulesSection
         title="Rules"
         rules={rules}

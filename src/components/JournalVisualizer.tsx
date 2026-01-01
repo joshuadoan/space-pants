@@ -23,7 +23,7 @@ const JournalEntryItem = ({ entry, isNew }: JournalEntryItemProps) => {
   const { displayedText, isTyping } = useTypewriter(formattedEntry.text, 30, isNew);
 
   return (
-    <div className="p-2 flex gap-2">
+    <div className="p-2">
       <div className="flex items-center gap-2">
         <div className="flex items-center gap-1 shrink-0">
           {formattedEntry.icons.map((icon, idx) => (

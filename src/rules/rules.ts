@@ -31,34 +31,6 @@ export type Rules = {
 };
 
 export const MINER_RULES: Rule[] = [
-  // low on energy 
-  {
-    name: "Low on Energy",
-    description:
-      "When the miner has less than 1 energy, they will rest and regenerate 1 energy.",
-    property: VitalsType.Energy,
-    operator: Operator.LessThan,
-    value: 1,
-    actions: [
-      // find an apartment
-      // add1 to vitals until energy is 100
-      (meeple, game) => {
-        const apartment = game.findRandomMeepleByRoleId(RoleId.SpaceApartments);
-        if (apartment) {
-          meeple.travelTo(apartment)
-          .callMethod(() => {
-            meeple.addToVitals(VitalsType.Energy, UNIT);
-          })
-          .callMethod(() => {
-            meeple.dispatch({
-              name: "finish",
-            });
-          })
-          .delay(DEFAULT_DELAY);
-        }
-      },
-     ],
-  },
   {
     name: "Low on Ore",
     description:
@@ -164,28 +136,28 @@ export const RULES: Record<RoleId, Rule[]> = {
 export function applyMeepleRules(
   meeple: Meeple,
   engine: Game,
-  rulesMap: Rule[],
+  rulesMap: Rule[]
 ) {
   if (meeple.actions.getQueue().hasNext()) {
     return;
   }
-    for (let i = 0; i < rulesMap.length; i++) {
-      const rule = rulesMap[i];
-      if (
-        evaluateCondition(
-          rule.property,
-          rule.operator,
-          rule.value,
-          meeple.state.inventory,
-          meeple.state.stats
-        )
-      ) {
-        for (const action of rule.actions) {
-          action(meeple, engine);
-        }
-        break;
+  for (let i = 0; i < rulesMap.length; i++) {
+    const rule = rulesMap[i];
+    if (
+      evaluateCondition(
+        rule.property,
+        rule.operator,
+        rule.value,
+        meeple.state.inventory,
+        meeple.state.stats
+      )
+    ) {
+      for (const action of rule.actions) {
+        action(meeple, engine);
       }
+      break;
     }
+  }
 }
 
 export function evaluateCondition(

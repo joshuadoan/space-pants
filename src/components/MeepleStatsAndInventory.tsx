@@ -14,31 +14,32 @@ export const MeepleStatsAndInventory = ({
   inventory: Inventory;
 }) => {
   return (
-    <div className={cx("flex gap-2 items-center", className)}>
-      {Object.entries(stats).map(([key, value]) => {
-        const vitalsType = key as VitalsType;
-        return (
-          <MeepleExtraDetailCardItem
-            key={vitalsType}
-            goodType={vitalsType}
-            quantity={value}
-          />
-        );
-      })}
-
-      |
-
-      {Object.entries(inventory).map(([key, value]) => {
-        const goodType = key as MiningType | ProductType | CurrencyType;
-        return (
-          <MeepleExtraDetailCardItem
-            key={goodType}
-            goodType={goodType}
-            quantity={value}
-          />
-        );
-      })}
-    </div>
+    <>
+      <div className={cx("flex gap-2 items-center", className)}>
+        {Object.entries(stats).map(([key, value]) => {
+          const vitalsType = key as VitalsType;
+          return (
+            <MeepleExtraDetailCardItem
+              key={vitalsType}
+              goodType={vitalsType}
+              quantity={value}
+            />
+          );
+        })}
+      </div>
+      <div className={cx("flex gap-2 items-center", className)}>
+        {Object.entries(inventory).map(([key, value]) => {
+          const goodType = key as MiningType | ProductType | CurrencyType;
+          return (
+            <MeepleExtraDetailCardItem
+              key={goodType}
+              goodType={goodType}
+              quantity={value}
+            />
+          );
+        })}
+      </div>
+    </>
   );
 };
 
