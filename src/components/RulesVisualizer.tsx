@@ -6,18 +6,10 @@ import cx from "classnames";
 
 type RuleItemProps = {
   rule: Rule;
-  stats: Stats;
-  inventory: Inventory;
+  isActive: boolean;
 };
 
-const RuleItem = ({ rule, stats, inventory }: RuleItemProps) => {
-  const isActive = evaluateCondition(
-    rule.property,
-    rule.operator,
-    rule.value,
-    inventory,
-    stats
-  );
+const RuleItem = ({ rule, isActive }: RuleItemProps) => {
 
   return (
     <div
@@ -64,6 +56,24 @@ type RulesSectionProps = {
 const RulesSection = ({ title, rules, stats, inventory }: RulesSectionProps) => {
   const rulesArray = rules || [];
   
+  // Find the first rule that passes its condition
+  let firstActiveIndex = -1;
+  for (let i = 0; i < rulesArray.length; i++) {
+    const rule = rulesArray[i];
+    if (
+      evaluateCondition(
+        rule.property,
+        rule.operator,
+        rule.value,
+        inventory,
+        stats
+      )
+    ) {
+      firstActiveIndex = i;
+      break;
+    }
+  }
+  
   if (rulesArray.length === 0) {
     return (
       <div className="flex flex-col gap-2">
@@ -85,8 +95,7 @@ const RulesSection = ({ title, rules, stats, inventory }: RulesSectionProps) => 
           <RuleItem
             key={index}
             rule={rule}
-            stats={stats}
-            inventory={inventory}
+            isActive={index === firstActiveIndex}
           />
         ))}
       </div>

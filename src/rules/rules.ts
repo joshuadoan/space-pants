@@ -31,6 +31,34 @@ export type Rules = {
 };
 
 export const MINER_RULES: Rule[] = [
+  // low on energy 
+  {
+    name: "Low on Energy",
+    description:
+      "When the miner has less than 1 energy, they will rest and regenerate 1 energy.",
+    property: VitalsType.Energy,
+    operator: Operator.LessThan,
+    value: 1,
+    actions: [
+      // find an apartment
+      // add1 to vitals until energy is 100
+      (meeple, game) => {
+        const apartment = game.findRandomMeepleByRoleId(RoleId.SpaceApartments);
+        if (apartment) {
+          meeple.travelTo(apartment)
+          .callMethod(() => {
+            meeple.addToVitals(VitalsType.Energy, UNIT);
+          })
+          .callMethod(() => {
+            meeple.dispatch({
+              name: "finish",
+            });
+          })
+          .delay(DEFAULT_DELAY);
+        }
+      },
+     ],
+  },
   {
     name: "Low on Ore",
     description:
@@ -46,8 +74,6 @@ export const MINER_RULES: Rule[] = [
             .travelTo(asteroid)
             .callMethod(() => {
               meeple.addToInventory(MiningType.Ore, UNIT);
-            })
-            .callMethod(() => {
               asteroid.removeFromInventory(MiningType.Ore, UNIT);
             })
             .callMethod(() => {
@@ -63,7 +89,8 @@ export const MINER_RULES: Rule[] = [
   // if ore is 1 or more go to space store and sell 1 ore for 1 money
   {
     name: "Sell Ore to SpaceStore",
-    description: "When the miner has 1 or more ore, they will travel to a space store and sell 1 ore for 1 money.",
+    description:
+      "When the miner has 1 or more ore, they will travel to a space store and sell 1 ore for 1 money.",
     property: MiningType.Ore,
     operator: Operator.GreaterThanOrEqual,
     value: 1,
@@ -91,16 +118,20 @@ export const SPACE_STORE_RULES: Rule[] = [
   // turn every ore into money wiht exchange rate
   {
     name: "Turn Ore into Money",
-    description: "When the space store has ore, it will turn it into money with the exchange rate.",
+    description:
+      "When the space store has ore, it will turn it into money with the exchange rate.",
     property: MiningType.Ore,
     operator: Operator.GreaterThanOrEqual,
     value: 1,
     actions: [
       (meeple) => {
         meeple.removeFromInventory(MiningType.Ore, UNIT);
-        meeple.addToInventory(CurrencyType.Money, UNIT * EXCHANGE_RATE_TO_MONEY[MiningType.Ore]);
+        meeple.addToInventory(
+          CurrencyType.Money,
+          UNIT * EXCHANGE_RATE_TO_MONEY[MiningType.Ore]
+        );
       },
-    ]
+    ],
   },
 ];
 
@@ -109,7 +140,8 @@ export const ASTEROID_RULES: Rule[] = [
   // if ore less than 100 generate 1 ore for the asteroid
   {
     name: "Generate Ore",
-    description: "When the asteroid has less than 100 ore, it will generate 1 ore.",
+    description:
+      "When the asteroid has less than 100 ore, it will generate 1 ore.",
     property: MiningType.Ore,
     operator: Operator.LessThan,
     value: 100,
@@ -117,9 +149,9 @@ export const ASTEROID_RULES: Rule[] = [
       (meeple) => {
         meeple.addToInventory(MiningType.Ore, UNIT);
       },
-    ]
+    ],
   },
-]
+];
 
 export const RULES: Record<RoleId, Rule[]> = {
   [RoleId.Miner]: MINER_RULES,
@@ -133,14 +165,10 @@ export function applyMeepleRules(
   meeple: Meeple,
   engine: Game,
   rulesMap: Rule[],
-  source: "rule" | "generator" = "rule"
 ) {
   if (meeple.actions.getQueue().hasNext()) {
     return;
   }
-  // Store source on meeple temporarily so rule actions can access it
-  (meeple as any).__currentRuleSource = source;
-  try {
     for (let i = 0; i < rulesMap.length; i++) {
       const rule = rulesMap[i];
       if (
@@ -155,11 +183,9 @@ export function applyMeepleRules(
         for (const action of rule.actions) {
           action(meeple, engine);
         }
+        break;
       }
     }
-  } finally {
-    delete (meeple as any).__currentRuleSource;
-  }
 }
 
 export function evaluateCondition(

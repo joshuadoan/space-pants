@@ -156,12 +156,11 @@ export class Meeple extends Actor {
     this.state = state;
   }
 
-  dispatch(action: MeepleAction, source?: "rule" | "generator"): void {
+  dispatch(action: MeepleAction): void {
     this.addToJournal({
       timestamp: Date.now(),
       state: this.state,
       action,
-      source,
     });
     let nextState: MeepleState;
     switch (action.name) {
@@ -196,6 +195,14 @@ export class Meeple extends Actor {
                 : this.state.inventory[action.good] - action.quantity,
           },
         };
+
+        // for every transact-inventory, the energy of the meeple will decrease by 1
+        switch (this.roleId) {
+          case RoleId.Miner: {
+            nextState.stats[VitalsType.Energy] -= 1;
+            break;
+          }
+        }
         break;
       }
       case "transact-vitals": {
@@ -229,10 +236,10 @@ export class Meeple extends Actor {
   initRulesTimer(game: Game): void {
     const timer = new Timer({
       fcn: async () => {
-        applyMeepleRules(this, game, this.rulesMapRules, "rule");
+        applyMeepleRules(this, game, this.rulesMapRules);
       },
       repeats: true,
-      interval: 500,
+      interval: 1000,
     });
     game.currentScene.add(timer);
     timer.start();
@@ -267,10 +274,7 @@ export class Meeple extends Actor {
   addToInventory(
     good: MiningType | ProductType | CurrencyType,
     quantity: number,
-    source?: "rule" | "generator"
   ): ActionContext {
-    // If source not provided, try to get it from current rule context
-    const actualSource = source ?? (this as any).__currentRuleSource ?? "rule";
     return this.actions
       .callMethod(() => {
         this.dispatch({
@@ -278,7 +282,7 @@ export class Meeple extends Actor {
           good,
           quantity,
           transactionType: "add",
-        }, actualSource);
+        });
       })
       .delay(DEFAULT_DELAY)
   }
@@ -286,10 +290,7 @@ export class Meeple extends Actor {
   removeFromInventory(
     good: MiningType | ProductType | CurrencyType,
     quantity: number,
-    source?: "rule" | "generator"
   ): ActionContext {
-    // If source not provided, try to get it from current rule context
-    const actualSource = source ?? (this as any).__currentRuleSource ?? "rule";
     return this.actions
       .callMethod(() => {
         this.dispatch({
@@ -297,12 +298,12 @@ export class Meeple extends Actor {
           good,
           quantity,
           transactionType: "remove",
-        }, actualSource);
+        });
       })
       .delay(DEFAULT_DELAY)
   }
 
-  addToVitals(vitals: VitalsType, quantity: number, source?: "rule" | "generator"): ActionContext {
+  addToVitals(vitals: VitalsType, quantity: number): ActionContext {
     return this.actions
       .callMethod(() => {
         this.dispatch({
@@ -310,12 +311,12 @@ export class Meeple extends Actor {
           vitals,
           quantity,
           transactionType: "add",
-        }, source);
+        });
       })
       .delay(DEFAULT_DELAY)
   }
 
-  removeFromVitals(vitals: VitalsType, quantity: number, source?: "rule" | "generator"): ActionContext {
+  removeFromVitals(vitals: VitalsType, quantity: number): ActionContext {
     return this.actions
       .callMethod(() => {
         this.dispatch({
@@ -323,7 +324,7 @@ export class Meeple extends Actor {
           vitals,
           quantity,
           transactionType: "remove",
-        }, source);
+        });
       })
       .delay(DEFAULT_DELAY)
   }

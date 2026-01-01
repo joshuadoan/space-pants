@@ -93,6 +93,7 @@ export const MeepleStateBadge = ({ state }: { state: MeepleState }) => (
         <IconRoute size={14} />
         <span className="font-semibold capitalize">{state.name}</span>
         <span className="text-warning/70 text-xs">→ {state.target.name}</span>
+        <span className="text-warning/70 text-xs">→ {state.target.roleId}</span>
       </div>
     )}
     {state.name === "visiting" && (
