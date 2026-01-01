@@ -7,7 +7,7 @@ import {
   RoleId,
   VitalsType,
 } from "./types";
-import { applyMeepleRules, type Rule, type Rules } from "../rules/rules";
+import { applyMeepleRules, type Rule } from "../rules/rules";
 import { DEFAULT_DELAY } from "../consts";
 
 export type Stats = {

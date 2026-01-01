@@ -96,7 +96,7 @@ export const SPACE_STORE_RULES: Rule[] = [
     operator: Operator.GreaterThanOrEqual,
     value: 1,
     actions: [
-      (meeple, game) => {
+      (meeple) => {
         meeple.removeFromInventory(MiningType.Ore, UNIT);
         meeple.addToInventory(CurrencyType.Money, UNIT * EXCHANGE_RATE_TO_MONEY[MiningType.Ore]);
       },

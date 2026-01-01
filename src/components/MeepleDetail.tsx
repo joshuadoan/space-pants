@@ -9,7 +9,6 @@ import type { RoleId } from "../entities/types";
 import { IconPlayerPause, IconRoute } from "@tabler/icons-react";
 import { IconArrowsExchange } from "@tabler/icons-react";
 import cx from "classnames";
-import { MeepleExtraDetail } from "./MeepleExtraDetail";
 
 const MEEPLE_STATE_NAMES = ["idle", "traveling", "visiting", "transacting"] as const;
 
@@ -38,12 +37,6 @@ export const MeepleDetails = (props: {
       </div>
       <MeepleRoleBadge roleId={meeple.roleId} />
       <MeepleStateBadge state={meeple.state} />
-      {isSelected && (
-        <MeepleExtraDetail
-          stats={{ ...meeple.state.stats }}
-          inventory={{ ...meeple.state.inventory }}
-        />
-      )}
     </MeepleDetail>
   );
 };

@@ -20,6 +20,7 @@ import { DEFAULT_ZOOM_VALUE, ZoomSlider } from "./ZoomSlider";
 import { RulesVisualizer } from "./RulesVisualizer";
 import { JournalVisualizer } from "./JournalVisualizer";
 import { Help } from "./Help";
+import { MeepleExtraDetail } from "./MeepleExtraDetail";
 
 type State = {
   showUi: boolean;
@@ -317,6 +318,14 @@ export const MeeplesList = () => {
             />
             <div className="tabs tabs-boxed mb-2 shrink-0">
               <button
+                onClick={() => setActiveTab("stats")}
+                className={cx("tab flex items-center gap-1.5", {
+                  "tab-active": activeTab === "stats",
+                })}
+              >
+                <span>Stats</span>
+              </button>
+              <button
                 onClick={() => setActiveTab("rules")}
                 className={cx("tab flex items-center gap-1.5", {
                   "tab-active": activeTab === "rules",
@@ -334,19 +343,27 @@ export const MeeplesList = () => {
               </button>
             </div>
             <div className="flex-1 overflow-y-auto">
-              {/* {activeTab === "rules" && (
+              {activeTab === "rules" && (
                 <RulesVisualizer
-                  rules={{
-                    rules: selectedMeeple.rulesMapRules,
-                    generators: selectedMeeple.rulesMapGenerator,
-                  }}
+                  className="w-sm"
+                  rules={selectedMeeple.rulesMapRules}
                   stats={{ ...selectedMeeple.state.stats }}
                   inventory={{ ...selectedMeeple.state.inventory }}
                   currentStateName={selectedMeeple.state.name}
                 />
-              )} */}
+              )}
+              {activeTab === "stats" && (
+                <MeepleExtraDetail
+                  className="w-sm"
+                  stats={{ ...selectedMeeple.state.stats }}
+                  inventory={{ ...selectedMeeple.state.inventory }}
+                />
+              )}
               {activeTab === "journal" && (
-                <JournalVisualizer journal={[...selectedMeeple.journal]} className="w-sm" />
+                <JournalVisualizer
+                  journal={[...selectedMeeple.journal]}
+                  className="w-sm"
+                />
               )}
             </div>
           </div>
