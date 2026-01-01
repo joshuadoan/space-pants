@@ -9,8 +9,14 @@ import type { RoleId } from "../entities/types";
 import { IconPlayerPause, IconRoute } from "@tabler/icons-react";
 import { IconArrowsExchange } from "@tabler/icons-react";
 import cx from "classnames";
+import { MeepleStatsAndInventory } from "./MeepleStatsAndInventory";
 
-const MEEPLE_STATE_NAMES = ["idle", "traveling", "visiting", "transacting"] as const;
+const MEEPLE_STATE_NAMES = [
+  "idle",
+  "traveling",
+  "visiting",
+  "transacting",
+] as const;
 
 export const MeepleDetails = (props: {
   className?: string;
@@ -25,8 +31,8 @@ export const MeepleDetails = (props: {
   const { className, id, isSelected, ...meeple } = props;
 
   return (
-    <MeepleDetail className={className}>
-      <div className="flex items-center justify-between">
+    <MeepleDetail className={cx("flex flex-col gap-2", className)}>
+      <div className="flex items-center justify-between mb-2">
         <Link
           className="cursor-pointer hover:text-primary underline"
           to={`/meeple/${id}`}
@@ -34,15 +40,35 @@ export const MeepleDetails = (props: {
           {meeple.name}
         </Link>
         <StateRulesTimeLine state={meeple.state} />
+        <MeepleRoleBadge roleId={meeple.roleId} />
       </div>
-      <MeepleRoleBadge roleId={meeple.roleId} />
+
       <MeepleStateBadge state={meeple.state} />
+
+      {isSelected && (
+        <MeepleStatsAndInventory
+          className="w-sm"
+          stats={{ ...meeple.state.stats }}
+          inventory={{ ...meeple.state.inventory }}
+        />
+      )}
     </MeepleDetail>
   );
 };
 
-export const MeepleDetail = ({ children, className }: { children: React.ReactNode, className?: string }) => (
-  <div className={cx("flex flex-col gap-2 p-3 border border-gray-300 rounded-md mb-2", className)}>
+export const MeepleDetail = ({
+  children,
+  className,
+}: {
+  children: React.ReactNode;
+  className?: string;
+}) => (
+  <div
+    className={cx(
+      "flex flex-col gap-2 p-3 border border-gray-300 rounded-md mb-2",
+      className
+    )}
+  >
     {children}
   </div>
 );
@@ -90,22 +116,15 @@ export const MeepleStateBadge = ({ state }: { state: MeepleState }) => (
   </div>
 );
 
-const StateRulesTimeLine = ({
-  state,
-}: {
-  state: MeepleState;
-}) => {
+const StateRulesTimeLine = ({ state }: { state: MeepleState }) => {
   return (
     <div className="flex items-center gap-1">
       <div className="flex items-center gap-1 flex-wrap">
         {MEEPLE_STATE_NAMES.map((stateName, index) => {
           const isActiveState = stateName === state.name;
-          
+
           return (
-            <div
-              key={stateName}
-              className="flex items-center gap-1"
-            >
+            <div key={stateName} className="flex items-center gap-1">
               <div
                 className={cx(
                   "rounded-full transition-all duration-200 w-2 h-2",

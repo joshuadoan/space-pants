@@ -20,10 +20,11 @@ import { DEFAULT_ZOOM_VALUE, ZoomSlider } from "./ZoomSlider";
 import { RulesVisualizer } from "./RulesVisualizer";
 import { JournalVisualizer } from "./JournalVisualizer";
 import { Help } from "./Help";
-import { MeepleExtraDetail } from "./MeepleExtraDetail";
 
 type State = {
   showUi: boolean;
+  mainTab: "meeples" | "help";
+  activeTab: "stats" | "rules" | "journal";
 };
 
 type ActionToggleShowUi = {
@@ -31,16 +32,32 @@ type ActionToggleShowUi = {
   payload: boolean;
 };
 
-type Action = ActionToggleShowUi;
+type ActionSetMainTab = {
+  type: "set-main-tab";
+  payload: "meeples" | "help";
+};
+
+type ActionSetActiveTab = {
+  type: "set-active-tab";
+  payload: "stats" | "rules" | "journal";
+};
+
+type Action = ActionToggleShowUi | ActionSetMainTab | ActionSetActiveTab;
 
 const initialState: State = {
   showUi: true,
+  mainTab: "meeples",
+  activeTab: "rules",
 };
 
 const reducer = (state: State, action: Action): State => {
   switch (action.type) {
     case "toggle-show-ui":
       return { ...state, showUi: action.payload };
+    case "set-main-tab":
+      return { ...state, mainTab: action.payload };
+    case "set-active-tab":
+      return { ...state, activeTab: action.payload };
   }
 };
 
@@ -54,10 +71,6 @@ export const MeeplesList = () => {
     zoomToEntity,
     centerCameraInGame,
     setZoom,
-    mainTab,
-    activeTab,
-    setMainTab,
-    setActiveTab,
   } = useGame();
   const navigate = useNavigate();
 
@@ -199,23 +212,23 @@ export const MeeplesList = () => {
         <div className="p-2 flex flex-col gap-2">
           <div className="tabs tabs-boxed">
             <button
-              onClick={() => setMainTab("meeples")}
+              onClick={() => dispatch({ type: "set-main-tab", payload: "meeples" })}
               className={cx("tab flex items-center gap-1.5", {
-                "tab-active": mainTab === "meeples",
+                "tab-active": state.mainTab === "meeples",
               })}
             >
               <span>Meeples</span>
             </button>
             <button
-              onClick={() => setMainTab("help")}
+              onClick={() => dispatch({ type: "set-main-tab", payload: "help" })}
               className={cx("tab flex items-center gap-1.5", {
-                "tab-active": mainTab === "help",
+                "tab-active": state.mainTab === "help",
               })}
             >
               <span>Help</span>
             </button>
           </div>
-          {mainTab === "meeples" && (
+          {state.mainTab === "meeples" && (
             <>
               {id ? (
                 <Link
@@ -260,10 +273,10 @@ export const MeeplesList = () => {
         className={cx("flex-1 p-2 overflow-y-auto", {
           hidden: !state.showUi,
         })}
-        ref={!id && mainTab === "meeples" ? parentRef : undefined}
+        ref={!id && state.mainTab === "meeples" ? parentRef : undefined}
       >
-        {mainTab === "help" && <Help />}
-        {mainTab === "meeples" && !id && (
+        {state.mainTab === "help" && <Help />}
+        {state.mainTab === "meeples" && !id && (
           <div
             style={{
               height: `${virtualizer.getTotalSize()}px`,
@@ -303,7 +316,7 @@ export const MeeplesList = () => {
             })}
           </div>
         )}
-        {mainTab === "meeples" && selectedMeeple ? (
+        {state.mainTab === "meeples" && selectedMeeple ? (
           <div className="flex flex-col h-full">
             <MeepleDetails
               className="w-sm"
@@ -318,32 +331,24 @@ export const MeeplesList = () => {
             />
             <div className="tabs tabs-boxed mb-2 shrink-0">
               <button
-                onClick={() => setActiveTab("stats")}
+                onClick={() => dispatch({ type: "set-active-tab", payload: "rules" })}
                 className={cx("tab flex items-center gap-1.5", {
-                  "tab-active": activeTab === "stats",
-                })}
-              >
-                <span>Stats</span>
-              </button>
-              <button
-                onClick={() => setActiveTab("rules")}
-                className={cx("tab flex items-center gap-1.5", {
-                  "tab-active": activeTab === "rules",
+                  "tab-active": state.activeTab === "rules",
                 })}
               >
                 <span>Rules</span>
               </button>
               <button
-                onClick={() => setActiveTab("journal")}
+                onClick={() => dispatch({ type: "set-active-tab", payload: "journal" })}
                 className={cx("tab flex items-center gap-1.5", {
-                  "tab-active": activeTab === "journal",
+                  "tab-active": state.activeTab === "journal",
                 })}
               >
                 <span>Journal</span>
               </button>
             </div>
             <div className="flex-1 overflow-y-auto">
-              {activeTab === "rules" && (
+              {state.activeTab === "rules" && (
                 <RulesVisualizer
                   className="w-sm"
                   rules={selectedMeeple.rulesMapRules}
@@ -352,14 +357,7 @@ export const MeeplesList = () => {
                   currentStateName={selectedMeeple.state.name}
                 />
               )}
-              {activeTab === "stats" && (
-                <MeepleExtraDetail
-                  className="w-sm"
-                  stats={{ ...selectedMeeple.state.stats }}
-                  inventory={{ ...selectedMeeple.state.inventory }}
-                />
-              )}
-              {activeTab === "journal" && (
+              {state.activeTab === "journal" && (
                 <JournalVisualizer
                   journal={[...selectedMeeple.journal]}
                   className="w-sm"
