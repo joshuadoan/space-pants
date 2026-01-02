@@ -20,7 +20,7 @@ import {
 } from "../entities/types";
 import { generateSpaceName } from "../utils/generateSpaceName";
 import { Meeple, type MeepleState } from "../entities/Meeple";
-import {  RULES } from "../rules/rules";
+import { RULES } from "../rules/rules";
 import {
   MAX_SHIP_DEFAULT_SPEED,
   MIN_SHIP_DEFAULT_SPEED,
@@ -29,9 +29,13 @@ import {
   GAME_HEIGHT,
   COUNTS,
 } from "../consts";
+import { keyboardControls } from "../utils/keyboardControls";
 
 function getRandomSpeed(): number {
-  return Math.random() * (MAX_SHIP_DEFAULT_SPEED - MIN_SHIP_DEFAULT_SPEED) + MIN_SHIP_DEFAULT_SPEED * GAME_SPEED;
+  return (
+    Math.random() * (MAX_SHIP_DEFAULT_SPEED - MIN_SHIP_DEFAULT_SPEED) +
+    MIN_SHIP_DEFAULT_SPEED * GAME_SPEED
+  );
 }
 
 const initialMeeplState: MeepleState = {
@@ -75,6 +79,11 @@ type ZoomToEntityAction = {
   payload: Meeple;
 };
 
+type SetPlayerAction = {
+  type: "set-player";
+  payload: Meeple;
+};
+
 type SetMainTabAction = {
   type: "set-main-tab";
   payload: "meeples" | "help";
@@ -89,6 +98,7 @@ type SetActiveTabAction = {
 type GameAction =
   | SetIsLoadingAction
   | SetGameAction
+  | SetPlayerAction
   | ZoomToEntityAction
   | SetMeeplesAction
   | SetMainTabAction
@@ -100,13 +110,11 @@ type GameState = {
   isLoading: boolean;
   mainTab: "meeples" | "help";
   activeTab: "stats" | "rules" | "journal";
+  player: Meeple | null;
 };
 
 /** Type for the game context value */
 type GameContextValue = {
-  game: Game | null;
-  isLoading: boolean;
-  mainTab: "meeples" | "help";
   activeTab: "stats" | "rules" | "journal";
   zoomToEntity: (meeple: Meeple) => void;
   getMeepleById: (id: string) => Meeple | undefined;
@@ -114,7 +122,7 @@ type GameContextValue = {
   setZoom: (zoom: number) => void;
   setMainTab: (tab: "meeples" | "help") => void;
   setActiveTab: (tab: "stats" | "rules" | "journal") => void;
-};
+} & GameState;
 
 // ============================================================================
 // Initial State
@@ -125,6 +133,7 @@ const initialState: GameState = {
   isLoading: true,
   mainTab: "meeples",
   activeTab: "rules",
+  player: null,
 };
 
 // ============================================================================
@@ -151,6 +160,11 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       return {
         ...state,
         mainTab: action.payload,
+      };
+    case "set-player":
+      return {
+        ...state,
+        player: action.payload,
       };
     case "set-active-tab":
       return {
@@ -271,6 +285,19 @@ export function GameProvider({ children }: { children: ReactNode }) {
 
       game.currentScene.add(miner);
     }
+
+    const player = new Meeple({
+      position: new Vector(GAME_WIDTH / 2, GAME_HEIGHT / 2),
+      graphic: createEntityGraphic(EntityGraphicStyle.Trader2),
+      name: "player",
+      state: initialMeeplState,
+      roleId: RoleId.Player,
+      rulesMapRules: [],
+      journal: [],
+    });
+    game.currentScene.add(player);
+    keyboardControls(game, player);
+    dispatch({ type: "set-player", payload: player });
 
     dispatch({ type: "set-game", payload: game });
     dispatch({

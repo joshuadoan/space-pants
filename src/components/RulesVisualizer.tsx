@@ -1,4 +1,4 @@
-import type { Inventory, Stats } from "../entities/Meeple";
+import type { Inventory, MeepleStateName, Stats } from "../entities/Meeple";
 import type { Rule } from "../rules/rules";
 import { evaluateCondition } from "../rules/rules";
 import { IconComponent } from "../utils/iconMap";
@@ -50,6 +50,7 @@ type RulesSectionProps = {
   rules: Rule[];
   stats: Stats;
   inventory: Inventory;
+  stateName: MeepleStateName;
 };
 
 const RulesSection = ({
@@ -57,6 +58,7 @@ const RulesSection = ({
   rules,
   stats,
   inventory,
+  stateName,
 }: RulesSectionProps) => {
   const rulesArray = rules || [];
 
@@ -66,11 +68,13 @@ const RulesSection = ({
     const rule = rulesArray[i];
     if (
       evaluateCondition(
+        stateName,
         rule.property,
         rule.operator,
         rule.value,
         inventory,
-        stats
+        stats,
+        rule.allowedStates
       )
     ) {
       firstActiveIndex = i;
@@ -107,17 +111,13 @@ export const RulesVisualizer = ({
   rules = [],
   stats,
   inventory,
+  stateName,
 }: {
   className?: string;
   rules: Rule[];
   stats: Stats;
   inventory: Inventory;
-  currentStateName:
-    | "idle"
-    | "traveling"
-    | "visiting"
-    | "transacting"
-    | "resting";
+  stateName: MeepleStateName;
 }) => {
   return (
     <div className={cx("flex flex-col gap-4", className)}>
@@ -126,6 +126,7 @@ export const RulesVisualizer = ({
         rules={rules}
         stats={stats}
         inventory={inventory}
+        stateName={stateName}
       />
     </div>
   );

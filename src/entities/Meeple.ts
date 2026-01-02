@@ -24,27 +24,35 @@ export type SharedMeepleState = {
   speed: number;
 };
 
+export enum MeepleStateName {
+  Idle = "idle",
+  Resting = "resting",
+  Traveling = "traveling",
+  Visiting = "visiting",
+  Transacting = "transacting",
+}
+
 export type MeepleStateIdle = {
-  name: "idle";
+  name: MeepleStateName.Idle;
 } & SharedMeepleState;
 
 export type MeepleStateResting = {
-  name: "resting";
+  name: MeepleStateName.Resting;
   target: Meeple;
 } & SharedMeepleState;
 
 export type MeepleStateTraveling = {
-  name: "traveling";
+  name: MeepleStateName.Traveling;
   target: Meeple;
 } & SharedMeepleState;
 
 export type MeepleStateVisiting = {
-  name: "visiting";
+  name: MeepleStateName.Visiting;
   target: Meeple;
 } & SharedMeepleState;
 
 export type MeepleStateTransacting = {
-  name: "transacting";
+  name: MeepleStateName.Transacting;
   good: MiningType | ProductType | CurrencyType | VitalsType;
   quantity: number;
   transactionType: "add" | "remove";
@@ -180,7 +188,7 @@ export class Meeple extends Actor {
       case "travel-to": {
         nextState = {
           ...this.state,
-          name: "traveling",
+          name: MeepleStateName.Traveling,
           target: action.target,
         };
         break;
@@ -188,14 +196,14 @@ export class Meeple extends Actor {
       case "visit":
         nextState = {
           ...this.state,
-          name: "visiting",
+          name: MeepleStateName.Visiting,
           target: action.target,
         };
         break;
       case "rest": {
         nextState = {
           ...this.state,
-          name: "resting",
+          name: MeepleStateName.Resting,
           target: action.target,
           stats: {
             ...this.state.stats,
@@ -207,7 +215,7 @@ export class Meeple extends Actor {
       case "transact-inventory": {
         nextState = {
           ...this.state,
-          name: "transacting",
+          name: MeepleStateName.Transacting,
           good: action.good,
           quantity: action.quantity,
           transactionType: action.transactionType,
@@ -225,7 +233,7 @@ export class Meeple extends Actor {
       case "transact-vitals": {
         nextState = {
           ...this.state,
-          name: "transacting",
+          name: MeepleStateName.Transacting,
           good: action.vitals,
           quantity: action.quantity,
           transactionType: action.transactionType,
@@ -242,7 +250,7 @@ export class Meeple extends Actor {
       case "finish": {
         nextState = {
           ...this.state,
-          name: "idle",
+          name: MeepleStateName.Idle,
         };
         break;
       }

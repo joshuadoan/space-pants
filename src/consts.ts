@@ -1,6 +1,7 @@
 import { MiningType } from "./entities/types";
 
 export const GAME_SPEED = 1;
+export const PLAYER_SPEED = 5;
 
 export const DEFAULT_DELAY = 1000;
 

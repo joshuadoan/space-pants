@@ -4,6 +4,7 @@ export enum RoleId {
   SpaceStore = "SpaceStore",
   SpaceBar = "SpaceBar",
   SpaceApartments = "SpaceApartments",
+  Player = "Player",
 }
 
 export enum Operator {
@@ -18,6 +19,7 @@ export enum Operator {
 export enum UserActionType {
   Back = "back",
   HideUi = "hide-ui",
+  TakeControl = "take-control",
 }
 
 export enum MiningType {

@@ -1,5 +1,6 @@
 import type { Game } from "../entities/Game";
 import {
+  MeepleStateName,
   type Inventory,
   type Meeple,
   type MeepleState,
@@ -24,6 +25,7 @@ export type Rule = {
   operator: Operator;
   value: number;
   actions: ((meeple: Meeple, game: Game) => void)[];
+  allowedStates: MeepleState["name"][];
 };
 
 export type Rules = {
@@ -38,6 +40,7 @@ export const MINER_RULES: Rule[] = [
     property: MiningType.Ore,
     operator: Operator.LessThan,
     value: 1,
+    allowedStates: [MeepleStateName.Idle],
     actions: [
       (meeple, game) => {
         const asteroid = game.findRandomMeepleByRoleId(RoleId.Asteroid);
@@ -53,7 +56,6 @@ export const MINER_RULES: Rule[] = [
                 name: "finish",
               });
             })
-            .delay(DEFAULT_DELAY);
         }
       },
     ],
@@ -66,6 +68,7 @@ export const MINER_RULES: Rule[] = [
     property: MiningType.Ore,
     operator: Operator.GreaterThanOrEqual,
     value: 1,
+    allowedStates: [MeepleStateName.Idle],
     actions: [
       (meeple, game) => {
         const spaceStore = game.findRandomMeepleByRoleId(RoleId.SpaceStore);
@@ -95,6 +98,7 @@ export const SPACE_STORE_RULES: Rule[] = [
     property: MiningType.Ore,
     operator: Operator.GreaterThanOrEqual,
     value: 1,
+    allowedStates: [MeepleStateName.Idle],
     actions: [
       (meeple) => {
         meeple.removeFromInventory(MiningType.Ore, UNIT);
@@ -116,6 +120,7 @@ export const ASTEROID_RULES: Rule[] = [
       "When the asteroid has less than 100 ore, it will generate 1 ore.",
     property: MiningType.Ore,
     operator: Operator.LessThan,
+    allowedStates: [MeepleStateName.Idle],
     value: 100,
     actions: [
       (meeple) => {
@@ -131,6 +136,7 @@ export const RULES: Record<RoleId, Rule[]> = {
   [RoleId.SpaceStore]: SPACE_STORE_RULES,
   [RoleId.SpaceBar]: [],
   [RoleId.SpaceApartments]: [],
+  [RoleId.Player]: [],
 };
 
 export function applyMeepleRules(
@@ -145,11 +151,13 @@ export function applyMeepleRules(
     const rule = rulesMap[i];
     if (
       evaluateCondition(
+        meeple.state.name,
         rule.property,
         rule.operator,
         rule.value,
         meeple.state.inventory,
-        meeple.state.stats
+        meeple.state.stats,
+        rule.allowedStates
       )
     ) {
       for (const action of rule.actions) {
@@ -161,12 +169,17 @@ export function applyMeepleRules(
 }
 
 export function evaluateCondition(
+  stateName: MeepleStateName,
   property: MiningType | ProductType | CurrencyType | VitalsType,
   operator: Operator,
   value: number,
   inventory: Inventory,
-  stats: Stats
+  stats: Stats,
+  allowedStates: MeepleStateName[]
 ): boolean {
+  if (!allowedStates.includes(stateName)) {
+    return false;
+  }
   // Check if property is a VitalsType
   const isVital = Object.values(VitalsType).includes(property as VitalsType);
 

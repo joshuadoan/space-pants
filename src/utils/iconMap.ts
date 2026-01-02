@@ -5,6 +5,7 @@ import {
   IconBeer,
   IconBolt,
   IconBuilding,
+  IconCamera,
   IconCurrencyDollar,
   IconEyeOff,
   IconHeart,
@@ -13,6 +14,7 @@ import {
   IconPackage,
   IconPick,
   IconSparkles,
+  IconUser,
 } from "@tabler/icons-react";
 import {
   CurrencyType,
@@ -54,6 +56,8 @@ const IconMap: Record<
   [ProductType.Fizzy]: IconSparkles,
   [RoleId.SpaceBar]: IconBeer,
   [RoleId.SpaceApartments]: IconBuilding,
+  [UserActionType.TakeControl]: IconCamera,
+  [RoleId.Player]: IconUser,
 } as const;
 
 // ============================================================================

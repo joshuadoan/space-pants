@@ -71,6 +71,7 @@ export const MeeplesList = () => {
     zoomToEntity,
     centerCameraInGame,
     setZoom,
+    player,
   } = useGame();
   const navigate = useNavigate();
 
@@ -145,7 +146,7 @@ export const MeeplesList = () => {
     }
   }, [id, selectedMeeple, navigate]);
 
-  if (isLoading) {
+  if (isLoading || !player?.id) {
     return <div>Loading...</div>;
   }
 
@@ -161,6 +162,13 @@ export const MeeplesList = () => {
           <IconComponent icon={UserActionType.HideUi} size={14} />
           <span>{state.showUi ? "Hide UI" : "Show UI"}</span>
         </button>
+        {/* <Link
+          to={`/meeple/${player.id}`}
+          className="btn btn-sm btn-outline flex items-center gap-1.5"
+        >
+          <IconComponent icon={UserActionType.TakeControl} size={14} />
+          <span>Take Control</span>
+        </Link> */}
         <div className="flex items-center gap-2">
           {/* <-- stats  */}
           <div className="flex items-center gap-2 flex-wrap">
@@ -212,7 +220,9 @@ export const MeeplesList = () => {
         <div className="p-2 flex flex-col gap-2">
           <div className="tabs tabs-boxed">
             <button
-              onClick={() => dispatch({ type: "set-main-tab", payload: "meeples" })}
+              onClick={() =>
+                dispatch({ type: "set-main-tab", payload: "meeples" })
+              }
               className={cx("tab flex items-center gap-1.5", {
                 "tab-active": state.mainTab === "meeples",
               })}
@@ -220,7 +230,9 @@ export const MeeplesList = () => {
               <span>Meeples</span>
             </button>
             <button
-              onClick={() => dispatch({ type: "set-main-tab", payload: "help" })}
+              onClick={() =>
+                dispatch({ type: "set-main-tab", payload: "help" })
+              }
               className={cx("tab flex items-center gap-1.5", {
                 "tab-active": state.mainTab === "help",
               })}
@@ -241,6 +253,15 @@ export const MeeplesList = () => {
               ) : (
                 <div className="tabs tabs-boxed">
                   <button
+                    onClick={() => setFilter(RoleId.Player)}
+                    className={cx("tab flex items-center gap-1.5", {
+                      "tab-active": selectedFilter === RoleId.Player,
+                    })}
+                  >
+                    <IconComponent icon={RoleId.Player} size={14} />
+                    <span>{RoleId.Player}</span>
+                  </button>
+                  <button
                     onClick={() => setFilter(null)}
                     className={cx("tab flex items-center gap-1.5", {
                       "tab-active": selectedFilter === null,
@@ -248,21 +269,23 @@ export const MeeplesList = () => {
                   >
                     <span>All</span>
                   </button>
-                  {Object.values(RoleId).map((roleId) => {
-                    const isActive = selectedFilter === roleId;
-                    return (
-                      <button
-                        key={roleId}
-                        onClick={() => setFilter(roleId)}
-                        className={cx("tab flex items-center gap-1.5", {
-                          "tab-active": isActive,
-                        })}
-                      >
-                        <IconComponent icon={roleId} size={14} />
-                        <span>{roleId}</span>
-                      </button>
-                    );
-                  })}
+                  {Object.values(RoleId)
+                    .filter((roleId) => roleId !== RoleId.Player)
+                    .map((roleId) => {
+                      const isActive = selectedFilter === roleId;
+                      return (
+                        <button
+                          key={roleId}
+                          onClick={() => setFilter(roleId)}
+                          className={cx("tab flex items-center gap-1.5", {
+                            "tab-active": isActive,
+                          })}
+                        >
+                          <IconComponent icon={roleId} size={14} />
+                          <span>{roleId}</span>
+                        </button>
+                      );
+                    })}
                 </div>
               )}
             </>
@@ -331,7 +354,9 @@ export const MeeplesList = () => {
             />
             <div className="tabs tabs-boxed shrink-0">
               <button
-                onClick={() => dispatch({ type: "set-active-tab", payload: "rules" })}
+                onClick={() =>
+                  dispatch({ type: "set-active-tab", payload: "rules" })
+                }
                 className={cx("tab flex items-center gap-1.5", {
                   "tab-active": state.activeTab === "rules",
                 })}
@@ -339,7 +364,9 @@ export const MeeplesList = () => {
                 <span>Rules</span>
               </button>
               <button
-                onClick={() => dispatch({ type: "set-active-tab", payload: "journal" })}
+                onClick={() =>
+                  dispatch({ type: "set-active-tab", payload: "journal" })
+                }
                 className={cx("tab flex items-center gap-1.5", {
                   "tab-active": state.activeTab === "journal",
                 })}
@@ -354,7 +381,7 @@ export const MeeplesList = () => {
                   rules={selectedMeeple.rulesMapRules}
                   stats={{ ...selectedMeeple.state.stats }}
                   inventory={{ ...selectedMeeple.state.inventory }}
-                  currentStateName={selectedMeeple.state.name}
+                  stateName={selectedMeeple.state.name}
                 />
               )}
               {state.activeTab === "journal" && (
