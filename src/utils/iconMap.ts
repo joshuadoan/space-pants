@@ -2,25 +2,16 @@ import type { ComponentType } from "react";
 import { createElement } from "react";
 import {
   IconArrowLeft,
-  IconBeer,
-  IconBolt,
+  IconArrowsExchange,
   IconBuilding,
+  IconClock,
   IconCurrencyDollar,
-  IconEyeOff,
-  IconHeart,
+  IconMapPin,
   IconMeteor,
-  IconMoodSmile,
   IconPackage,
   IconPick,
-  IconSparkles,
+  IconRoute,
 } from "@tabler/icons-react";
-import {
-  CurrencyType,
-  MiningType,
-  ProductType,
-  VitalsType,
-} from "../entities/types";
-import { RoleId, UserActionType } from "../entities/types";
 
 // ============================================================================
 // Icon Component Type
@@ -32,28 +23,29 @@ export type IconComponent = ComponentType<{
 }>;
 
 const IconMap: Record<
-  | MiningType
-  | ProductType
-  | CurrencyType
-  | VitalsType
-  | RoleId
-  | UserActionType,
+  string,
   IconComponent
 > = {
-  [VitalsType.Health]: IconHeart,
-  [VitalsType.Energy]: IconBolt,
-  [VitalsType.Happiness]: IconMoodSmile,
-  [MiningType.Ore]: IconPick,
-  [CurrencyType.Money]: IconCurrencyDollar,
-  [ProductType.Gruffle]: IconPackage,
-  [RoleId.Miner]: IconPick,
-  [RoleId.Asteroid]: IconMeteor,
-  [RoleId.SpaceStore]: IconBuilding,
-  [UserActionType.Back]: IconArrowLeft,
-  [UserActionType.HideUi]: IconEyeOff,
-  [ProductType.Fizzy]: IconSparkles,
-  [RoleId.SpaceBar]: IconBeer,
-  [RoleId.SpaceApartments]: IconBuilding,
+  // Roles
+  "miner": IconPick,
+  "trader": IconPackage,
+  "asteroid": IconMeteor,
+  "space-store": IconBuilding,
+  // Navigation
+  "arrow-left": IconArrowLeft,
+  // Inventory Items
+  "stuff": IconPackage,
+  "money": IconCurrencyDollar,
+  // Actions
+  "travel": IconRoute,
+  "visit": IconMapPin,
+  "transact": IconArrowsExchange,
+  // States
+  "idle": IconClock,
+  "traveling": IconRoute,
+  "visiting": IconMapPin,
+  "transacting": IconArrowsExchange,
+  "position": IconMapPin,
 } as const;
 
 // ============================================================================

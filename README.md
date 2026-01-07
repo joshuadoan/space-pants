@@ -18,14 +18,13 @@ A real-time space economy simulation game built with React, TypeScript, and Exca
 - **Resource Management**: Visual indicators show inventory (ore, money, products) and stats (health, energy, happiness) for each entity
 
 ### UI Features
-- **Tabbed Interface**: Filter entities by type (Miners, Asteroids, Space Stores, Space Bars, Space Apartments, All)
-- **Entity Cards**: Cards showing entity name, role, current state, and detailed stats/inventory
-- **State Visualization**: Visual badges showing entity state (idle, traveling, visiting, transacting)
-- **Aggregated Stats**: View total resources across all filtered entities in the top navigation bar
-- **Hide/Show UI**: Toggle UI visibility for a cleaner view
-- **Rules Visualizer**: View all rules for a selected entity, see which rules are active, and understand rule conditions
-- **Journal System**: Track entity actions and state changes over time with timestamped journal entries
-- **Detail Tabs**: Switch between Rules and Journal views for selected entities (stats are shown in the main detail view)
+- **Filter Interface**: Filter entities by type (Miners, Asteroids, Space Stores) using radio buttons
+- **Entity List**: List view showing entity name, role, current state, and position
+- **State Visualization**: Visual indicators showing entity state (idle, traveling, visiting, transacting)
+- **Detail View**: Click on any entity to view detailed information including inventory, conditions, and action history
+- **Conditions Display**: View all conditions for a selected entity, see which conditions are met, and understand condition evaluation
+- **Action History**: Track entity actions and state changes over time with timestamped history entries displayed in reverse chronological order
+- **Routing**: Navigate between main list view and individual entity detail pages using React Router
 
 ## 🎮 Game Entities
 
@@ -43,16 +42,6 @@ A real-time space economy simulation game built with React, TypeScript, and Exca
 - Accept ore from miners
 - Handle transactions with visiting entities
 - Named with randomly generated space names
-
-### Space Bars
-- Social gathering spots
-- Named with randomly generated space names
-- Stationary structures
-
-### Space Apartments
-- Residential buildings
-- Named with randomly generated space names
-- Stationary structures
 
 ### Asteroids
 - Source of ore for miners
@@ -142,18 +131,16 @@ pnpm lint
 ## 🎯 How to Play
 
 1. **Observe**: Watch the autonomous entities go about their business in real-time
-2. **Explore**: Click on any entity name in the sidebar to zoom the camera to it
-3. **Filter**: Use the tabs to filter entities by type (Miners, Asteroids, Space Stores, Space Bars, Space Apartments, All)
-4. **Inspect**: Click on an entity to view detailed stats and inventory (shown automatically when selected)
-5. **View Rules**: Switch to the "Rules" tab to see all rules for an entity and which ones are currently active
-6. **Check Journal**: Switch to "Journal" tab to see a history of entity actions and state changes
-7. **Zoom**: Use the zoom slider to adjust camera zoom level
-8. **Toggle UI**: Use the "Hide UI" button to toggle UI visibility for a cleaner view
-9. **Monitor Resources**: View aggregated resource counts (ore, products, money) in the top navigation bar
+2. **Filter**: Use the filter buttons to filter entities by type (Miners, Asteroids, Space Stores)
+3. **Explore**: Click on any entity name in the list to navigate to its detail page and zoom the camera to it
+4. **Inspect**: View detailed inventory, conditions, and action history for the selected entity
+5. **View Conditions**: See all conditions for an entity and which ones are currently met (highlighted in green)
+6. **Check History**: Scroll through the action history to see a timeline of entity actions and state changes
+7. **Navigate**: Use the back button to return to the main list view
 
-## 🧩 Entity Rules System
+## 🧩 Entity Conditions System
 
-Each entity follows a set of logic rules that determine its behavior. Rules are evaluated every 500ms based on the entity's current state.
+Each entity follows a set of conditions that determine its behavior. Conditions are evaluated periodically based on the entity's current inventory state.
 
 ### Entity States
 Entities can be in one of four states:
@@ -162,47 +149,35 @@ Entities can be in one of four states:
 - **visiting**: Entity has reached its target and is interacting
 - **transacting**: Entity is performing an inventory transaction (adding/removing goods)
 
-### Rule Format
-Each rule consists of:
-- **name**: Human-readable rule identifier
-- **property**: The resource to check (Ore, Money, Products, or Vitals like Health/Energy/Happiness)
-- **operator**: Comparison operator (=, <, >, <=, >=, !=)
-- **value**: Threshold value to compare against
-- **actions**: Array of functions to execute when condition is met
+### Condition Format
+Each condition consists of:
+- **description**: Human-readable condition description
+- **type**: The type of condition (currently supports Inventory)
+- **property**: The inventory item to check (stuff, money)
+- **operator**: Comparison operator (<, >, >=, <=, !=)
+- **quantity**: Threshold value to compare against
+- **action**: Function to execute when condition is met
 
-### Rule Evaluation
-- Rules are evaluated based on the entity's current state
-- Rules are checked every 500ms via a timer
-- The first matching rule's actions are executed
-- Rules can check inventory (ore, money, products) or stats (health, energy, happiness)
+### Condition Evaluation
+- Conditions are evaluated periodically via Excalibur Timer (randomized interval between 100-1000ms)
+- Conditions are checked when the entity is idle (not performing actions)
+- The first matching condition's action is executed
+- Conditions check inventory items (stuff, money)
 
-### Rule Types
-The system uses two types of rules:
-- **RULES**: Behavior rules that control entity actions (e.g., miners traveling to asteroids or stores)
-- **GENERATORS**: Resource generation rules that create resources over time (e.g., asteroids generating ore, space stores generating money from ore)
+### Current Miner Conditions
+Miners have two main conditions:
+- **IF_NO_MONEY_MINE_ORE**: If stuff < 1 → Travel to random asteroid, mine ore
+- **IF_ORE_SELL_TO_SPACE_STORE**: If stuff ≥ 1 → Travel to space store, sell ore for money
 
-### Current Miner Rules
-Miners have rules defined for different states:
-- **idle state**: 
-  - If Ore < 1 → Travel to random asteroid
-  - If Ore ≥ 1 → Travel to random space store
-- **visiting state**:
-  - If Ore < 1 and visiting asteroid → Mine ore (add 1 ore, remove 1 from asteroid)
-  - If Ore ≥ 1 and visiting space store → Trade ore for money (transfer ore to store, receive money)
+### Space Store Conditions
+- **IF_ORE_TURN_INTO_MONEY**: If stuff ≥ 1 → Convert 1 stuff into 2 money (generates profit)
 
-### Space Store Generator Rules
-- **idle state**:
-  - If Ore ≥ 1 → Generate 2 money and remove 1 ore (converts ore to money)
+### Asteroid Conditions
+- **IF_LOW_ORE_GENERATE_ORE**: If stuff < 100 → Generate 1 stuff (replenishes asteroid resources)
 
-### Asteroid Generator Rules
-- **idle state**:
-  - If Ore < 100 → Generate 1 ore (replenishes asteroid resources)
-
-### Resources & Products
-- **Mining Types**: Ore
-- **Products**: Gruffle, Fizzy
-- **Currency**: Money
-- **Vitals**: Health, Energy, Happiness
+### Resources
+- **Stuff**: Ore/material that can be mined and traded
+- **Money**: Currency used in transactions
 
 ## 📁 Project Structure
 
@@ -210,47 +185,46 @@ Miners have rules defined for different states:
 space-pants/
 ├── src/
 │   ├── components/          # React UI components
-│   │   ├── MeepleDetail.tsx      # Entity detail card component
-│   │   ├── MeepleStatsAndInventory.tsx # Extended entity details (stats/inventory)
-│   │   ├── MeeplesList.tsx       # Main entity list with filtering
-│   │   ├── RulesVisualizer.tsx   # Rules visualization component
-│   │   ├── JournalVisualizer.tsx # Journal/action history viewer
-│   │   ├── Toast.tsx             # Toast notification system
-│   │   └── ZoomSlider.tsx        # Camera zoom control
-│   ├── entities/             # Game entity classes
-│   │   ├── Game.ts           # Excalibur game engine wrapper
-│   │   ├── Meeple.ts         # Base entity class with state management
-│   │   └── types.ts          # Entity type definitions and enums
-│   ├── rules/                # Rule system
-│   │   └── rules.ts          # Rule definitions and evaluation system
-│   ├── hooks/                # React hooks
-│   │   ├── useGame.tsx       # Game initialization and state management
-│   │   └── useMeepleFilters.tsx  # Entity filtering logic
+│   │   ├── BackButton.tsx        # Navigation back button
+│   │   ├── ConditionsDisplay.tsx # Condition visualization component
+│   │   ├── Detail.tsx            # Entity detail page component
+│   │   ├── HistoryItem.tsx       # Action history item component
+│   │   ├── Layout.tsx            # Main layout wrapper with canvas
+│   │   ├── Main.tsx              # Main list view component
+│   │   ├── MeepleInventoryItemDisplay.tsx # Inventory item display
+│   │   ├── MeepleListItem.tsx    # Entity list item component
+│   │   └── RoleFilter.tsx        # Entity type filter component
+│   ├── Game/                # Game logic and entity classes
+│   │   ├── Game.ts          # Excalibur game engine wrapper
+│   │   ├── Meeple.ts        # Base entity class with state management
+│   │   ├── conditions.ts    # Condition definitions
+│   │   └── useGame.tsx      # Game initialization and state management hook
 │   ├── utils/                # Utility functions
 │   │   ├── createStarTilemap.ts  # Star background generation
+│   │   ├── dateUtils.ts          # Date formatting utilities
 │   │   ├── generateSpaceName.ts  # Random name generation
 │   │   ├── iconMap.ts            # Icon component mapping
-│   │   ├── instruction-templates.ts # Instruction templates
 │   │   ├── keyboardControls.ts   # Keyboard control utilities
 │   │   └── graphics/             # Entity graphics
 │   │       ├── index.ts          # Graphics factory
 │   │       ├── types.ts          # Graphic style types
 │   │       ├── asteroid.ts       # Asteroid graphics
-│   │       ├── bartender.ts      # Bartender graphics
-│   │       ├── buildings.ts      # Building graphics
-│   │       ├── default.ts        # Default ship graphics
-│   │       ├── miner.ts          # Miner graphics
-│   │       ├── special.ts        # Special entity graphics
-│   │       └── trader.ts         # Trader graphics
+│   │       ├── bartender.ts       # Bartender graphics
+│   │       ├── buildings.ts       # Building graphics
+│   │       ├── default.ts         # Default ship graphics
+│   │       ├── miner.ts           # Miner graphics
+│   │       ├── special.ts         # Special entity graphics
+│   │       └── trader.ts          # Trader graphics
 │   ├── App.tsx               # Main application component with routing
 │   ├── main.tsx              # Application entry point
+│   ├── types.ts              # Type definitions and enums
+│   ├── consts.ts             # Game constants and configuration
 │   └── index.css             # Global styles
-├── src_old/                  # Legacy code (old implementation)
 ├── public/                   # Static assets
 ├── dist/                     # Production build output
 ├── docs.md                   # Additional documentation
 ├── improve.md                # Code improvement notes
-├── presentation.md           # Presentation notes
+├── presentation.md            # Presentation notes
 ├── rule-report.md            # Rule system analysis
 ├── package.json              # Project dependencies and scripts
 ├── pnpm-lock.yaml            # Dependency lock file
@@ -266,22 +240,20 @@ space-pants/
 ## 🎨 Customization
 
 ### World Configuration
-Edit `src/hooks/useGame.tsx` to modify:
+Edit `src/consts.ts` to modify:
 - World size (`GAME_WIDTH`, `GAME_HEIGHT`) - Default: 2500x2500
 - Number of entities (in `COUNTS`):
-  - `MINER` - Default: 6
-  - `ASTEROID` - Default: 3
+  - `MINER` - Default: 17
+  - `ASTEROID` - Default: 7
   - `SPACE_STORE` - Default: 1
-  - `SPACE_BAR` - Default: 1
-  - `SPACE_APARTMENT` - Default: 1
 - Entity speed range - Default: 50-150 units/second (configurable via `MIN_SHIP_DEFAULT_SPEED` and `MAX_SHIP_DEFAULT_SPEED`)
 - Star distribution and spacing (in `src/utils/createStarTilemap.ts`)
 
 ### Entity Behavior
-- Modify rules in `src/rules/rules.ts` to change entity behavior
-  - Edit `RULES` for behavior rules (actions entities take)
-  - Edit `GENERATORS` for resource generation rules
-- Edit entity state management in `src/entities/Meeple.ts`
+- Modify conditions in `src/Game/conditions.ts` to change entity behavior
+  - Each condition defines when and how entities act
+  - Conditions check inventory state and execute actions
+- Edit entity state management in `src/Game/Meeple.ts`
 - Customize entity appearance in `src/utils/graphics/`
 
 ### Styling
@@ -302,8 +274,9 @@ The game uses React's automatic memoization and efficient state management:
 - Viewport culling for stars (only render visible stars)
 - Efficient entity state management via Excalibur.js
 - React's built-in output comparison prevents unnecessary re-renders
-- Memoized filters and computed values using `useMemo`
-- React Router for efficient navigation
+- Game state updates every 500ms to sync with React
+- React Router for efficient navigation between views
+- Randomized condition evaluation intervals (100-1000ms) to distribute load
 
 ## 🐛 Development
 

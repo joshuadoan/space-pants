@@ -8,11 +8,9 @@
 ## Current Implementation
 
 ### Entities
-- **Miners**: Mine ore from asteroids → Trade ore for money at space stores
-- **Space Stores**: Trading hubs that accept ore from miners
-- **Space Bars**: Social gathering spots (currently static)
-- **Space Apartments**: Residential buildings (currently static)
-- **Asteroids**: Ore sources for miners
+- **Miners**: Mine ore (stuff) from asteroids → Trade ore for money at space stores
+- **Space Stores**: Trading hubs that accept ore from miners and convert it to money
+- **Asteroids**: Ore sources for miners that regenerate ore over time
 
 ### Entity States
 Entities can be in one of four states:
@@ -21,26 +19,28 @@ Entities can be in one of four states:
 3. **visiting**: Has reached target and is interacting
 4. **transacting**: Performing inventory transaction (add/remove goods)
 
-### Rule System
-- Rules are evaluated every 500ms via Excalibur Timer
-- Rules are state-based (different rules for idle, traveling, visiting, transacting)
-- Rules check inventory (ore, money, products) or stats (health, energy, happiness)
-- First matching rule's actions are executed
-- Two types of rules:
-  - **RULES**: Behavior rules that control entity actions (travel, visit, transact)
-  - **GENERATORS**: Resource generation rules that create resources over time
-- Rules can be visualized in the UI with active state highlighting
+### Condition System
+- Conditions are evaluated periodically via Excalibur Timer (randomized interval between 100-1000ms)
+- Conditions are checked when entities are idle (not performing actions)
+- Conditions check inventory items (stuff, money)
+- First matching condition's action is executed
+- Conditions are defined as objects with:
+  - Description for human readability
+  - Type (currently Inventory)
+  - Property to check (stuff, money)
+  - Operator (<, >, >=, <=, !=)
+  - Quantity threshold
+  - Action function to execute
+- Conditions can be visualized in the UI with active state highlighting (green when met)
 
 ### Interactive Features
-- Tabbed interface to filter entities by type
-- Click entity name to zoom camera to it
-- View detailed stats and inventory for selected entities
-- Rules Visualizer: See all rules for an entity, which are active, and condition evaluation
-- Journal System: Track entity actions and state changes with timestamps
-- Detail tabs: Switch between Rules and Journal views (stats are shown in the main detail view)
-- Zoom slider for camera control
-- Hide/Show UI toggle
-- Aggregated resource stats in navigation bar
+- Filter interface with radio buttons to filter entities by type (Miners, Asteroids, Space Stores)
+- Click entity name to navigate to detail page and zoom camera to it
+- View detailed inventory and conditions for selected entities
+- Conditions Display: See all conditions for an entity, which are met (highlighted in green), and condition evaluation
+- Action History: Track entity actions and state changes with timestamps displayed in reverse chronological order
+- Detail view: Shows inventory, conditions, and action history together
+- Routing: Navigate between main list view (`/`) and entity detail pages (`/:meepleId`)
 
 ## Architecture
 
@@ -53,7 +53,7 @@ Entities can be in one of four states:
 - Excalibur.js handles rendering and physics
 - React handles UI updates
 - Game state syncs with React every 500ms
-- Entity rules evaluated independently via timers
+- Entity conditions evaluated independently via randomized timers (100-1000ms intervals)
 
 ### Performance Considerations
 - React 19's automatic memoization optimizes re-renders
@@ -75,44 +75,51 @@ Entities can be in one of four states:
 ## Code Structure
 
 ### Key Files
-- `src/entities/Meeple.ts`: Base entity class with state management and journal system
-- `src/rules/rules.ts`: Rule definitions (RULES and GENERATORS) and evaluation system
-- `src/entities/Game.ts`: Excalibur engine wrapper
-- `src/hooks/useGame.tsx`: Game initialization and state
-- `src/components/MeeplesList.tsx`: Main UI component with filtering and detail views
-- `src/components/RulesVisualizer.tsx`: Component for visualizing entity rules
-- `src/components/JournalVisualizer.tsx`: Component for viewing entity action history
+- `src/Game/Meeple.ts`: Base entity class with state management and action history system
+- `src/Game/conditions.ts`: Condition definitions (IF_NO_MONEY_MINE_ORE, IF_ORE_SELL_TO_SPACE_STORE, etc.)
+- `src/Game/Game.ts`: Excalibur engine wrapper
+- `src/Game/useGame.tsx`: Game initialization and state management hook
+- `src/components/Main.tsx`: Main list view component with filtering
+- `src/components/Detail.tsx`: Entity detail page component
+- `src/components/ConditionsDisplay.tsx`: Component for visualizing entity conditions
+- `src/components/HistoryItem.tsx`: Component for displaying action history items
+- `src/components/Layout.tsx`: Main layout wrapper with canvas and routing outlet
+- `src/types.ts`: Type definitions and enums
+- `src/consts.ts`: Game constants and configuration
 
 ### Entity Lifecycle
 1. Entity created with initial state (idle, empty inventory)
-2. Timer starts evaluating rules every 500ms
-3. Rules check conditions based on current state
-4. Matching rule executes actions (travel, visit, transact)
+2. Timer starts evaluating conditions with randomized intervals (100-1000ms)
+3. Conditions check inventory state when entity is idle
+4. Matching condition executes action (travel, visit, transact)
 5. State transitions occur via `dispatch()` method
-6. Actions and state changes are logged to entity journal
-7. React UI updates reflect state changes
+6. Actions and state changes are logged to entity `actionsHistory`
+7. React UI updates reflect state changes every 500ms
 
-### Journal System
-- Each entity maintains a journal of actions and state changes
-- Journal entries include:
+### Action History System
+- Each entity maintains an `actionsHistory` array of actions and state changes
+- History entries include:
   - Timestamp of the action
-  - Previous state before action
-  - Action taken (travel-to, visit, finish, transact-inventory)
-- Journal entries are displayed in reverse chronological order (newest first)
+  - Action taken (travel, visit, transact)
+  - State after the action (idle, traveling, visiting, transacting)
+- History entries are displayed in reverse chronological order (newest first)
+- History is limited to the last 100 entries per entity
 - Useful for debugging entity behavior and understanding decision history
 
 ## Current Entity Counts
-- Miners: 6
-- Asteroids: 3
+- Miners: 17
+- Asteroids: 7
 - Space Stores: 1
-- Space Bars: 1
-- Space Apartments: 1
+
+(Configured in `src/consts.ts`)
 
 ## Future Enhancements
-- Editable rules system with UI
+- Editable conditions system with UI
 - Additional entity types (Traders, Pirates, Bartenders)
 - Player-controlled entity
 - More complex economic interactions
 - Save/load game state
 - Enhanced visualization features
-- Journal export/analysis features
+- Action history export/analysis features
+- Additional condition types (beyond Inventory)
+- More sophisticated operators and condition logic
