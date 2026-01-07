@@ -1,5 +1,5 @@
 import { useParams, useNavigate, Link } from "react-router-dom";
-import { useEffect, useMemo } from "react";
+import { useEffect } from "react";
 import { AnimatePresence } from "motion/react";
 import { useGame } from "../Game/useGame";
 import { IconComponent } from "../utils/iconMap";
@@ -14,10 +14,6 @@ export const Detail = () => {
   const { meepleId } = useParams();
   const navigate = useNavigate();
   const meeple = meeples.find((meeple) => meeple.id.toString() === meepleId);
-
-  // const inventory = useMemo(() => {
-  //   return { ...meeple?.inventory };
-  // }, [meeple?.inventory]);
 
   useEffect(() => {
     if (!meeple) {
