@@ -13,7 +13,7 @@ import { createEntityGraphic, EntityGraphicStyle } from "../utils/graphics";
 import { Vector } from "excalibur";
 import { Meeple } from "./Meeple";
 import { MeepleRoles } from "../types";
-import { IF_NO_MONEY_MINE_ORE, IF_ORE_SELL_TO_SPACE_STORE } from "./conditions";
+import { IF_NO_MONEY_MINE_ORE, IF_LOW_ORE_GENERATE_ORE, IF_ORE_SELL_TO_SPACE_STORE, IF_ORE_TURN_INTO_MONEY } from "./conditions";
 import { generateSpaceName } from "../utils/generateSpaceName";
 
 type GameActionStart = {
@@ -112,7 +112,6 @@ export function GameProvider({ children }: { children: ReactNode }) {
       dispatch({ type: "set-filterby-role", filters: filters });
     },
     lockCameraToMeeple: (meeple: Meeple) => {
-      console.log("lockCameraToMeeple", meeple);
       gameRef.current?.currentScene.camera.strategy.lockToActor(meeple);
     },
   });
@@ -141,6 +140,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
       );
 
       Asteroid.name = generateSpaceName();
+      Asteroid.conditions = [IF_LOW_ORE_GENERATE_ORE];
       game.currentScene.add(Asteroid);
     }
 
@@ -165,6 +165,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
       );
 
       SpaceStore.name = generateSpaceName();
+      SpaceStore.conditions = [IF_ORE_TURN_INTO_MONEY];
       game.currentScene.add(SpaceStore);
     }
     for (let i = 0; i < COUNTS.MINER; i++) {
@@ -199,7 +200,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
 
     const interval = setInterval(() => {
       dispatch({ type: "update-game", meeples: meeples });
-    }, 300);
+    }, 500);
 
     return () => clearInterval(interval);
   }, []);

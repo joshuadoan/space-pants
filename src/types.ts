@@ -72,8 +72,8 @@ export type MeepleActionHistory = {
 };
 
 export type MeepleTransaction = {
-  from: Meeple;
-  to: Meeple;
+  from: Meeple | null;
+  to: Meeple | null;
   property: MeepleInventoryItem;
   quantity: number;
 };

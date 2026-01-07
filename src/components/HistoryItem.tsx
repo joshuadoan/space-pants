@@ -63,6 +63,11 @@ export const HistoryItem = ({
         </motion.div>
       );
     case "transacting":
+      const { transaction } = historyItem.state;
+      const isSelfTransaction =
+        !transaction.from ||
+        (transaction.from && transaction.to && transaction.from === transaction.to);
+      
       return (
         <motion.div
           {...animationProps}
@@ -71,11 +76,16 @@ export const HistoryItem = ({
           <div className="flex items-center gap-2 text-sm font-medium">
             <IconComponent icon="transacting" size={16} />
             <span>
-              Transacted {historyItem.state.transaction.quantity}{" "}
-              {historyItem.state.transaction.property}
+              Transacted {transaction.quantity} {transaction.property}
               <br />
-              From {historyItem.state.transaction.from.name} to{" "}
-              {historyItem.state.transaction.to.name}
+              {isSelfTransaction ? (
+                <>Generating{transaction.to ? ` (${transaction.to.name})` : ""}</>
+              ) : (
+                <>
+                  From {transaction.from?.name || "unknown"} to{" "}
+                  {transaction.to?.name || "unknown"}
+                </>
+              )}
             </span>
           </div>
           <div className="text-xs opacity-60 mt-1">{timeAgo}</div>

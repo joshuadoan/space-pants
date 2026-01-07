@@ -122,40 +122,9 @@ export class Meeple extends Actor {
     }
   }
 
-  // dispatch(action: MeepleAction) {
-  //   this.addActionHistory({
-  //     action,
-  //     timestamp: Date.now(),
-  //     state: this.state,
-  //   });
-
-  //   const previousState = this.state;
-  //   switch (action.type) {
-  //     case "travel":
-  //       this.state = { type: "traveling", target: action.target };
-  //       this.actions
-  //         .moveTo(action.target.pos, this.speed)
-  //         .callMethod(() => {
-  //           this.dispatch({ type: "visit", target: action.target });
-  //         })
-  //         .delay(DEFAULT_DELAY);
-  //       break;
-  //     case "transact":
-  //       this.state = { type: "transacting", transaction: action.transaction };
-  //       this.actions
-  //         .callMethod(() => {
-  //           this.transact(action.transaction);
-  //         })
-  //         .delay(DEFAULT_DELAY)
-  //         .callMethod(() => {
-  //           this.state = previousState;
-  //         });
-  //       break;
-  //     case "visit":
-  //       this.state = { type: "visiting", target: action.target };
-  //       break;
-  //   }
-  // }
+  setInventory(inventory: MeepleInventory) {
+    this.inventory = { ...inventory };
+  }
 
   delay(delay: number) {
     return this.actions.delay(delay);
@@ -183,7 +152,12 @@ export class Meeple extends Actor {
   }
 
   transact(transaction: MeepleTransaction) {
-    transaction.from.inventory[transaction.property] -= transaction.quantity;
-    transaction.to.inventory[transaction.property] += transaction.quantity;
+    if (transaction.from) {
+      transaction.from.setInventory({ ...transaction.from.inventory, [transaction.property]: transaction.from.inventory[transaction.property] - transaction.quantity });
+    }
+
+    if (transaction.to) {
+      transaction.to.setInventory({ ...transaction.to.inventory, [transaction.property]: transaction.to.inventory[transaction.property] + transaction.quantity });
+    }
   }
 }

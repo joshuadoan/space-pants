@@ -31,6 +31,7 @@ export const RoleFilter = ({
       )}
       {Object.values(MeepleRoles).map((role) => (
         <input
+          key={role}
           className="btn"
           type="radio"
           name="roles"

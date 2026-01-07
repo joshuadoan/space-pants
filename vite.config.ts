@@ -7,9 +7,9 @@ export default defineConfig({
   plugins: [
     react({
       babel: {
-        // plugins: [
-        //   ['babel-plugin-react-compiler', { target: '18' }], // Set target to your React version
-        // ],
+        plugins: [
+          ['babel-plugin-react-compiler', { target: '18' }], // Set target to your React version
+        ],
       },
     }),
     tailwindcss(),

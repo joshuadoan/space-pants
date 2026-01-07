@@ -1,5 +1,5 @@
 import { useParams, useNavigate, Link } from "react-router-dom";
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
 import { AnimatePresence } from "motion/react";
 import { useGame } from "../Game/useGame";
 import { IconComponent } from "../utils/iconMap";
@@ -14,6 +14,10 @@ export const Detail = () => {
   const { meepleId } = useParams();
   const navigate = useNavigate();
   const meeple = meeples.find((meeple) => meeple.id.toString() === meepleId);
+
+  // const inventory = useMemo(() => {
+  //   return { ...meeple?.inventory };
+  // }, [meeple?.inventory]);
 
   useEffect(() => {
     if (!meeple) {
@@ -35,7 +39,9 @@ export const Detail = () => {
     );
   }
 
+  const inventory = { ...meeple?.inventory };
   const orderedActionsHistory = [...meeple.actionsHistory].reverse();
+  const conditions = [...meeple.conditions];
 
   return (
     <div className="flex flex-col h-full">
@@ -66,7 +72,7 @@ export const Detail = () => {
           Inventory
         </h3>
         <div className="mb-4">
-          {Object.entries(meeple.inventory).map(([item, quantity]) => (
+          {Object.entries(inventory).map(([item, quantity]) => (
             <div
               key={item}
               className="flex justify-between items-center p-2 bg-base-200 rounded mb-1"
@@ -76,12 +82,24 @@ export const Detail = () => {
             </div>
           ))}
         </div>
-        {meeple.conditions.length > 0 && (
+        {conditions.length > 0 && (
           <div className="mb-4">
             <h3 className="text-sm font-semibold uppercase opacity-60 mb-2">
               Conditions
             </h3>
-            <ConditionsDisplay conditions={meeple.conditions} meeple={meeple} />
+            <div className="space-y-2">
+              {conditions.map((condition, index) => {
+                const isMet = !!meeple.evaluateCondition(condition);
+                return (
+                  <ConditionsDisplay
+                    key={index}
+                    condition={condition}
+                    meeple={meeple}
+                    isMet={isMet}
+                  />
+                );
+              })}
+            </div>
           </div>
         )}
         <h3 className="text-sm font-semibold uppercase opacity-60 mb-2">
@@ -90,10 +108,7 @@ export const Detail = () => {
         <div className="flex-1 overflow-y-auto">
           <AnimatePresence mode="popLayout">
             {orderedActionsHistory.map((historyItem, index) => (
-              <HistoryItem
-                key={index}
-                historyItem={historyItem}
-              />
+              <HistoryItem key={index} historyItem={historyItem} />
             ))}
           </AnimatePresence>
         </div>

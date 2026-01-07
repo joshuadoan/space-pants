@@ -88,3 +88,63 @@ export const IF_ORE_SELL_TO_SPACE_STORE: ConditionSelfInventory = {
       .delay(DEFAULT_DELAY);
   },
 };
+
+/// If ore is less than 100 then generate ore
+export const IF_LOW_ORE_GENERATE_ORE: ConditionSelfInventory = {
+  description: "Generate ore when ore is less than 100",
+  type: ConditionType.Inventory,
+  property: MeepleInventoryItem.Stuff,
+  operator: Operator.LessThan,
+  quantity: 100,
+  action: (meeple: Meeple) => {
+       meeple.actions
+      .callMethod(() => {
+        meeple.dispatch({
+          type: "transact",
+          transaction: {
+            from: null,
+            to: meeple,
+            property: MeepleInventoryItem.Stuff,
+            quantity: 1,
+          },
+        });
+      })
+      .delay(DEFAULT_DELAY);
+  },
+};
+
+
+/// turn ore into money
+export const IF_ORE_TURN_INTO_MONEY: ConditionSelfInventory = {
+  description: "Turn ore into money",
+  type: ConditionType.Inventory,
+  property: MeepleInventoryItem.Stuff,
+  operator: Operator.GreaterThanOrEqual,
+  quantity: 1,
+  action: (meeple: Meeple) => {
+    meeple.actions
+    .callMethod(() => {
+      meeple.dispatch({
+        type: "transact",
+        transaction: {
+          from: meeple,
+          to: null,
+          property: MeepleInventoryItem.Stuff,
+          quantity: 1,
+        },
+      });
+    })
+    .callMethod(() => {
+      meeple.dispatch({
+        type: "transact",
+        transaction: {
+          from: null,
+          to: meeple,
+          property: MeepleInventoryItem.Money,
+          quantity: 2,
+        },
+      });
+    })
+    .delay(DEFAULT_DELAY);
+  },
+};
