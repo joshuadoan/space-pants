@@ -1,6 +1,6 @@
 import { Circle, Color, TileMap, Vector } from "excalibur";
 
-import type { Game } from "../entities/Game";
+import type { Game } from "../Game/Game";
 
 /**
  * Creates a tilemap-based starfield background for the game.
