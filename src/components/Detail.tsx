@@ -1,5 +1,5 @@
 import { useParams, useNavigate, Link } from "react-router-dom";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { AnimatePresence } from "motion/react";
 import { useGame } from "../Game/useGame";
 import { IconComponent } from "../utils/iconMap";
@@ -8,11 +8,13 @@ import { BackButton } from "./BackButton";
 import { MeepleInventoryItemDisplay } from "./MeepleInventoryItemDisplay";
 import { ConditionsDisplay } from "./ConditionsDisplay";
 import { HistoryItem } from "./HistoryItem";
+import { Vector } from "excalibur";
 
 export const Detail = () => {
   const { meeples, lockCameraToMeeple } = useGame();
   const { meepleId } = useParams();
   const navigate = useNavigate();
+  const [pos, setPos] = useState<Vector>(new Vector(0, 0));
   const meeple = meeples.find((meeple) => meeple.id.toString() === meepleId);
 
   useEffect(() => {
@@ -22,6 +24,16 @@ export const Detail = () => {
     }
     lockCameraToMeeple(meeple);
   }, [meeple, navigate, lockCameraToMeeple]);
+
+  useEffect(() => {
+    if (!meeple) {
+      return;
+    }
+    const interval = setInterval(() => {
+      setPos(new Vector(meeple?.pos.x, meeple?.pos.y));
+    }, 500);
+    return () => clearInterval(interval);
+  }, [meeple]);
 
   if (!meeple) {
     return (
@@ -58,7 +70,7 @@ export const Detail = () => {
             </div>
             <div className="text-xs uppercase font-semibold opacity-60 flex items-center gap-1">
               <IconComponent icon="position" size={12} />
-              {meeple.pos.x.toFixed(2)}, {meeple.pos.y.toFixed(2)}
+              {pos.x.toFixed(2)}, {pos.y.toFixed(2)}
             </div>
           </div>
         </li>
@@ -103,8 +115,8 @@ export const Detail = () => {
         </h3>
         <div className="flex-1 overflow-y-auto">
           <AnimatePresence mode="popLayout">
-            {orderedActionsHistory.map((historyItem, index) => (
-              <HistoryItem key={index} historyItem={historyItem} />
+            {orderedActionsHistory.map((historyItem) => (
+              <HistoryItem key={historyItem.timestamp} historyItem={historyItem} />
             ))}
           </AnimatePresence>
         </div>

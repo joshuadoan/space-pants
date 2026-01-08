@@ -5,12 +5,14 @@ import { Detail } from "./components/Detail";
 
 function App() {
   return (
-    <Routes>
-      <Route path="/" element={<Layout />}>
-        <Route index element={<Main />} />
-        <Route path="/:meepleId" element={<Detail />} />
-      </Route>
-    </Routes>
+    <div className="p-4">
+      <Routes>
+        <Route path="/" element={<Layout />}>
+          <Route index element={<Main />} />
+          <Route path="/:meepleId" element={<Detail />} />
+        </Route>
+      </Routes>
+    </div>
   );
 }
 

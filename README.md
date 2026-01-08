@@ -15,7 +15,9 @@ A real-time space economy simulation game built with React, TypeScript, and Exca
 - **Mining System**: Miners extract ore from asteroids
 - **Trading System**: Miners sell ore to space stations for money
 - **Space Stations**: Trading hubs that accept ore and may produce products
-- **Resource Management**: Visual indicators show inventory (ore, money, products) and stats (health, energy, happiness) for each entity
+- **Bar System**: Bartenders purchase fizzy drinks from space stores and restock their assigned bars
+- **Home System**: Entities have homes (miners → apartments, bartenders → bars) that they return to
+- **Resource Management**: Visual indicators show inventory (ore, money, fizzy drinks) and stats (health, energy, happiness) for each entity
 
 ### UI Features
 - **Filter Interface**: Filter entities by type (Miners, Asteroids, Space Stores) using radio buttons
@@ -31,17 +33,39 @@ A real-time space economy simulation game built with React, TypeScript, and Exca
 ### Miners
 - Mine ore from asteroids
 - Trade ore for money at space stations
+- Have homes (assigned to random space apartments)
 - Rule-based behavior system that evaluates conditions every 500ms
 - Default behavior cycle: Mine → Trade
 - Rules are evaluated based on state (idle, traveling, visiting, transacting)
-- Starting resources: 0 ore, 0 money, 100 health, 100 energy, 100 happiness
+- Starting resources: 0 ore, 0 money, 0 fizzy drinks, 100 health, 100 energy, 100 happiness
 - Speed: Random between 50-150 units/second
 
 ### Space Stores (Space Stations)
 - Stationary trading hubs
 - Accept ore from miners
+- Sell fizzy drinks to bartenders
 - Handle transactions with visiting entities
 - Named with randomly generated space names
+
+### Bartenders
+- Purchase fizzy drinks from space stores when inventory is low (< 100)
+- Return to their assigned bar and restock when they have fizzy drinks (≥ 1)
+- Each bartender is assigned to a specific space bar as their home
+- Rule-based behavior system that evaluates conditions every 500ms
+- Default behavior cycle: Buy Fizzy Drinks → Return to Bar → Restock
+- Starting resources: 0 ore, 0 money, 0 fizzy drinks, 100 health, 100 energy, 100 happiness
+- Speed: Random between 50-150 units/second
+
+### Space Bars
+- Stationary establishments that serve as bartender homes
+- Receive fizzy drinks from their assigned bartenders
+- Each bar has one assigned bartender who restocks it
+- Named with randomly generated space names
+
+### Space Apartments
+- Stationary residential buildings
+- Serve as homes for miners
+- Each miner is assigned to a random apartment as their home
 
 ### Asteroids
 - Source of ore for miners
@@ -153,7 +177,7 @@ Entities can be in one of four states:
 Each condition consists of:
 - **description**: Human-readable condition description
 - **type**: The type of condition (currently supports Inventory)
-- **property**: The inventory item to check (stuff, money)
+- **property**: The inventory item to check (stuff, money, fizzy)
 - **operator**: Comparison operator (<, >, >=, <=, !=)
 - **quantity**: Threshold value to compare against
 - **action**: Function to execute when condition is met
@@ -162,12 +186,17 @@ Each condition consists of:
 - Conditions are evaluated periodically via Excalibur Timer (randomized interval between 100-1000ms)
 - Conditions are checked when the entity is idle (not performing actions)
 - The first matching condition's action is executed
-- Conditions check inventory items (stuff, money)
+- Conditions check inventory items (stuff, money, fizzy)
 
 ### Current Miner Conditions
 Miners have two main conditions:
 - **IF_NO_MONEY_MINE_ORE**: If stuff < 1 → Travel to random asteroid, mine ore
 - **IF_ORE_SELL_TO_SPACE_STORE**: If stuff ≥ 1 → Travel to space store, sell ore for money
+
+### Bartender Conditions
+Bartenders have two main conditions:
+- **IF_LOW_FIZZY_DRINK_BUY_FIZZY_DRINK**: If fizzy < 100 → Travel to space store, buy 1 fizzy drink
+- **IF_HIGH_FIZZY_DRINK_RESTOCK_BAR**: If fizzy ≥ 1 → Travel to home bar, transfer all fizzy drinks to bar
 
 ### Space Store Conditions
 - **IF_ORE_TURN_INTO_MONEY**: If stuff ≥ 1 → Convert 1 stuff into 2 money (generates profit)
@@ -178,6 +207,7 @@ Miners have two main conditions:
 ### Resources
 - **Stuff**: Ore/material that can be mined and traded
 - **Money**: Currency used in transactions
+- **Fizzy**: Fizzy drinks that bartenders purchase and restock bars with
 
 ## 📁 Project Structure
 
@@ -245,7 +275,9 @@ Edit `src/consts.ts` to modify:
 - Number of entities (in `COUNTS`):
   - `MINER` - Default: 17
   - `ASTEROID` - Default: 7
-  - `SPACE_STORE` - Default: 1
+  - `SPACE_STORE` - Default: 3
+  - `SPACE_BAR` - Default: 2
+  - `SPACE_APARTMENT` - Default: 3
 - Entity speed range - Default: 50-150 units/second (configurable via `MIN_SHIP_DEFAULT_SPEED` and `MAX_SHIP_DEFAULT_SPEED`)
 - Star distribution and spacing (in `src/utils/createStarTilemap.ts`)
 
@@ -313,7 +345,7 @@ This is a private repository. Contributions and collaboration are welcome from a
 ### Areas for Contribution
 
 - Bug fixes
-- New entity types (Traders, Pirates, Bartenders, etc.)
+- New entity types (Traders, Pirates, etc.)
 - UI/UX improvements
 - Performance optimizations
 - Documentation improvements

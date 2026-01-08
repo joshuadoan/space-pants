@@ -8,8 +8,11 @@
 ## Current Implementation
 
 ### Entities
-- **Miners**: Mine ore (stuff) from asteroids → Trade ore for money at space stores
-- **Space Stores**: Trading hubs that accept ore from miners and convert it to money
+- **Miners**: Mine ore (stuff) from asteroids → Trade ore for money at space stores. Each miner has a home (random space apartment).
+- **Space Stores**: Trading hubs that accept ore from miners, convert it to money, and sell fizzy drinks to bartenders
+- **Bartenders**: Purchase fizzy drinks from space stores when inventory is low, then return to their assigned bar to restock it with fizzy drinks. Each bartender has a home (their assigned space bar).
+- **Space Bars**: Stationary establishments that receive fizzy drinks from their assigned bartenders. Each bar has one bartender assigned to it.
+- **Space Apartments**: Residential buildings that serve as homes for miners
 - **Asteroids**: Ore sources for miners that regenerate ore over time
 
 ### Entity States
@@ -22,7 +25,7 @@ Entities can be in one of four states:
 ### Condition System
 - Conditions are evaluated periodically via Excalibur Timer (randomized interval between 100-1000ms)
 - Conditions are checked when entities are idle (not performing actions)
-- Conditions check inventory items (stuff, money)
+- Conditions check inventory items (stuff, money, fizzy)
 - First matching condition's action is executed
 - Conditions are defined as objects with:
   - Description for human readability
@@ -75,8 +78,8 @@ Entities can be in one of four states:
 ## Code Structure
 
 ### Key Files
-- `src/Game/Meeple.ts`: Base entity class with state management and action history system
-- `src/Game/conditions.ts`: Condition definitions (IF_NO_MONEY_MINE_ORE, IF_ORE_SELL_TO_SPACE_STORE, etc.)
+- `src/Game/Meeple.ts`: Base entity class with state management, action history system, and home property
+- `src/Game/conditions.ts`: Condition definitions (IF_NO_MONEY_MINE_ORE, IF_ORE_SELL_TO_SPACE_STORE, IF_LOW_FIZZY_DRINK_BUY_FIZZY_DRINK, IF_HIGH_FIZZY_DRINK_RESTOCK_BAR, etc.)
 - `src/Game/Game.ts`: Excalibur engine wrapper
 - `src/Game/useGame.tsx`: Game initialization and state management hook
 - `src/components/Main.tsx`: Main list view component with filtering
@@ -109,13 +112,31 @@ Entities can be in one of four states:
 ## Current Entity Counts
 - Miners: 17
 - Asteroids: 7
-- Space Stores: 1
+- Space Stores: 3
+- Space Bars: 2
+- Space Apartments: 3
+- Bartenders: 2 (one per space bar)
 
 (Configured in `src/consts.ts`)
 
+## Home System
+Entities can have a `home` property that points to another entity:
+- **Miners**: Assigned to a random space apartment as their home
+- **Bartenders**: Assigned to a specific space bar as their home (one bartender per bar)
+- The home property is used by conditions to determine where entities should return to (e.g., bartenders restocking their bar)
+
+## Bartender System
+Bartenders are autonomous entities that manage fizzy drink inventory for space bars:
+- **Buying Phase**: When fizzy drink inventory < 100, bartenders travel to space stores to purchase fizzy drinks
+- **Restocking Phase**: When fizzy drink inventory ≥ 1, bartenders return to their home bar and transfer all fizzy drinks to the bar
+- Each space bar has exactly one assigned bartender who is responsible for restocking it
+- Bartenders use the `home` property to know which bar they should restock
+
 ## Future Enhancements
 - Editable conditions system with UI
-- Additional entity types (Traders, Pirates, Bartenders)
+- Additional entity types (Traders, Pirates)
+- Customers for bars (entities that consume fizzy drinks)
+- More complex bar economics (pricing, profit margins)
 - Player-controlled entity
 - More complex economic interactions
 - Save/load game state

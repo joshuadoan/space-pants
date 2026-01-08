@@ -25,6 +25,9 @@ export const RoleFilter = ({
               [MeepleRoles.Miner]: false,
               [MeepleRoles.Asteroid]: false,
               [MeepleRoles.SpaceStore]: false,
+              [MeepleRoles.SpaceBar]: false,
+              [MeepleRoles.SpaceApartment]: false,
+              [MeepleRoles.Bartender]: false,
             })
           }
         />

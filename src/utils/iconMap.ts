@@ -3,9 +3,11 @@ import { createElement } from "react";
 import {
   IconArrowLeft,
   IconArrowsExchange,
+  IconBeer,
   IconBuilding,
   IconClock,
   IconCurrencyDollar,
+  IconGlassCocktail,
   IconMapPin,
   IconMeteor,
   IconPackage,
@@ -31,11 +33,15 @@ const IconMap: Record<
   "trader": IconPackage,
   "asteroid": IconMeteor,
   "space-store": IconBuilding,
+  "space-bar": IconBeer,
+  "space-apartment": IconBuilding,
+  "bartender": IconBeer,
   // Navigation
   "arrow-left": IconArrowLeft,
   // Inventory Items
   "stuff": IconPackage,
   "money": IconCurrencyDollar,
+  "fizzy": IconGlassCocktail,
   // Actions
   "travel": IconRoute,
   "visit": IconMapPin,

@@ -5,11 +5,15 @@ export enum MeepleRoles {
   Miner = "miner",
   Asteroid = "asteroid",
   SpaceStore = "space-store",
+  SpaceBar = "space-bar",
+  SpaceApartment = "space-apartment",
+  Bartender = "bartender",
 }
 
 export enum MeepleInventoryItem {
   Stuff = "stuff",
   Money = "money",
+  Fizzy = "fizzy",
 }
 
 export type MeepleInventory = Record<MeepleInventoryItem, number>;

@@ -18,6 +18,7 @@ export class Meeple extends Actor {
   lastUpdate: number = 0;
   conditions: Condition[] = [];
   state: MeepleState = { type: MeepleStateNames.Idle };
+  home: Meeple | null = null;
   inventory: MeepleInventory;
   actionsHistory: {
     action: MeepleAction;
