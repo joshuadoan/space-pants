@@ -8,9 +8,12 @@
 ## Current Implementation
 
 ### Entities
-- **Miners**: Mine ore (stuff) from asteroids → Trade ore for money at space stores
-- **Space Stores**: Trading hubs that accept ore from miners and convert it to money
-- **Asteroids**: Ore sources for miners that regenerate ore over time
+- **Miners**: Mine minerals (ore) from asteroids → Trade minerals for money at space stores → Can buy fizzy drinks from space bars. Each miner has a home (random space apartment).
+- **Space Stores**: Trading hubs that accept minerals from miners (1 mineral → 1 money), convert minerals into fizzy drinks (1 mineral → 3 fizzy drinks), and sell fizzy drinks to bartenders
+- **Bartenders**: Purchase fizzy drinks from space stores when their assigned bar's inventory is low (< 100), then return to their assigned bar to restock it with fizzy drinks. Each bartender has a home (their assigned space bar). Bars pay bartenders for restocking.
+- **Space Bars**: Stationary establishments that receive fizzy drinks from their assigned bartenders, sell fizzy drinks to miners, and pay bartenders for restocking. Each bar has one bartender assigned to it.
+- **Space Apartments**: Residential buildings that serve as homes for miners
+- **Asteroids**: Mineral sources for miners that regenerate minerals when inventory is low (< 100)
 
 ### Entity States
 Entities can be in one of four states:
@@ -22,24 +25,25 @@ Entities can be in one of four states:
 ### Condition System
 - Conditions are evaluated periodically via Excalibur Timer (randomized interval between 100-1000ms)
 - Conditions are checked when entities are idle (not performing actions)
-- Conditions check inventory items (stuff, money)
+- Conditions check inventory items (minerals, money, fizzy)
+- Some conditions can check another entity's inventory (e.g., bartenders check their bar's inventory using the `target` property)
 - First matching condition's action is executed
 - Conditions are defined as objects with:
   - Description for human readability
   - Type (currently Inventory)
-  - Property to check (stuff, money)
+  - Property to check (minerals, money, fizzy)
   - Operator (<, >, >=, <=, !=)
   - Quantity threshold
   - Action function to execute
 - Conditions can be visualized in the UI with active state highlighting (green when met)
 
 ### Interactive Features
-- Filter interface with radio buttons to filter entities by type (Miners, Asteroids, Space Stores)
+- Filter interface with radio buttons to filter entities by type (Miners, Asteroids, Space Stores, Space Bars, Space Apartments, Bartenders)
 - Click entity name to navigate to detail page and zoom camera to it
 - View detailed inventory and conditions for selected entities
 - Conditions Display: See all conditions for an entity, which are met (highlighted in green), and condition evaluation
-- Action History: Track entity actions and state changes with timestamps displayed in reverse chronological order
-- Detail view: Shows inventory, conditions, and action history together
+- Journal (Action History): Track entity actions and state changes with timestamps displayed in reverse chronological order
+- Detail view: Shows inventory, conditions, and journal together
 - Routing: Navigate between main list view (`/`) and entity detail pages (`/:meepleId`)
 
 ## Architecture
@@ -75,8 +79,8 @@ Entities can be in one of four states:
 ## Code Structure
 
 ### Key Files
-- `src/Game/Meeple.ts`: Base entity class with state management and action history system
-- `src/Game/conditions.ts`: Condition definitions (IF_NO_MONEY_MINE_ORE, IF_ORE_SELL_TO_SPACE_STORE, etc.)
+- `src/Game/Meeple.ts`: Base entity class with state management, action history system, and home property
+- `src/Game/conditions.ts`: Condition definitions (ifNoMoneyMineOre, ifOreSellToSpaceStore, ifHasMoneyBuyFizzyDrink, ifLowFizzyDrinkBuyFizzyDrink, ifHighFizzyDrinkRestockBar, ifOreTurnIntoFizzy, ifLowOreGenerateOre)
 - `src/Game/Game.ts`: Excalibur engine wrapper
 - `src/Game/useGame.tsx`: Game initialization and state management hook
 - `src/components/Main.tsx`: Main list view component with filtering
@@ -96,30 +100,57 @@ Entities can be in one of four states:
 6. Actions and state changes are logged to entity `actionsHistory`
 7. React UI updates reflect state changes every 500ms
 
-### Action History System
+### Action History System (Journal)
 - Each entity maintains an `actionsHistory` array of actions and state changes
 - History entries include:
   - Timestamp of the action
   - Action taken (travel, visit, transact)
   - State after the action (idle, traveling, visiting, transacting)
-- History entries are displayed in reverse chronological order (newest first)
+- History entries are displayed in reverse chronological order (newest first) in the UI as "Journal"
 - History is limited to the last 100 entries per entity
 - Useful for debugging entity behavior and understanding decision history
 
 ## Current Entity Counts
-- Miners: 17
-- Asteroids: 7
+- Miners: 14
+- Bartenders: 7
+- Asteroids: 5
 - Space Stores: 1
+- Space Bars: 1
+- Space Apartments: 1
 
 (Configured in `src/consts.ts`)
 
+## Home System
+Entities can have a `home` property that points to another entity:
+- **Miners**: Assigned to a random space apartment as their home
+- **Bartenders**: Assigned to a specific space bar as their home (one bartender per bar)
+- The home property is used by conditions to determine where entities should return to (e.g., bartenders restocking their bar)
+
+## Bartender System
+Bartenders are autonomous entities that manage fizzy drink inventory for space bars:
+- **Buying Phase**: When the bar's fizzy drink inventory < 100, bartenders travel to space stores to purchase fizzy drinks (pays 1 money, receives 1 fizzy)
+- **Restocking Phase**: When bartender's fizzy drink inventory ≥ 1, bartenders return to their home bar and transfer 1 fizzy drink to the bar (bar pays bartender 2 money)
+- Each space bar has exactly one assigned bartender who is responsible for restocking it
+- Bartenders use the `home` property to know which bar they should restock
+- The condition `ifLowFizzyDrinkBuyFizzyDrink` checks the bar's inventory (not the bartender's) using the `target` property
+
+## Economic Flow
+1. **Mining**: Miners extract minerals from asteroids
+2. **Trading**: Miners sell minerals to space stores for money (1 mineral → 1 money)
+3. **Production**: Space stores convert minerals into fizzy drinks (1 mineral → 3 fizzy drinks)
+4. **Distribution**: Bartenders buy fizzy drinks from space stores and restock their bars
+5. **Consumption**: Miners can buy fizzy drinks from space bars
+6. **Regeneration**: Asteroids regenerate minerals when inventory is low
+
 ## Future Enhancements
 - Editable conditions system with UI
-- Additional entity types (Traders, Pirates, Bartenders)
+- Additional entity types (Traders, Pirates)
+- Customers for bars (entities that consume fizzy drinks)
+- More complex bar economics (pricing, profit margins)
 - Player-controlled entity
 - More complex economic interactions
 - Save/load game state
 - Enhanced visualization features
-- Action history export/analysis features
+- Journal export/analysis features
 - Additional condition types (beyond Inventory)
 - More sophisticated operators and condition logic

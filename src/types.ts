@@ -5,11 +5,15 @@ export enum MeepleRoles {
   Miner = "miner",
   Asteroid = "asteroid",
   SpaceStore = "space-store",
+  SpaceBar = "space-bar",
+  SpaceApartment = "space-apartment",
+  Bartender = "bartender",
 }
 
 export enum MeepleInventoryItem {
-  Stuff = "stuff",
+  Minirals = "minirals",
   Money = "money",
+  Fizzy = "fizzy",
 }
 
 export type MeepleInventory = Record<MeepleInventoryItem, number>;
@@ -98,6 +102,7 @@ export type ConditionSelfInventory = {
   operator: Operator;
   quantity: number;
   action: (meeple: Meeple, game: Game) => void;
+  target?: Meeple;
 };
 
 export type Condition = ConditionSelfInventory;

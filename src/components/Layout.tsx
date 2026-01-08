@@ -8,6 +8,10 @@ export const Layout = () => {
       </div>
       <main className="flex h-full">
         <div className="w-sm h-full">
+          <header className="p-4">
+            <h1 className="text-2xl font-bold">space-pants</h1>
+            <p className="text-sm text-gray-500">A space simulation</p>
+          </header>
           <Outlet />
         </div>
         <div className="w-full h-full">

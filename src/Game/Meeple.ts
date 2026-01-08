@@ -18,6 +18,7 @@ export class Meeple extends Actor {
   lastUpdate: number = 0;
   conditions: Condition[] = [];
   state: MeepleState = { type: MeepleStateNames.Idle };
+  home: Meeple | null = null;
   inventory: MeepleInventory;
   actionsHistory: {
     action: MeepleAction;
@@ -104,7 +105,10 @@ export class Meeple extends Actor {
 
   evaluateCondition(condition: Condition) {
     if (condition.type === ConditionType.Inventory) {
-      const inventory = this.inventory[condition.property];
+      const inventory = condition.target
+        ? condition.target.inventory[condition.property]
+        : this.inventory[condition.property];
+        
       const quantity = condition.quantity;
       const operator = condition.operator;
 
@@ -153,11 +157,20 @@ export class Meeple extends Actor {
 
   transact(transaction: MeepleTransaction) {
     if (transaction.from) {
-      transaction.from.setInventory({ ...transaction.from.inventory, [transaction.property]: transaction.from.inventory[transaction.property] - transaction.quantity });
+      transaction.from.setInventory({
+        ...transaction.from.inventory,
+        [transaction.property]:
+          transaction.from.inventory[transaction.property] -
+          transaction.quantity,
+      });
     }
 
     if (transaction.to) {
-      transaction.to.setInventory({ ...transaction.to.inventory, [transaction.property]: transaction.to.inventory[transaction.property] + transaction.quantity });
+      transaction.to.setInventory({
+        ...transaction.to.inventory,
+        [transaction.property]:
+          transaction.to.inventory[transaction.property] + transaction.quantity,
+      });
     }
   }
 }

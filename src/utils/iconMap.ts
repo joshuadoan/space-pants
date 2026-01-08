@@ -3,14 +3,17 @@ import { createElement } from "react";
 import {
   IconArrowLeft,
   IconArrowsExchange,
+  IconBeer,
   IconBuilding,
   IconClock,
   IconCurrencyDollar,
+  IconGlassCocktail,
   IconMapPin,
   IconMeteor,
   IconPackage,
   IconPick,
   IconRoute,
+  IconMoon,
 } from "@tabler/icons-react";
 
 // ============================================================================
@@ -31,11 +34,15 @@ const IconMap: Record<
   "trader": IconPackage,
   "asteroid": IconMeteor,
   "space-store": IconBuilding,
+  "space-bar": IconBeer,
+  "space-apartment": IconBuilding,
+  "bartender": IconBeer,
   // Navigation
   "arrow-left": IconArrowLeft,
   // Inventory Items
   "stuff": IconPackage,
   "money": IconCurrencyDollar,
+  "fizzy": IconGlassCocktail,
   // Actions
   "travel": IconRoute,
   "visit": IconMapPin,
@@ -46,6 +53,7 @@ const IconMap: Record<
   "visiting": IconMapPin,
   "transacting": IconArrowsExchange,
   "position": IconMapPin,
+  "minirals": IconMoon,
 } as const;
 
 // ============================================================================
