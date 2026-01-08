@@ -13,9 +13,21 @@ import { createEntityGraphic, EntityGraphicStyle } from "../utils/graphics";
 import { Vector } from "excalibur";
 import { Meeple } from "./Meeple";
 import { MeepleRoles } from "../types";
-import { IF_NO_MONEY_MINE_ORE, IF_LOW_ORE_GENERATE_ORE, IF_ORE_SELL_TO_SPACE_STORE, IF_ORE_TURN_INTO_MONEY, IF_LOW_FIZZY_DRINK_BUY_FIZZY_DRINK, IF_HIGH_FIZZY_DRINK_RESTOCK_BAR, IF_HAS_MONEY_BUY_FIZZY_DRINK } from "./conditions";
+import {
+  ifNoMoneyMineOre,
+  ifLowOreGenerateOre,
+  ifOreSellToSpaceStore,
+  ifOreTurnIntoFizzy,
+  ifLowFizzyDrinkBuyFizzyDrink,
+  ifHighFizzyDrinkRestockBar,
+  ifHasMoneyBuyFizzyDrink,
+} from "./conditions";
 import { generateSpaceName } from "../utils/generateSpaceName";
-import { MIN_SHIP_DEFAULT_SPEED, MAX_SHIP_DEFAULT_SPEED } from "../consts";
+import {
+  MIN_SHIP_DEFAULT_SPEED,
+  MAX_SHIP_DEFAULT_SPEED,
+  DEFAULT_INVENTORY,
+} from "../consts";
 
 type GameActionStart = {
   type: "start-game";
@@ -131,9 +143,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
         height: 100,
         roleId: MeepleRoles.Asteroid,
         inventory: {
-          stuff: 0,
-          money: 0,
-          fizzy: 0,
+          ...DEFAULT_INVENTORY,
         },
         conditions: [],
       });
@@ -145,7 +155,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
       );
 
       Asteroid.name = generateSpaceName();
-      Asteroid.conditions = [IF_LOW_ORE_GENERATE_ORE];
+      Asteroid.conditions = [ifLowOreGenerateOre()];
       Asteroid.home = Asteroid;
       game.currentScene.add(Asteroid);
     }
@@ -156,9 +166,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
         height: 100,
         roleId: MeepleRoles.SpaceStore,
         inventory: {
-          stuff: 0,
-          money: 0,
-          fizzy: 0,
+          ...DEFAULT_INVENTORY,
         },
         conditions: [],
       });
@@ -172,7 +180,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
       );
 
       SpaceStore.name = generateSpaceName();
-      SpaceStore.conditions = [IF_ORE_TURN_INTO_MONEY];
+      SpaceStore.conditions = [ifOreTurnIntoFizzy()];
       SpaceStore.home = SpaceStore;
       game.currentScene.add(SpaceStore);
     }
@@ -184,16 +192,12 @@ export function GameProvider({ children }: { children: ReactNode }) {
         height: 100,
         roleId: MeepleRoles.SpaceBar,
         inventory: {
-          stuff: 0,
-          money: 0,
-          fizzy: 0,
+          ...DEFAULT_INVENTORY,
         },
         conditions: [],
       });
 
-      SpaceBar.graphics.add(
-        createEntityGraphic(EntityGraphicStyle.SpaceBar)
-      );
+      SpaceBar.graphics.add(createEntityGraphic(EntityGraphicStyle.SpaceBar));
       SpaceBar.pos = new Vector(
         Math.random() * GAME_WIDTH,
         Math.random() * GAME_HEIGHT
@@ -212,9 +216,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
         height: 100,
         roleId: MeepleRoles.SpaceApartment,
         inventory: {
-          stuff: 0,
-          money: 0,
-          fizzy: 0,
+          ...DEFAULT_INVENTORY,
         },
         conditions: [],
       });
@@ -239,9 +241,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
         height: 100,
         roleId: MeepleRoles.Miner,
         inventory: {
-          stuff: 0,
-          money: 0,
-          fizzy: 0,
+          ...DEFAULT_INVENTORY,
         },
         conditions: [],
       });
@@ -249,7 +249,11 @@ export function GameProvider({ children }: { children: ReactNode }) {
       Miner.graphics.add(createEntityGraphic(EntityGraphicStyle.Trader));
       Miner.pos = new Vector(GAME_WIDTH / 2, GAME_HEIGHT / 2);
 
-      Miner.conditions = [IF_NO_MONEY_MINE_ORE, IF_ORE_SELL_TO_SPACE_STORE, IF_HAS_MONEY_BUY_FIZZY_DRINK];
+      Miner.conditions = [
+        ifHasMoneyBuyFizzyDrink(),
+        ifOreSellToSpaceStore(),
+        ifNoMoneyMineOre(),
+      ];
       Miner.speed =
         Math.random() * (MAX_SHIP_DEFAULT_SPEED - MIN_SHIP_DEFAULT_SPEED) +
         MIN_SHIP_DEFAULT_SPEED;
@@ -259,15 +263,13 @@ export function GameProvider({ children }: { children: ReactNode }) {
       game.currentScene.add(Miner);
     }
 
-    for (let i = 0; i < spaceBars.length; i++) {
+    for (let i = 0; i < COUNTS.BARTENDER; i++) {
       const Bartender = new Meeple({
         width: 100,
         height: 100,
         roleId: MeepleRoles.Bartender,
         inventory: {
-          stuff: 0,
-          money: 0,
-          fizzy: 0,
+          ...DEFAULT_INVENTORY,
         },
         conditions: [],
       });
@@ -275,12 +277,15 @@ export function GameProvider({ children }: { children: ReactNode }) {
       Bartender.graphics.add(createEntityGraphic(EntityGraphicStyle.Bartender));
       Bartender.pos = new Vector(GAME_WIDTH / 2, GAME_HEIGHT / 2);
 
-      Bartender.conditions = [IF_LOW_FIZZY_DRINK_BUY_FIZZY_DRINK, IF_HIGH_FIZZY_DRINK_RESTOCK_BAR];
+      Bartender.conditions = [
+        ifHighFizzyDrinkRestockBar(),
+        ifLowFizzyDrinkBuyFizzyDrink(spaceBars[i]),
+      ];
       Bartender.speed =
         Math.random() * (MAX_SHIP_DEFAULT_SPEED - MIN_SHIP_DEFAULT_SPEED) +
         MIN_SHIP_DEFAULT_SPEED;
       Bartender.name = generateSpaceName();
-      Bartender.home = spaceBars[i];
+      Bartender.home = game.getRandomMeepleByRole(MeepleRoles.SpaceBar);
       game.currentScene.add(Bartender);
     }
 

@@ -11,7 +11,7 @@ export enum MeepleRoles {
 }
 
 export enum MeepleInventoryItem {
-  Stuff = "stuff",
+  Minirals = "minirals",
   Money = "money",
   Fizzy = "fizzy",
 }
@@ -102,6 +102,7 @@ export type ConditionSelfInventory = {
   operator: Operator;
   quantity: number;
   action: (meeple: Meeple, game: Game) => void;
+  target?: Meeple;
 };
 
 export type Condition = ConditionSelfInventory;

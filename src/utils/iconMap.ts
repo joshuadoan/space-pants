@@ -13,6 +13,7 @@ import {
   IconPackage,
   IconPick,
   IconRoute,
+  IconMoon,
 } from "@tabler/icons-react";
 
 // ============================================================================
@@ -52,6 +53,7 @@ const IconMap: Record<
   "visiting": IconMapPin,
   "transacting": IconArrowsExchange,
   "position": IconMapPin,
+  "minirals": IconMoon,
 } as const;
 
 // ============================================================================

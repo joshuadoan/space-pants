@@ -8,6 +8,7 @@ import { BackButton } from "./BackButton";
 import { MeepleInventoryItemDisplay } from "./MeepleInventoryItemDisplay";
 import { ConditionsDisplay } from "./ConditionsDisplay";
 import { HistoryItem } from "./HistoryItem";
+import { StateType } from "./StateType";
 import { Vector } from "excalibur";
 
 export const Detail = () => {
@@ -58,16 +59,17 @@ export const Detail = () => {
       </div>
       <ul className="list bg-base-100 rounded-box shadow-md w-xs">
         <li className="list-row" key={meeple.id}>
-          <div>
-            <IconComponent icon={meeple.roleId} />
-          </div>
-          <div>
+          <div className="flex flex-col gap-1.5">
             <Link to={`/${meeple.id}`} className="link link-hover">
               {meeple.name}
             </Link>
-            <div className="text-xs uppercase font-semibold opacity-60">
-              {meeple.roleId} {meeple.state.type}
+            <div className="flex items-center gap-2 text-xs uppercase font-semibold opacity-60">
+              <span className="flex items-center gap-1">
+                <IconComponent icon={meeple.roleId} size={12} />
+                {meeple.roleId}
+              </span>
             </div>
+            <StateType state={meeple.state} />
             <div className="text-xs uppercase font-semibold opacity-60 flex items-center gap-1">
               <IconComponent icon="position" size={12} />
               {pos.x.toFixed(2)}, {pos.y.toFixed(2)}
@@ -98,12 +100,13 @@ export const Detail = () => {
             <div className="space-y-2">
               {conditions.map((condition, index) => {
                 const isMet = !!meeple.evaluateCondition(condition);
+                const isFirstMet = isMet && index === conditions.findIndex(c => !!meeple.evaluateCondition(c));
                 return (
                   <ConditionsDisplay
                     key={index}
                     condition={condition}
                     meeple={meeple}
-                    isMet={isMet}
+                    isMet={isFirstMet}
                   />
                 );
               })}
@@ -116,7 +119,10 @@ export const Detail = () => {
         <div className="flex-1 overflow-y-auto">
           <AnimatePresence mode="popLayout">
             {orderedActionsHistory.map((historyItem) => (
-              <HistoryItem key={historyItem.timestamp} historyItem={historyItem} />
+              <HistoryItem
+                key={historyItem.timestamp}
+                historyItem={historyItem}
+              />
             ))}
           </AnimatePresence>
         </div>
