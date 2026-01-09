@@ -77,7 +77,7 @@ export const Detail = () => {
           </div>
         </li>
       </ul>
-      <div className="p-4 flex flex-col gap-1 h-full">
+      <div className="p-4 flex flex-col gap-1 h-full overflow-y-auto">
         <h3 className="text-sm font-semibold uppercase opacity-60 mb-2">
           Inventory
         </h3>
@@ -116,7 +116,7 @@ export const Detail = () => {
         <h3 className="text-sm font-semibold uppercase opacity-60 mb-2">
           Journal
         </h3>
-        <div className="flex-1 overflow-y-auto">
+        <div className="">
           <AnimatePresence mode="popLayout">
             {orderedActionsHistory.map((historyItem) => (
               <HistoryItem

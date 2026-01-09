@@ -9,6 +9,7 @@ import {
   ConditionType,
   Operator,
   MeepleStateNames,
+  MeepleInventoryItem,
 } from "../types";
 import type { Game } from "./Game";
 
@@ -30,6 +31,7 @@ export class Meeple extends Actor {
     height,
     roleId,
     inventory,
+    conditions,
   }: {
     width: number;
     height: number;
@@ -44,6 +46,7 @@ export class Meeple extends Actor {
 
     this.roleId = roleId;
     this.inventory = inventory;
+    this.conditions = conditions;
   }
 
   onInitialize(game: Game): void {
@@ -92,6 +95,56 @@ export class Meeple extends Actor {
           transaction: action.transaction,
         };
         break;
+      case "mine":
+        this.mine(action.target, action.property, action.quantity);
+        this.state = {
+          type: MeepleStateNames.Mining,
+          target: action.target,
+          property: action.property,
+          quantity: action.quantity,
+        };
+        break;
+      case "buy":
+        this.buy(action.target, action.property, action.quantity);
+        this.state = {
+          type: MeepleStateNames.Buying,
+          target: action.target,
+          property: action.property,
+          quantity: action.quantity,
+        };
+        break;
+      case "sell":
+        this.sell(action.target, action.property, action.quantity);
+        this.state = {
+          type: MeepleStateNames.Selling,
+          target: action.target,
+          property: action.property,
+          quantity: action.quantity,
+        };
+        break;
+      case "transmutation":
+        this.transmutation(
+          action.fromProperty,
+          action.fromQuantity,
+          action.toProperty,
+          action.toQuantity,
+        );
+        this.state = {
+          type: MeepleStateNames.Transmuting,
+          fromProperty: action.fromProperty,
+          toProperty: action.toProperty,
+          fromQuantity: action.fromQuantity,
+          toQuantity: action.toQuantity,
+        };
+        break;
+      case "generate":
+        this.generate(action.property, action.quantity);
+        this.state = {
+          type: MeepleStateNames.Generating,
+          property: action.property,
+          quantity: action.quantity,
+        };
+        break;
       default:
         break;
     }
@@ -108,7 +161,7 @@ export class Meeple extends Actor {
       const inventory = condition.target
         ? condition.target.inventory[condition.property]
         : this.inventory[condition.property];
-        
+
       const quantity = condition.quantity;
       const operator = condition.operator;
 
@@ -117,13 +170,19 @@ export class Meeple extends Actor {
           return inventory < quantity;
         case Operator.GreaterThan:
           return inventory > quantity;
-          return false;
         case Operator.GreaterThanOrEqual:
           return inventory >= quantity;
+        case Operator.LessThanOrEqual:
+          return inventory <= quantity;
+        case Operator.Equal:
+          return inventory === quantity;
         case Operator.NotEqual:
           return inventory !== quantity;
+        default:
+          return false;
       }
     }
+    return false;
   }
 
   setInventory(inventory: MeepleInventory) {
@@ -172,5 +231,85 @@ export class Meeple extends Actor {
           transaction.to.inventory[transaction.property] + transaction.quantity,
       });
     }
+  }
+
+  buy(seller: Meeple, property: MeepleInventoryItem, quantity: number) {
+    const PRICES = {
+      [MeepleInventoryItem.Minirals]: 1,
+      [MeepleInventoryItem.Fizzy]: 1,
+      [MeepleInventoryItem.Money]: 1,
+    };
+
+    const price = PRICES[property];
+
+    // update buyer's inventory
+    this.setInventory({
+      ...this.inventory,
+      [property]: this.inventory[property] + quantity,
+      [MeepleInventoryItem.Money]: this.inventory[MeepleInventoryItem.Money] - price * quantity,
+    });
+
+    // update seller's inventory
+    seller.setInventory({
+      ...seller.inventory,
+      [property]: seller.inventory[property] - quantity,
+      [MeepleInventoryItem.Money]: seller.inventory[MeepleInventoryItem.Money] + price * quantity,
+    });
+  }
+
+  sell(buyer: Meeple, property: MeepleInventoryItem, quantity: number) {
+    const PRICES = {
+      [MeepleInventoryItem.Minirals]: 1,
+      [MeepleInventoryItem.Fizzy]: 2,
+      [MeepleInventoryItem.Money]: 1,
+    };
+
+    const price = PRICES[property];
+
+    // Seller loses property and gains money
+    this.setInventory({
+      ...this.inventory,
+      [property]: this.inventory[property] - quantity,
+      [MeepleInventoryItem.Money]: this.inventory[MeepleInventoryItem.Money] + price * quantity,
+    });
+
+    // Buyer gains property and loses money
+    buyer.setInventory({
+      ...buyer.inventory,
+      [property]: buyer.inventory[property] + quantity,
+      [MeepleInventoryItem.Money]: buyer.inventory[MeepleInventoryItem.Money] - price * quantity,
+    });
+  }
+
+  mine(target: Meeple, property: MeepleInventoryItem, quantity: number) {
+    // Target loses quantity, miner gains quantity
+    target.setInventory({
+      ...target.inventory,
+      [property]: target.inventory[property] - quantity,
+    });
+    this.setInventory({
+      ...this.inventory,
+      [property]: this.inventory[property] + quantity,
+    });
+  }
+  transmutation(
+    fromProperty: MeepleInventoryItem,
+    fromQuantity: number,
+    toProperty: MeepleInventoryItem,
+    toQuantity: number
+  ) {
+    // Lose source material, gain converted material
+    this.setInventory({
+      ...this.inventory,
+      [fromProperty]: this.inventory[fromProperty] - fromQuantity,
+      [toProperty]: this.inventory[toProperty] + toQuantity,
+    });
+  }
+
+  generate(property: MeepleInventoryItem, quantity: number) {
+    this.setInventory({
+      ...this.inventory,
+      [property]: this.inventory[property] + quantity,
+    });
   }
 }

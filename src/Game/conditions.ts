@@ -1,11 +1,16 @@
-import { DEFAULT_DELAY, DEFAULT_PRICE } from "../consts";
-import { ConditionType, Operator, MeepleRoles, MeepleInventoryItem } from "../types";
+import { DEFAULT_DELAY } from "../consts";
+import {
+  ConditionType,
+  Operator,
+  MeepleRoles,
+  MeepleInventoryItem,
+} from "../types";
 import type { Meeple } from "./Meeple";
 import type { Game } from "./Game";
 import type { ConditionSelfInventory } from "../types";
 
 export const ifNoMoneyMineOre = (): ConditionSelfInventory => ({
-  description: "Venture to the nearest asteroid and extract minirals",
+  description: "Venture toa random asteroid and extract minirals",
   type: ConditionType.Inventory,
   property: MeepleInventoryItem.Minirals,
   operator: Operator.LessThan,
@@ -29,13 +34,10 @@ export const ifNoMoneyMineOre = (): ConditionSelfInventory => ({
       .delay(DEFAULT_DELAY)
       .callMethod(() => {
         meeple.dispatch({
-          type: "transact",
-          transaction: {
-            from: target,
-            to: meeple,
-            property: MeepleInventoryItem.Minirals,
-            quantity: 1,
-          },
+          type: "mine",
+          target: target,
+          property: MeepleInventoryItem.Minirals,
+          quantity: 1,
         });
       })
       .delay(DEFAULT_DELAY);
@@ -43,7 +45,8 @@ export const ifNoMoneyMineOre = (): ConditionSelfInventory => ({
 });
 
 export const ifOreSellToSpaceStore = (): ConditionSelfInventory => ({
-  description: "Cash in your hard-earned minerals at the SpaceStore for credits",
+  description:
+    "Cash in your hard-earned minerals at the SpaceStore for credits",
   type: ConditionType.Inventory,
   property: MeepleInventoryItem.Minirals,
   operator: Operator.GreaterThanOrEqual,
@@ -67,28 +70,15 @@ export const ifOreSellToSpaceStore = (): ConditionSelfInventory => ({
       .delay(DEFAULT_DELAY)
       .callMethod(() => {
         meeple.dispatch({
-          type: "transact",
-          transaction: {
-            from: target,
-            to: meeple,
-            property: MeepleInventoryItem.Money,
-            quantity: 1,
-          },
-        });
-        meeple.dispatch({
-          type: "transact",
-          transaction: {
-            from: meeple,
-            to: target,
-            property: MeepleInventoryItem.Minirals,
-            quantity: 1,
-          },
+          type: "sell",
+          target: target,
+          property: MeepleInventoryItem.Minirals,
+          quantity: 1,
         });
       })
       .delay(DEFAULT_DELAY);
   },
 });
-
 
 export const ifHasMoneyBuyFizzyDrink = (): ConditionSelfInventory => ({
   description: "Visit a space bar and buy a fizzy drink when you have money",
@@ -116,22 +106,10 @@ export const ifHasMoneyBuyFizzyDrink = (): ConditionSelfInventory => ({
       .callMethod(() => {
         // Buy fizzy drink: pay money to bar, receive fizzy drink
         meeple.dispatch({
-          type: "transact",
-          transaction: {
-            from: meeple,
-            to: target,
-            property: MeepleInventoryItem.Money,
-            quantity: DEFAULT_PRICE,
-          },
-        });
-        meeple.dispatch({
-          type: "transact",
-          transaction: {
-            from: target,
-            to: meeple,
-            property: MeepleInventoryItem.Fizzy,
-            quantity: DEFAULT_PRICE,
-          },
+          type: "buy",
+          target: target,
+          property: MeepleInventoryItem.Fizzy,
+          quantity: 1,
         });
       })
       .delay(DEFAULT_DELAY);
@@ -146,22 +124,17 @@ export const ifLowOreGenerateOre = (): ConditionSelfInventory => ({
   operator: Operator.LessThan,
   quantity: 100,
   action: (meeple: Meeple) => {
-       meeple.actions
+    meeple.actions
       .callMethod(() => {
         meeple.dispatch({
-          type: "transact",
-          transaction: {
-            from: null,
-            to: meeple,
-            property: MeepleInventoryItem.Minirals,
-            quantity: DEFAULT_PRICE,
-          },
+          type: "generate",
+          property: MeepleInventoryItem.Minirals,
+          quantity: 1,
         });
       })
       .delay(DEFAULT_DELAY);
   },
 });
-
 
 /// turn ore into money
 export const ifOreTurnIntoFizzy = (): ConditionSelfInventory => ({
@@ -174,43 +147,20 @@ export const ifOreTurnIntoFizzy = (): ConditionSelfInventory => ({
     meeple.actions
       .callMethod(() => {
         meeple.dispatch({
-          type: "transact",
-          transaction: {
-            from: meeple,
-            to: null,
-            property: MeepleInventoryItem.Minirals,
-            quantity: DEFAULT_PRICE,
-          },
-        });
-      })
-      .callMethod(() => {
-        meeple.dispatch({
-          type: "transact",
-          transaction: {
-            from: null,
-            to: meeple,
-            property: MeepleInventoryItem.Fizzy,
-            quantity: DEFAULT_PRICE * 2,
-          },
-        });
-      })
-      .callMethod(() => {
-        meeple.dispatch({
-          type: "transact",
-          transaction: {
-            from: null,
-            to: meeple,
-            property: MeepleInventoryItem.Fizzy,
-            quantity: DEFAULT_PRICE,
-          },
+          type: "transmutation",
+          fromProperty: MeepleInventoryItem.Minirals,
+          toProperty: MeepleInventoryItem.Fizzy,
+          fromQuantity: 1,
+          toQuantity: 2,
         });
       })
       .delay(DEFAULT_DELAY);
   },
 });
 
-
-export const ifLowFizzyDrinkBuyFizzyDrink = (bar: Meeple): ConditionSelfInventory => ({
+export const ifLowFizzyDrinkBuyFizzyDrink = (
+  bar: Meeple
+): ConditionSelfInventory => ({
   description: "Buy fizzy drinks from space store when bar has less than 100",
   type: ConditionType.Inventory,
   property: MeepleInventoryItem.Fizzy,
@@ -237,22 +187,10 @@ export const ifLowFizzyDrinkBuyFizzyDrink = (bar: Meeple): ConditionSelfInventor
       .callMethod(() => {
         // Bartender pays money to space store and receives fizzy drink
         meeple.dispatch({
-          type: "transact",
-          transaction: {
-            from: meeple,
-            to: spaceStore,
-            property: MeepleInventoryItem.Money,
-            quantity: DEFAULT_PRICE,
-          },
-        });
-        meeple.dispatch({
-          type: "transact",
-          transaction: {
-            from: spaceStore,
-            to: meeple,
-            property: MeepleInventoryItem.Fizzy,
-            quantity: DEFAULT_PRICE,
-          },
+          type: "buy",
+          target: spaceStore,
+          property: MeepleInventoryItem.Fizzy,
+          quantity: 1,
         });
       })
       .delay(DEFAULT_DELAY);
@@ -260,10 +198,11 @@ export const ifLowFizzyDrinkBuyFizzyDrink = (bar: Meeple): ConditionSelfInventor
 });
 
 /// for bartenders
-// if fizzy drink is >= 1 then fly back to 
+// if fizzy drink is >= 1 then fly back to
 // the bar and restock fizzy drinks
 export const ifHighFizzyDrinkRestockBar = (): ConditionSelfInventory => ({
-  description: "Return to bar and restock fizzy drinks when fizzy drink is greater than or equal to 1",
+  description:
+    "Return to bar and restock fizzy drinks when fizzy drink is greater than or equal to 1",
   type: ConditionType.Inventory,
   property: MeepleInventoryItem.Fizzy,
   operator: Operator.GreaterThanOrEqual,
@@ -290,23 +229,10 @@ export const ifHighFizzyDrinkRestockBar = (): ConditionSelfInventory => ({
       .delay(DEFAULT_DELAY)
       .callMethod(() => {
         meeple.dispatch({
-          type: "transact",
-          transaction: {
-            from: meeple,
-            to: bar,
-            property: MeepleInventoryItem.Fizzy,
-            quantity: DEFAULT_PRICE,
-          },
-        });
-        // Bar pays bartender money for restocking
-        meeple.dispatch({
-          type: "transact",
-          transaction: {
-            from: bar,
-            to: meeple,
-            property: MeepleInventoryItem.Money,
-            quantity: DEFAULT_PRICE * 2,
-          },
+          type: "sell",
+          target: bar,
+          property: MeepleInventoryItem.Fizzy,
+          quantity: 1,
         });
       })
       .delay(DEFAULT_DELAY);
