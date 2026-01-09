@@ -44,7 +44,8 @@ export const HistoryItem = ({
         >
           <div className="flex items-center gap-2 text-sm font-medium">
             <IconComponent icon="traveling" size={16} />
-            Traveling to {historyItem.state.target.name} ({historyItem.state.target.roleId})
+            Traveling to {historyItem.state.target.name} (
+            {historyItem.state.target.roleId})
           </div>
           <div className="text-xs opacity-60 mt-1">{timeAgo}</div>
         </motion.div>
@@ -57,7 +58,8 @@ export const HistoryItem = ({
         >
           <div className="flex items-center gap-2 text-sm font-medium">
             <IconComponent icon="visiting" size={16} />
-            Visiting {historyItem.state.target.name} ({historyItem.state.target.roleId})
+            Visiting {historyItem.state.target.name} (
+            {historyItem.state.target.roleId})
           </div>
           <div className="text-xs opacity-60 mt-1">{timeAgo}</div>
         </motion.div>
@@ -66,8 +68,10 @@ export const HistoryItem = ({
       const { transaction } = historyItem.state;
       const isSelfTransaction =
         !transaction.from ||
-        (transaction.from && transaction.to && transaction.from === transaction.to);
-      
+        (transaction.from &&
+          transaction.to &&
+          transaction.from === transaction.to);
+
       return (
         <motion.div
           {...animationProps}
@@ -79,7 +83,9 @@ export const HistoryItem = ({
               Transacted {transaction.quantity} {transaction.property}
               <br />
               {isSelfTransaction ? (
-                <>Generating{transaction.to ? ` (${transaction.to.name})` : ""}</>
+                <>
+                  Generating{transaction.to ? ` (${transaction.to.name})` : ""}
+                </>
               ) : (
                 <>
                   From {transaction.from?.name || "unknown"} to{" "}
@@ -91,6 +97,91 @@ export const HistoryItem = ({
           <div className="text-xs opacity-60 mt-1">{timeAgo}</div>
         </motion.div>
       );
+    case "mining":
+      return (
+        <motion.div
+          {...animationProps}
+          className={`${baseClasses} border-orange-400`}
+        >
+          <div className="flex items-center gap-2 text-sm font-medium">
+            <IconComponent icon="mining" size={16} />
+            <span>
+              Mining {historyItem.state.quantity} {historyItem.state.property}
+              <br />
+              From {historyItem.state.target.name} (
+              {historyItem.state.target.roleId})
+            </span>
+          </div>
+          <div className="text-xs opacity-60 mt-1">{timeAgo}</div>
+        </motion.div>
+      );
+    case "buying":
+      return (
+        <motion.div
+          {...animationProps}
+          className={`${baseClasses} border-red-400`}
+        >
+          <div className="flex items-center gap-2 text-sm font-medium">
+            <IconComponent icon="buying" size={16} />
+            <span>
+              Buying {historyItem.state.quantity} {historyItem.state.property}
+              <br />
+              From {historyItem.state.target.name} (
+              {historyItem.state.target.roleId})
+            </span>
+          </div>
+          <div className="text-xs opacity-60 mt-1">{timeAgo}</div>
+        </motion.div>
+      );
+    case "selling":
+      return (
+        <motion.div
+          {...animationProps}
+          className={`${baseClasses} border-blue-400`}
+        >
+          <div className="flex items-center gap-2 text-sm font-medium">
+            <IconComponent icon="selling" size={16} />
+            <span>
+              Selling {historyItem.state.quantity} {historyItem.state.property}
+              <br />
+              To {historyItem.state.target.name} (
+              {historyItem.state.target.roleId})
+            </span>
+          </div>
+          <div className="text-xs opacity-60 mt-1">{timeAgo}</div>
+        </motion.div>
+      );
+    case "transmuting":
+      return (
+        <motion.div
+          {...animationProps}
+          className={`${baseClasses} border-purple-400`}
+        >
+          <div className="flex items-center gap-2 text-sm font-medium">
+            <IconComponent icon="transmuting" size={16} />
+            <span>
+              Transmuting {historyItem.state.fromQuantity}{" "}
+              {historyItem.state.fromProperty} to {historyItem.state.toProperty}
+            </span>
+          </div>
+          <div className="text-xs opacity-60 mt-1">{timeAgo}</div>
+        </motion.div>
+      );
+    case "generating":
+      return (
+        <motion.div
+          {...animationProps}
+          className={`${baseClasses} border-green-400`}
+        >
+          <div className="flex items-center gap-2 text-sm font-medium">
+            <IconComponent icon="generating" size={16} />
+            <span>
+              Generating {historyItem.state.quantity}{" "}
+              {historyItem.state.property}
+            </span>
+          </div>
+          <div className="text-xs opacity-60 mt-1">{timeAgo}</div>
+        </motion.div>
+      );
   }
 };
-

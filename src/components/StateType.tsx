@@ -11,6 +11,16 @@ const getStateColor = (stateType: MeepleStateNames): string => {
       return "badge-info";
     case MeepleStateNames.Transacting:
       return "badge-success";
+    case MeepleStateNames.Mining:
+      return "badge-warning";
+    case MeepleStateNames.Buying:
+      return "badge-error";
+    case MeepleStateNames.Selling:
+      return "badge-info";
+    case MeepleStateNames.Transmuting:
+      return "badge-warning";
+    case MeepleStateNames.Generating:
+      return "badge-success";
     default:
       return "badge-neutral";
   }

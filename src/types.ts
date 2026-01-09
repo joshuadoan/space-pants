@@ -32,16 +32,61 @@ export type MeepleActionTransact = {
   transaction: MeepleTransaction;
 };
 
+export type MeepleActionMine = {
+  type: "mine";
+  target: Meeple;
+  property: MeepleInventoryItem;
+  quantity: number;
+};
+
+export type MeepleActionBuy = {
+  type: "buy";
+  target: Meeple;
+  property: MeepleInventoryItem;
+  quantity: number;
+};
+
+export type MeepleActionSell = {
+  type: "sell";
+  target: Meeple;
+  property: MeepleInventoryItem;
+  quantity: number;
+};
+
+export type MeepleActionTransmutation = {
+  type: "transmutation";
+  fromProperty: MeepleInventoryItem;
+  fromQuantity: number;
+  toProperty: MeepleInventoryItem;
+  toQuantity: number;
+};
+
+export type GenerateAction = {
+  type: "generate";
+  property: MeepleInventoryItem;
+  quantity: number;
+};
+
 export type MeepleAction =
   | MeepleActionTravel
   | MeepleActionVisit
-  | MeepleActionTransact;
+  | MeepleActionTransact
+  | MeepleActionMine
+  | MeepleActionBuy
+  | MeepleActionSell
+  | MeepleActionTransmutation
+  | GenerateAction;
 
 export enum MeepleStateNames {
   Idle = "idle",
   Traveling = "traveling",
   Visiting = "visiting",
   Transacting = "transacting",
+  Mining = "mining",
+  Buying = "buying",
+  Selling = "selling",
+  Transmuting = "transmuting",
+  Generating = "generating",
 }
 
 export type MeepleStateIdle = {
@@ -63,11 +108,51 @@ export type MeepleStateTransacting = {
   transaction: MeepleTransaction;
 };
 
+export type MeepleStateMining = {
+  type: MeepleStateNames.Mining;
+  target: Meeple;
+  property: MeepleInventoryItem;
+  quantity: number;
+};
+
+export type MeepleStateBuying = {
+  type: MeepleStateNames.Buying;
+  target: Meeple;
+  property: MeepleInventoryItem;
+  quantity: number;
+};
+
+export type MeepleStateSelling = {
+  type: MeepleStateNames.Selling;
+  target: Meeple;
+  property: MeepleInventoryItem;
+  quantity: number;
+};
+
+export type MeepleStateTransmuting = {
+  type: MeepleStateNames.Transmuting;
+  fromProperty: MeepleInventoryItem;
+  fromQuantity: number;
+  toProperty: MeepleInventoryItem;
+  toQuantity: number;
+};
+
+export type MeepleStateGenerating = {
+  type: MeepleStateNames.Generating;
+  property: MeepleInventoryItem;
+  quantity: number;
+};
+
 export type MeepleState =
   | MeepleStateIdle
   | MeepleStateTraveling
   | MeepleStateVisiting
-  | MeepleStateTransacting;
+  | MeepleStateTransacting
+  | MeepleStateMining
+  | MeepleStateBuying
+  | MeepleStateSelling
+  | MeepleStateTransmuting
+  | MeepleStateGenerating;
 
 export type MeepleActionHistory = {
   action: MeepleAction;
