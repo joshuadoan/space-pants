@@ -1,6 +1,5 @@
-import { useMemo } from "react";
 import { useGame } from "../Game/useGame";
-import { MeepleInventoryItem, MeepleRoles } from "../types";
+import { MeepleRoles } from "../types";
 import { MeepleListItem } from "./MeepleListItem";
 
 export const Main = () => {
