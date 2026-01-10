@@ -1,36 +1,15 @@
-import { useGame } from "../Game/useGame";
 import { MeepleInventoryItem, MeepleRoles } from "../types";
 import { IconComponent } from "../utils/iconMap";
 
-export const Counts = () => {
-  const { meeples } = useGame();
+export const Counts = ({
+  roleEntries,
+  inventoryEntries,
+}: {
+  roleEntries: [MeepleRoles, number][];
+  inventoryEntries: [MeepleInventoryItem, number][];
+}) => {
 
-  // total counts for roles, inventory
-  const counts = {
-    ...Object.fromEntries(
-      Object.values(MeepleRoles).map((role) => [
-        role,
-        meeples.filter((meeple) => meeple.roleId === role).length,
-      ])
-    ),
-    ...Object.fromEntries(
-      Object.values(MeepleInventoryItem).map((item) => [
-        item,
-        meeples.reduce(
-          (acc, meeple) => acc + meeple.inventory[item],
-          0
-        ),
-      ])
-    ),
-  };
 
-  const roleEntries = Object.entries(counts).filter(([key]) =>
-    Object.values(MeepleRoles).includes(key as MeepleRoles)
-  ) as [MeepleRoles, number][];
-
-  const inventoryEntries = Object.entries(counts).filter(([key]) =>
-    Object.values(MeepleInventoryItem).includes(key as MeepleInventoryItem)
-  ) as [MeepleInventoryItem, number][];
 
   return (
     <div className="flex flex-col gap-1 border border-secondary rounded-lg p-2">
