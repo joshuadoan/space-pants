@@ -75,6 +75,13 @@ export const Layout = () => {
       </header>
       <main className="flex h-full">
         <div className="w-sm h-full">
+          {
+            !hasStarted && (
+              <div className="p-4">
+                <h2 className="text-2xl font-bold">Loading...</h2>
+              </div>
+            )
+          }
           <Outlet
             context={{
               selectedMeeple,
