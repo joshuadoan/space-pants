@@ -30,7 +30,7 @@ export const HistoryItem = ({
           className={`${baseClasses} border-gray-400`}
         >
           <div className="flex items-center gap-2 text-sm font-medium">
-            <IconComponent icon="idle" size={16} />
+            <IconComponent icon="idle" size={16} title="Idle" />
             Idle
           </div>
           <div className="text-xs opacity-60 mt-1">{timeAgo}</div>
@@ -43,7 +43,7 @@ export const HistoryItem = ({
           className={`${baseClasses} border-blue-400`}
         >
           <div className="flex items-center gap-2 text-sm font-medium">
-            <IconComponent icon="traveling" size={16} />
+            <IconComponent icon="traveling" size={16} title="Traveling" />
             Traveling to {historyItem.state.target.name} (
             {historyItem.state.target.roleId})
           </div>
@@ -57,7 +57,7 @@ export const HistoryItem = ({
           className={`${baseClasses} border-green-400`}
         >
           <div className="flex items-center gap-2 text-sm font-medium">
-            <IconComponent icon="visiting" size={16} />
+            <IconComponent icon="visiting" size={16} title="Visiting" />
             Visiting {historyItem.state.target.name} (
             {historyItem.state.target.roleId})
           </div>
@@ -78,7 +78,7 @@ export const HistoryItem = ({
           className={`${baseClasses} border-yellow-400`}
         >
           <div className="flex items-center gap-2 text-sm font-medium">
-            <IconComponent icon="transacting" size={16} />
+            <IconComponent icon="transacting" size={16} title="Transacting" />
             <span>
               Transacted {transaction.quantity} {transaction.property}
               <br />
@@ -104,7 +104,7 @@ export const HistoryItem = ({
           className={`${baseClasses} border-orange-400`}
         >
           <div className="flex items-center gap-2 text-sm font-medium">
-            <IconComponent icon="mining" size={16} />
+            <IconComponent icon="mining" size={16} title="Mining" />
             <span>
               Mining {historyItem.state.quantity} {historyItem.state.property}
               <br />
@@ -122,7 +122,7 @@ export const HistoryItem = ({
           className={`${baseClasses} border-red-400`}
         >
           <div className="flex items-center gap-2 text-sm font-medium">
-            <IconComponent icon="buying" size={16} />
+            <IconComponent icon="buying" size={16} title="Buying" />
             <span>
               Buying {historyItem.state.quantity} {historyItem.state.property}
               <br />
@@ -140,7 +140,7 @@ export const HistoryItem = ({
           className={`${baseClasses} border-blue-400`}
         >
           <div className="flex items-center gap-2 text-sm font-medium">
-            <IconComponent icon="selling" size={16} />
+            <IconComponent icon="selling" size={16} title="Selling" />
             <span>
               Selling {historyItem.state.quantity} {historyItem.state.property}
               <br />
@@ -158,7 +158,7 @@ export const HistoryItem = ({
           className={`${baseClasses} border-purple-400`}
         >
           <div className="flex items-center gap-2 text-sm font-medium">
-            <IconComponent icon="transmuting" size={16} />
+            <IconComponent icon="transmuting" size={16} title="Transmuting" />
             <span>
               Transmuting {historyItem.state.fromQuantity}{" "}
               {historyItem.state.fromProperty} to {historyItem.state.toProperty}
@@ -174,7 +174,7 @@ export const HistoryItem = ({
           className={`${baseClasses} border-green-400`}
         >
           <div className="flex items-center gap-2 text-sm font-medium">
-            <IconComponent icon="generating" size={16} />
+            <IconComponent icon="generating" size={16} title="Generating" />
             <span>
               Generating {historyItem.state.quantity}{" "}
               {historyItem.state.property}

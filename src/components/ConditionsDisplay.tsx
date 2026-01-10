@@ -30,7 +30,7 @@ export const ConditionsDisplay = ({
       </div>
       {condition.type === "inventory" && (
         <div className="flex items-center gap-2 text-xs opacity-60 mt-1 ml-4">
-          <IconComponent icon={condition.property} size={14} />
+          <IconComponent icon={condition.property} size={14} title={condition.property} />
           <span>
             {meeple.inventory[condition.property]} {condition.operator}{" "}
             {condition.quantity}
