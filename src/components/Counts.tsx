@@ -44,7 +44,7 @@ export const Counts = () => {
   ) as [MeepleInventoryItem, number][];
 
   return (
-    <div className="flex items-center gap-4">
+    <div className="flex flex-col gap-3">
       {/* Roles Section */}
       <div className="flex items-center gap-3">
         {roleEntries.map(([key, value]) => (
@@ -59,9 +59,6 @@ export const Counts = () => {
           </div>
         ))}
       </div>
-
-      {/* Divider */}
-      <div className="h-6 w-px bg-base-300" />
 
       {/* Inventory Section */}
       <div className="flex items-center gap-3">
