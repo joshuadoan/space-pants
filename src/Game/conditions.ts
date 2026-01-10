@@ -10,7 +10,7 @@ import type { Game } from "./Game";
 import type { ConditionSelfInventory } from "../types";
 
 export const ifNoMoneyMineOre = (): ConditionSelfInventory => ({
-  description: "Blast off to a distant asteroid field and mine precious space minerals!",
+  description: "Travel to an asteroid field and mine ore.",
   type: ConditionType.Inventory,
   property: MeepleInventoryItem.Minirals,
   operator: Operator.LessThan,
@@ -45,8 +45,7 @@ export const ifNoMoneyMineOre = (): ConditionSelfInventory => ({
 });
 
 export const ifOreSellToSpaceStore = (): ConditionSelfInventory => ({
-  description:
-    "Exchange your cosmic crystals at the SpaceStore for galactic credits!",
+  description: "Sell ore at the SpaceStore for money.",
   type: ConditionType.Inventory,
   property: MeepleInventoryItem.Minirals,
   operator: Operator.GreaterThanOrEqual,
@@ -81,7 +80,7 @@ export const ifOreSellToSpaceStore = (): ConditionSelfInventory => ({
 });
 
 export const ifHasMoneyBuyFizzyDrink = (): ConditionSelfInventory => ({
-  description: "Head to the space cantina and grab a refreshing quantum fizzy drink!",
+  description: "Buy a fizzy drink from the space bar.",
   type: ConditionType.Inventory,
   property: MeepleInventoryItem.Money,
   operator: Operator.GreaterThanOrEqual,
@@ -116,9 +115,29 @@ export const ifHasMoneyBuyFizzyDrink = (): ConditionSelfInventory => ({
   },
 });
 
+// If fizzy drink is >= 1 then consume fizzy drink
+export const ifHighFizzyDrinkConsumeFizzyDrink = (): ConditionSelfInventory => ({
+  description: "Consume a fizzy drink.",
+  type: ConditionType.Inventory,
+  property: MeepleInventoryItem.Fizzy,
+  operator: Operator.GreaterThanOrEqual,
+  quantity: 1,
+  action: (meeple: Meeple) => {
+    meeple.actions
+      .callMethod(() => {
+        meeple.dispatch({
+          type: "consume",
+          property: MeepleInventoryItem.Fizzy,
+          quantity: 1,
+        });
+      })
+      .delay(DEFAULT_DELAY);
+  },
+});
+
 /// If ore is less than 100 then generate ore
 export const ifLowOreGenerateOre = (): ConditionSelfInventory => ({
-  description: "Activate the quantum matter synthesizer to generate ore reserves!",
+  description: "Generate ore reserves.",
   type: ConditionType.Inventory,
   property: MeepleInventoryItem.Minirals,
   operator: Operator.LessThan,
@@ -138,7 +157,7 @@ export const ifLowOreGenerateOre = (): ConditionSelfInventory => ({
 
 /// turn ore into money
 export const ifOreTurnIntoFizzy = (): ConditionSelfInventory => ({
-  description: "Use alchemical transmutation to convert 1 ore into 2 fizzy drinks!",
+  description: "Convert 1 ore into 2 fizzy drinks.",
   type: ConditionType.Inventory,
   property: MeepleInventoryItem.Minirals,
   operator: Operator.GreaterThanOrEqual,
@@ -161,7 +180,7 @@ export const ifOreTurnIntoFizzy = (): ConditionSelfInventory => ({
 export const ifLowFizzyDrinkBuyFizzyDrink = (
   bar: Meeple
 ): ConditionSelfInventory => ({
-  description: "Restock the bar's quantum fizzy drink supply from the SpaceStore!",
+  description: "Restock the bar's fizzy drink supply from the SpaceStore.",
   type: ConditionType.Inventory,
   property: MeepleInventoryItem.Fizzy,
   operator: Operator.LessThan,
@@ -201,8 +220,7 @@ export const ifLowFizzyDrinkBuyFizzyDrink = (
 // if fizzy drink is >= 1 then fly back to
 // the bar and restock fizzy drinks
 export const ifHighFizzyDrinkRestockBar = (): ConditionSelfInventory => ({
-  description:
-    "Warp back to your home base and restock the bar with fizzy drinks!",
+  description: "Return to the bar and restock it with fizzy drinks.",
   type: ConditionType.Inventory,
   property: MeepleInventoryItem.Fizzy,
   operator: Operator.GreaterThanOrEqual,

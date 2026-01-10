@@ -57,6 +57,7 @@ const IconMap: Record<
   "buy": IconShoppingCart,
   "sell": IconCash,
   "generate": IconSparkles,
+  "consume": IconBottle,
   // States
   "idle": IconClock,
   "traveling": IconRoute,
@@ -64,6 +65,7 @@ const IconMap: Record<
   "transacting": IconArrowsExchange,
   "generating": IconSparkles,
   "mining": IconHammer,
+  "consuming": IconBottle,
   "buying": IconShoppingCart,
   "selling": IconCash,
   "transmuting": IconArrowsExchange,

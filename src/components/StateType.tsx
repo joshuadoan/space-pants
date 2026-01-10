@@ -21,6 +21,8 @@ const getStateColor = (stateType: MeepleStateNames): string => {
       return "badge-warning";
     case MeepleStateNames.Generating:
       return "badge-success";
+    case MeepleStateNames.Consuming:
+      return "badge-purple";
     default:
       return "badge-neutral";
   }

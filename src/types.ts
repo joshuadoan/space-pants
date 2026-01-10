@@ -46,6 +46,12 @@ export type MeepleActionBuy = {
   quantity: number;
 };
 
+export type MeepleActionConsume = {
+  type: "consume";
+  property: MeepleInventoryItem;
+  quantity: number;
+};
+
 export type MeepleActionSell = {
   type: "sell";
   target: Meeple;
@@ -75,7 +81,8 @@ export type MeepleAction =
   | MeepleActionBuy
   | MeepleActionSell
   | MeepleActionTransmutation
-  | GenerateAction;
+  | GenerateAction
+  | MeepleActionConsume;
 
 export enum MeepleStateNames {
   Idle = "idle",
@@ -87,6 +94,7 @@ export enum MeepleStateNames {
   Selling = "selling",
   Transmuting = "transmuting",
   Generating = "generating",
+  Consuming = "consuming",
 }
 
 export type MeepleStateIdle = {
@@ -143,6 +151,12 @@ export type MeepleStateGenerating = {
   quantity: number;
 };
 
+export type MeepleStateConsuming = {
+  type: MeepleStateNames.Consuming;
+  property: MeepleInventoryItem;
+  quantity: number;
+};
+
 export type MeepleState =
   | MeepleStateIdle
   | MeepleStateTraveling
@@ -152,7 +166,8 @@ export type MeepleState =
   | MeepleStateBuying
   | MeepleStateSelling
   | MeepleStateTransmuting
-  | MeepleStateGenerating;
+  | MeepleStateGenerating
+  | MeepleStateConsuming;
 
 export type MeepleActionHistory = {
   action: MeepleAction;

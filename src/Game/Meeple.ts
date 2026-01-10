@@ -142,6 +142,14 @@ export class Meeple extends Actor {
           quantity: action.quantity,
         };
         break;
+      case "consume":
+        this.consume(action.property, action.quantity);
+        this.state = {
+          type: MeepleStateNames.Consuming,
+          property: action.property,
+          quantity: action.quantity,
+        };
+        break;
       default:
         break;
     }
@@ -279,6 +287,13 @@ export class Meeple extends Actor {
       [property]: buyer.inventory[property] + quantity,
       [MeepleInventoryItem.Money]:
         buyer.inventory[MeepleInventoryItem.Money] - price * quantity,
+    });
+  }
+
+  consume(property: MeepleInventoryItem, quantity: number) {
+    this.setInventory({
+      ...this.inventory,
+      [property]: this.inventory[property] - quantity,
     });
   }
 
