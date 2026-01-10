@@ -7,6 +7,7 @@ export const ConditionsDisplay = ({
   condition: Condition;
   isMet: boolean;
 }) => {
+  console.log('condition', condition, isMet);
   return (
     <div
       key={condition.description}

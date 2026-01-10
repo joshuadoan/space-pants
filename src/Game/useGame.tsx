@@ -287,7 +287,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
 
     const interval = setInterval(() => {
       const currentMeeples =
-        gameRef.current?.currentScene.actors.filter(
+        game.currentScene.actors.filter(
           (actor): actor is Meeple => actor instanceof Meeple
         ) || [];
       dispatch({ type: "update-game", meeples: currentMeeples });
