@@ -58,7 +58,7 @@ type GameContextValue = {
 const initialState = {
   hasStarted: false,
   meeples: [],
-  filterBy: null,
+  filterBy: MeepleRoles.Miner,
 };
 
 // ============================================================================

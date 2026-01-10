@@ -127,7 +127,7 @@ export class Meeple extends Actor {
           action.fromProperty,
           action.fromQuantity,
           action.toProperty,
-          action.toQuantity,
+          action.toQuantity
         );
         this.state = {
           type: MeepleStateNames.Transmuting,
@@ -246,14 +246,16 @@ export class Meeple extends Actor {
     this.setInventory({
       ...this.inventory,
       [property]: this.inventory[property] + quantity,
-      [MeepleInventoryItem.Money]: this.inventory[MeepleInventoryItem.Money] - price * quantity,
+      [MeepleInventoryItem.Money]:
+        this.inventory[MeepleInventoryItem.Money] - price * quantity,
     });
 
     // update seller's inventory
     seller.setInventory({
       ...seller.inventory,
       [property]: seller.inventory[property] - quantity,
-      [MeepleInventoryItem.Money]: seller.inventory[MeepleInventoryItem.Money] + price * quantity,
+      [MeepleInventoryItem.Money]:
+        seller.inventory[MeepleInventoryItem.Money] + price * quantity,
     });
   }
 
@@ -270,14 +272,16 @@ export class Meeple extends Actor {
     this.setInventory({
       ...this.inventory,
       [property]: this.inventory[property] - quantity,
-      [MeepleInventoryItem.Money]: this.inventory[MeepleInventoryItem.Money] + price * quantity,
+      [MeepleInventoryItem.Money]:
+        this.inventory[MeepleInventoryItem.Money] + price * quantity,
     });
 
     // Buyer gains property and loses money
     buyer.setInventory({
       ...buyer.inventory,
       [property]: buyer.inventory[property] + quantity,
-      [MeepleInventoryItem.Money]: buyer.inventory[MeepleInventoryItem.Money] - price * quantity,
+      [MeepleInventoryItem.Money]:
+        buyer.inventory[MeepleInventoryItem.Money] - price * quantity,
     });
   }
 

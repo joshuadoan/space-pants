@@ -43,10 +43,12 @@ export const Counts = () => {
     Object.values(MeepleInventoryItem).includes(key as MeepleInventoryItem)
   ) as [MeepleInventoryItem, number][];
 
+  console.log("inventoryEntries", inventoryEntries);
+
   return (
-    <div className="flex flex-col gap-3">
+    <div className="flex flex-col gap-1 border border-secondary rounded-lg p-2">
       {/* Roles Section */}
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-1.5">
         {roleEntries.map(([key, value]) => (
           <div
             key={key}
