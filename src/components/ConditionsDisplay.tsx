@@ -1,15 +1,12 @@
 import { IconComponent } from "../utils/iconMap";
 import type { Condition } from "../types";
-import type { Meeple } from "../Game/Meeple";
 
 export const ConditionsDisplay = ({
   condition,
   isMet,
-  meeple,
 }: {
   condition: Condition;
   isMet: boolean;
-  meeple: Meeple;
 }) => {
   return (
     <div
@@ -30,11 +27,11 @@ export const ConditionsDisplay = ({
       </div>
       {condition.type === "inventory" && (
         <div className="flex items-center gap-2 text-xs opacity-60 mt-1 ml-4">
-          <IconComponent icon={condition.property} size={14} title={condition.property} />
-          <span>
-            {meeple.inventory[condition.property]} {condition.operator}{" "}
-            {condition.quantity}
-          </span>
+          <IconComponent
+            icon={condition.property}
+            size={14}
+            title={condition.property}
+          />
         </div>
       )}
     </div>

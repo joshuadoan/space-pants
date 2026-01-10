@@ -26,7 +26,7 @@ export const Layout = () => {
           </div>
           <p className="text-sm text-gray-500">A space simulation</p>
         </div>
-        <div className="pb-2">
+        <div className="p-2">
           <Counts />
         </div>
       </header>
