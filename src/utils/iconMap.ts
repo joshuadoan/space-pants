@@ -3,17 +3,22 @@ import { createElement } from "react";
 import {
   IconArrowLeft,
   IconArrowsExchange,
-  IconBeer,
-  IconBuilding,
+  IconBottle,
+  IconBox,
+  IconCash,
+  IconChefHat,
   IconClock,
   IconCurrencyDollar,
-  IconGlassCocktail,
+  IconDiamond,
+  IconGlassFull,
+  IconHammer,
+  IconHome,
   IconMapPin,
   IconMeteor,
-  IconPackage,
-  IconPick,
   IconRoute,
-  IconMoon,
+  IconShoppingBag,
+  IconShoppingCart,
+  IconSparkles,
 } from "@tabler/icons-react";
 
 // ============================================================================
@@ -30,40 +35,40 @@ const IconMap: Record<
   IconComponent
 > = {
   // Roles
-  "miner": IconPick,
-  "trader": IconPackage,
+  "miner": IconHammer,
+  "trader": IconShoppingCart,
   "asteroid": IconMeteor,
-  "space-store": IconBuilding,
-  "space-bar": IconBeer,
-  "space-apartment": IconBuilding,
-  "bartender": IconBeer,
+  "space-store": IconShoppingBag,
+  "space-bar": IconGlassFull,
+  "space-apartment": IconHome,
+  "bartender": IconChefHat,
   // Navigation
   "arrow-left": IconArrowLeft,
   // Inventory Items
-  "stuff": IconPackage,
+  "stuff": IconBox,
   "money": IconCurrencyDollar,
-  "fizzy": IconGlassCocktail,
+  "fizzy": IconBottle,
   // Actions
   "travel": IconRoute,
   "visit": IconMapPin,
   "transact": IconArrowsExchange,
   "transmutation": IconArrowsExchange,
-  "mine": IconPick,
-  "buy": IconCurrencyDollar,
-  "sell": IconArrowsExchange,
-  "generate": IconMoon,
+  "mine": IconHammer,
+  "buy": IconShoppingCart,
+  "sell": IconCash,
+  "generate": IconSparkles,
   // States
   "idle": IconClock,
   "traveling": IconRoute,
   "visiting": IconMapPin,
   "transacting": IconArrowsExchange,
-  "generating": IconMoon,
-  "mining": IconPick,
-  "buying": IconCurrencyDollar,
-  "selling": IconArrowsExchange,
+  "generating": IconSparkles,
+  "mining": IconHammer,
+  "buying": IconShoppingCart,
+  "selling": IconCash,
   "transmuting": IconArrowsExchange,
   "position": IconMapPin,
-  "minirals": IconMoon,
+  "minirals": IconDiamond,
 } as const;
 
 // ============================================================================
@@ -72,6 +77,7 @@ const IconMap: Record<
 
 type IconComponentProps = {
   icon: keyof typeof IconMap;
+  title: string;
   size?: number;
   className?: string;
   fill?: string;
@@ -83,12 +89,14 @@ type IconComponentProps = {
  */
 export function IconComponent({
   icon,
+  title,
   size,
   className,
   fill,
   ...rest
 }: IconComponentProps) {
   const iconElement = createElement(IconMap[icon], {
+    title,
     size,
     className,
     fill,
@@ -99,7 +107,7 @@ export function IconComponent({
     "div",
     {
       className: "tooltip tooltip-top cursor-pointer",
-      "data-tip": icon,
+      "data-tip": title,
     },
     iconElement
   );

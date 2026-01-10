@@ -54,30 +54,32 @@ export const Detail = () => {
 
   return (
     <div className="flex flex-col h-full">
-      <div className="py-2">
-        <BackButton />
-      </div>
       <ul className="list bg-base-100 rounded-box shadow-md w-xs">
         <li className="list-row" key={meeple.id}>
           <div className="flex flex-col gap-1.5">
-            <Link to={`/${meeple.id}`} className="link link-hover">
-              {meeple.name}
-            </Link>
+            <div className="flex items-center gap-2">
+              <Link to="/" aria-label="Back" title="Back to main page">
+                <IconComponent icon="arrow-left" size={16} title="Back" />
+              </Link>
+              <Link to={`/${meeple.id}`} className="link link-hover">
+                {meeple.name}
+              </Link>
+            </div>
             <div className="flex items-center gap-2 text-xs uppercase font-semibold opacity-60">
               <span className="flex items-center gap-1">
-                <IconComponent icon={meeple.roleId} size={12} />
+                <IconComponent icon={meeple.roleId} size={12} title={meeple.roleId} />
                 {meeple.roleId}
               </span>
             </div>
             <StateType state={meeple.state} />
             <div className="text-xs uppercase font-semibold opacity-60 flex items-center gap-1">
-              <IconComponent icon="position" size={12} />
+              <IconComponent icon="position" size={12} title="Position" />
               {pos.x.toFixed(2)}, {pos.y.toFixed(2)}
             </div>
           </div>
         </li>
       </ul>
-      <div className="p-4 flex flex-col gap-1 h-full overflow-y-auto">
+      <div className="p-4 flex flex-col gap-1">
         <h3 className="text-sm font-semibold uppercase opacity-60 mb-2">
           Inventory
         </h3>
@@ -92,6 +94,8 @@ export const Detail = () => {
             </div>
           ))}
         </div>
+      </div>
+      <div className="flex-1 overflow-y-auto px-4 pb-4">
         {conditions.length > 0 && (
           <div className="mb-4">
             <h3 className="text-sm font-semibold uppercase opacity-60 mb-2">
@@ -100,7 +104,10 @@ export const Detail = () => {
             <div className="space-y-2">
               {conditions.map((condition, index) => {
                 const isMet = !!meeple.evaluateCondition(condition);
-                const isFirstMet = isMet && index === conditions.findIndex(c => !!meeple.evaluateCondition(c));
+                const isFirstMet =
+                  isMet &&
+                  index ===
+                    conditions.findIndex((c) => !!meeple.evaluateCondition(c));
                 return (
                   <ConditionsDisplay
                     key={index}

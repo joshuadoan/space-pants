@@ -37,41 +37,28 @@ type GameActionUpdate = {
   meeples: Meeple[];
 };
 
-type GameActionSetFilterbyRole = {
-  type: "set-filterby-role";
-  filters: {
-    [key in MeepleRoles]: boolean;
-  };
+type GameActionSetFilterBy = {
+  type: "set-filter-by";
+  role: MeepleRoles | null;
 };
 
 type GameAction =
   | GameActionStart
   | GameActionUpdate
-  | GameActionSetFilterbyRole;
+  | GameActionSetFilterBy;
 
 type GameContextValue = {
   hasStarted: boolean;
   meeples: Meeple[];
-  filterbyRole: {
-    [key in MeepleRoles]: boolean;
-  };
-  setFilterbyRole: (filters: {
-    [key in MeepleRoles]: boolean;
-  }) => void;
+  filterBy: MeepleRoles | null;
+  setFilterBy: (role: MeepleRoles | null) => void;
   lockCameraToMeeple: (meeple: Meeple) => void;
 };
 
 const initialState = {
   hasStarted: false,
   meeples: [],
-  filterbyRole: {
-    [MeepleRoles.Miner]: true,
-    [MeepleRoles.Asteroid]: false,
-    [MeepleRoles.SpaceStore]: false,
-    [MeepleRoles.SpaceBar]: false,
-    [MeepleRoles.SpaceApartment]: false,
-    [MeepleRoles.Bartender]: false,
-  },
+  filterBy: null,
 };
 
 // ============================================================================
@@ -97,11 +84,10 @@ function gameReducer(
         ...state,
         meeples: action.meeples,
       };
-    case "set-filterby-role":
-      const filters = action.filters;
+    case "set-filter-by":
       return {
         ...state,
-        filterbyRole: filters,
+        filterBy: action.role,
       };
 
     default:
@@ -122,10 +108,8 @@ const GameContext = createContext<GameContextValue | undefined>(undefined);
 export function GameProvider({ children }: { children: ReactNode }) {
   const [gameState, dispatch] = useReducer(gameReducer, {
     ...initialState,
-    setFilterbyRole: (filters: {
-      [key in MeepleRoles]: boolean;
-    }) => {
-      dispatch({ type: "set-filterby-role", filters: filters });
+    setFilterBy: (role: MeepleRoles | null) => {
+      dispatch({ type: "set-filter-by", role: role });
     },
     lockCameraToMeeple: (meeple: Meeple) => {
       gameRef.current?.currentScene.camera.strategy.lockToActor(meeple);

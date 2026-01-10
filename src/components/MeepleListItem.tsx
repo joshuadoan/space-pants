@@ -15,13 +15,13 @@ export const MeepleListItem = ({ meeple }: { meeple: Meeple }) => {
         </Link>
         <div className="flex items-center gap-2 text-xs uppercase font-semibold opacity-60">
           <span className="flex items-center gap-1">
-            <IconComponent icon={meeple.roleId} size={12} />
+            <IconComponent icon={meeple.roleId} size={12} title={meeple.roleId} />
             {meeple.roleId}
           </span>
         </div>
         <StateType state={meeple.state} />
         <div className="text-xs uppercase font-semibold opacity-60 flex items-center gap-1">
-          <IconComponent icon="position" size={12} />
+          <IconComponent icon="position" size={12} title="Position" />
           {meeple.pos.x.toFixed(2)}, {meeple.pos.y.toFixed(2)}
         </div>
       </div>

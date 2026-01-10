@@ -8,7 +8,7 @@ export const MeepleInventoryItemDisplay = ({
 }) => {
   return (
     <div className="flex items-center gap-2">
-      <IconComponent icon={item} size={16} />
+      <IconComponent icon={item} size={16} title={item} />
       <span className="text-sm capitalize">{item}</span>
     </div>
   );

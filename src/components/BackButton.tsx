@@ -4,7 +4,7 @@ import { IconComponent } from "../utils/iconMap";
 export const BackButton = () => {
   return (
     <Link to="/" className="btn btn-ghost" aria-label="Back">
-      <IconComponent icon="arrow-left" />
+      <IconComponent icon="arrow-left" title="Back" />
       Back
     </Link>
   );
