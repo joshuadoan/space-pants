@@ -284,7 +284,11 @@ export function GameProvider({ children }: { children: ReactNode }) {
     dispatch({ type: "start-game" });
 
     const interval = setInterval(() => {
-      dispatch({ type: "update-game", meeples: meeples });
+      const currentMeeples =
+        gameRef.current?.currentScene.actors.filter(
+          (actor): actor is Meeple => actor instanceof Meeple
+        ) || [];
+      dispatch({ type: "update-game", meeples: currentMeeples });
     }, 500);
 
     return () => clearInterval(interval);

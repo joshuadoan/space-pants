@@ -191,3 +191,9 @@ export type ConditionSelfInventory = {
 };
 
 export type Condition = ConditionSelfInventory;
+
+export type ActionHistory = {
+  action: MeepleAction;
+  timestamp: number;
+  state: MeepleState;
+};

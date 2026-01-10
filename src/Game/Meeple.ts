@@ -10,6 +10,7 @@ import {
   Operator,
   MeepleStateNames,
   MeepleInventoryItem,
+  type ActionHistory,
 } from "../types";
 import type { Game } from "./Game";
 
@@ -21,11 +22,7 @@ export class Meeple extends Actor {
   state: MeepleState = { type: MeepleStateNames.Idle };
   home: Meeple | null = null;
   inventory: MeepleInventory;
-  actionsHistory: {
-    action: MeepleAction;
-    timestamp: number;
-    state: MeepleState;
-  }[] = [];
+  actionsHistory: ActionHistory[] = [];
   constructor({
     width,
     height,
@@ -71,7 +68,7 @@ export class Meeple extends Actor {
       },
       repeats: true,
       // randomize the interval between 100 and 1000
-      interval: Math.floor(Math.random() * 900) + 100,
+      interval: 1000,
     });
 
     return timer;
@@ -158,7 +155,7 @@ export class Meeple extends Actor {
 
   evaluateCondition(condition: Condition) {
     if (condition.type === ConditionType.Inventory) {
-      const inventory = condition.target
+      const inventory = condition.target && condition.target.inventory
         ? condition.target.inventory[condition.property]
         : this.inventory[condition.property];
 
