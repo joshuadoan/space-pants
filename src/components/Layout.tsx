@@ -66,22 +66,12 @@ export const Layout = () => {
           </div>
           <p className="text-sm text-gray-500">A space simulation</p>
         </div>
-        <div className="p-2">
-          <Counts
-            roleEntries={roleEntries}
-            inventoryEntries={inventoryEntries}
-          />
+        <div className="hidden md:block p-2">
+          <Counts roleEntries={roleEntries} inventoryEntries={inventoryEntries} />
         </div>
       </header>
       <main className="flex h-full">
-        <div className="w-sm h-full">
-          {
-            !hasStarted && (
-              <div className="p-4">
-                <h2 className="text-2xl font-bold">Loading...</h2>
-              </div>
-            )
-          }
+        <div className="hidden md:block w-sm h-full">
           <Outlet
             context={{
               selectedMeeple,
