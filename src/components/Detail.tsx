@@ -1,6 +1,10 @@
-
 import { AnimatePresence } from "motion/react";
-import { MeepleInventoryItem, type ActionHistory, type Condition, type MeepleAction, type MeepleInventory } from "../types";
+import {
+  MeepleInventoryItem,
+  type ActionHistory,
+  type Condition,
+  type MeepleInventory,
+} from "../types";
 import { MeepleInventoryItemDisplay } from "./MeepleInventoryItemDisplay";
 import { ConditionsDisplay } from "./ConditionsDisplay";
 import { HistoryItem } from "./HistoryItem";
@@ -11,7 +15,12 @@ type DetailProps = {
   conditions: Condition[];
   evaluateCondition: (condition: Condition) => boolean;
 };
-export const Detail = ({ inventory, actionsHistory, conditions, evaluateCondition }: DetailProps) => {
+export const Detail = ({
+  inventory,
+  actionsHistory,
+  conditions,
+  evaluateCondition,
+}: DetailProps) => {
   const orderedActionsHistory = [...actionsHistory].reverse();
   return (
     <div className="flex flex-col h-full">
@@ -42,8 +51,7 @@ export const Detail = ({ inventory, actionsHistory, conditions, evaluateConditio
                 const isMet = !!evaluateCondition(condition);
                 const isFirstMet =
                   isMet &&
-                  index ===
-                    conditions.findIndex((c) => !!evaluateCondition(c));
+                  index === conditions.findIndex((c) => !!evaluateCondition(c));
                 return (
                   <ConditionsDisplay
                     key={index}
