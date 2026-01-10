@@ -183,5 +183,20 @@ export const HistoryItem = ({
           <div className="text-xs opacity-60 mt-1">{timeAgo}</div>
         </motion.div>
       );
+    case "consuming":
+      return (
+        <motion.div
+          {...animationProps}
+          className={`${baseClasses} border-purple-400`}
+        >
+          <div className="flex items-center gap-2 text-sm font-medium">
+            <IconComponent icon="consuming" size={16} title="Consuming" />
+            <span>
+              Consuming {historyItem.state.quantity} {historyItem.state.property}
+            </span>
+          </div>
+          <div className="text-xs opacity-60 mt-1">{timeAgo}</div>
+        </motion.div>
+      );  
   }
 };

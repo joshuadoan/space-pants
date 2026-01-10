@@ -1,4 +1,3 @@
-import { IconComponent } from "../utils/iconMap";
 import type { Condition } from "../types";
 
 export const ConditionsDisplay = ({
@@ -11,7 +10,7 @@ export const ConditionsDisplay = ({
   return (
     <div
       key={condition.description}
-      className={`p-3 bg-base-200 rounded-lg border-l-4 ${
+      className={`p-3 bg-base-200 rounded-lg border-l-4 flex items-center gap-2 ${
         isMet ? "border-green-400" : "border-gray-400"
       }`}
     >
@@ -25,15 +24,6 @@ export const ConditionsDisplay = ({
           {condition.description}
         </span>
       </div>
-      {condition.type === "inventory" && (
-        <div className="flex items-center gap-2 text-xs opacity-60 mt-1 ml-4">
-          <IconComponent
-            icon={condition.property}
-            size={14}
-            title={condition.property}
-          />
-        </div>
-      )}
     </div>
   );
 };

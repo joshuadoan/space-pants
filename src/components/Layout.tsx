@@ -67,7 +67,10 @@ export const Layout = () => {
           <p className="text-sm text-gray-500">A space simulation</p>
         </div>
         <div className="p-2">
-          <Counts roleEntries={roleEntries} inventoryEntries={inventoryEntries} />
+          <Counts
+            roleEntries={roleEntries}
+            inventoryEntries={inventoryEntries}
+          />
         </div>
       </header>
       <main className="flex h-full">

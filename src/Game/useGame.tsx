@@ -21,6 +21,7 @@ import {
   ifLowFizzyDrinkBuyFizzyDrink,
   ifHighFizzyDrinkRestockBar,
   ifHasMoneyBuyFizzyDrink,
+  ifHighFizzyDrinkConsumeFizzyDrink,
 } from "./conditions";
 import { generateSpaceName } from "../utils/generateSpaceName";
 import {
@@ -234,6 +235,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
       Miner.pos = new Vector(GAME_WIDTH / 2, GAME_HEIGHT / 2);
 
       Miner.conditions = [
+        ifHighFizzyDrinkConsumeFizzyDrink(),
         ifHasMoneyBuyFizzyDrink(),
         ifOreSellToSpaceStore(),
         ifNoMoneyMineOre(),
