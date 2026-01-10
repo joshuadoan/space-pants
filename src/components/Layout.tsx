@@ -1,4 +1,5 @@
 import { Outlet } from "react-router-dom";
+import { IconBrandGithub } from "@tabler/icons-react";
 import { Counts } from "./Counts";
 
 export const Layout = () => {
@@ -9,9 +10,21 @@ export const Layout = () => {
       <div className="block md:hidden bg-yellow-400 text-black text-center py-2 px-4 font-semibold z-50">
         desktop is better
       </div>
-      <header className="p-4 flex justify-between items-center">
+      <header className="p-2 flex justify-between items-center">
         <div>
-          <h1 className="text-2xl font-bold">space-pants</h1>
+          <div className="flex items-center gap-3">
+            <a
+              href="https://github.com/joshuadoan/space-pants"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-gray-400 hover:text-white transition-colors"
+              aria-label="View on GitHub"
+            >
+              <IconBrandGithub size={24} />
+            </a>
+            <h1 className="text-2xl font-bold">space-pants</h1>
+          </div>
+          <p className="text-sm text-gray-500">A space simulation</p>
         </div>
         <Counts />
       </header>
