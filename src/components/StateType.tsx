@@ -28,10 +28,14 @@ const getStateColor = (stateType: MeepleStateNames): string => {
   }
 };
 
-export const StateType = ({ state }: { state: MeepleState }) => {
+export const StateType = ({ stateType }: { stateType: MeepleStateNames }) => {
   return (
-    <span className={`badge badge-sm ${getStateColor(state.type)} uppercase font-semibold`}>
-      {state.type}
+    <span
+      className={`badge badge-sm ${getStateColor(
+        stateType
+      )} uppercase font-semibold`}
+    >
+      {stateType}
     </span>
   );
 };

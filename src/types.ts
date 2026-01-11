@@ -44,6 +44,7 @@ export type MeepleActionBuy = {
   target: Meeple;
   property: MeepleInventoryItem;
   quantity: number;
+  price: number;
 };
 
 export type MeepleActionConsume = {
@@ -57,6 +58,7 @@ export type MeepleActionSell = {
   target: Meeple;
   property: MeepleInventoryItem;
   quantity: number;
+  price: number;
 };
 
 export type MeepleActionTransmutation = {

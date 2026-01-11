@@ -102,7 +102,7 @@ export class Meeple extends Actor {
         };
         break;
       case "buy":
-        this.buy(action.target, action.property, action.quantity);
+        this.buy(action.target, action.property, action.quantity, action.price);
         this.state = {
           type: MeepleStateNames.Buying,
           target: action.target,
@@ -111,7 +111,7 @@ export class Meeple extends Actor {
         };
         break;
       case "sell":
-        this.sell(action.target, action.property, action.quantity);
+        this.sell(action.target, action.property, action.quantity, action.price);
         this.state = {
           type: MeepleStateNames.Selling,
           target: action.target,
@@ -238,15 +238,7 @@ export class Meeple extends Actor {
     }
   }
 
-  buy(seller: Meeple, property: MeepleInventoryItem, quantity: number) {
-    const PRICES = {
-      [MeepleInventoryItem.Minirals]: 1,
-      [MeepleInventoryItem.Fizzy]: 1,
-      [MeepleInventoryItem.Money]: 1,
-    };
-
-    const price = PRICES[property];
-
+  buy(seller: Meeple, property: MeepleInventoryItem, quantity: number, price: number) {
     // update buyer's inventory
     this.setInventory({
       ...this.inventory,
@@ -264,21 +256,13 @@ export class Meeple extends Actor {
     });
   }
 
-  sell(buyer: Meeple, property: MeepleInventoryItem, quantity: number) {
-    const PRICES = {
-      [MeepleInventoryItem.Minirals]: 1,
-      [MeepleInventoryItem.Fizzy]: 2,
-      [MeepleInventoryItem.Money]: 1,
-    };
-
-    const price = PRICES[property];
-
+  sell(buyer: Meeple, property: MeepleInventoryItem, quantity: number, price: number) {;
     // Seller loses property and gains money
     this.setInventory({
       ...this.inventory,
       [property]: this.inventory[property] - quantity,
-      [MeepleInventoryItem.Money]:
-        this.inventory[MeepleInventoryItem.Money] + price * quantity,
+      [MeepleInventoryItem.Money]: this.inventory[MeepleInventoryItem.Money] + price * quantity,
+        // this.inventory[MeepleInventoryItem.Money] + price * quantity,
     });
 
     // Buyer gains property and loses money

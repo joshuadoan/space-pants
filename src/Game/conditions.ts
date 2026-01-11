@@ -1,4 +1,4 @@
-import { DEFAULT_DELAY } from "../consts";
+import { DEFAULT_DELAY, SELL_PRICES, TRANSMUTATION_RATIOS } from "../consts";
 import {
   ConditionType,
   Operator,
@@ -73,6 +73,7 @@ export const ifOreSellToSpaceStore = (): ConditionSelfInventory => ({
           target: target,
           property: MeepleInventoryItem.Minirals,
           quantity: 1,
+          price: SELL_PRICES[MeepleInventoryItem.Minirals],
         });
       })
       .delay(DEFAULT_DELAY);
@@ -84,7 +85,7 @@ export const ifHasMoneyBuyFizzyDrink = (): ConditionSelfInventory => ({
   type: ConditionType.Inventory,
   property: MeepleInventoryItem.Money,
   operator: Operator.GreaterThanOrEqual,
-  quantity: 1,
+  quantity: 2,
   action: (meeple: Meeple, game: Game) => {
     const target = game.getRandomMeepleByRole(MeepleRoles.SpaceBar);
     meeple.actions
@@ -109,6 +110,7 @@ export const ifHasMoneyBuyFizzyDrink = (): ConditionSelfInventory => ({
           target: target,
           property: MeepleInventoryItem.Fizzy,
           quantity: 1,
+          price: 1,
         });
       })
       .delay(DEFAULT_DELAY);
@@ -116,24 +118,25 @@ export const ifHasMoneyBuyFizzyDrink = (): ConditionSelfInventory => ({
 });
 
 // If fizzy drink is >= 1 then consume fizzy drink
-export const ifHighFizzyDrinkConsumeFizzyDrink = (): ConditionSelfInventory => ({
-  description: "Consume a fizzy drink.",
-  type: ConditionType.Inventory,
-  property: MeepleInventoryItem.Fizzy,
-  operator: Operator.GreaterThanOrEqual,
-  quantity: 1,
-  action: (meeple: Meeple) => {
-    meeple.actions
-      .callMethod(() => {
-        meeple.dispatch({
-          type: "consume",
-          property: MeepleInventoryItem.Fizzy,
-          quantity: 1,
-        });
-      })
-      .delay(DEFAULT_DELAY);
-  },
-});
+export const ifHighFizzyDrinkConsumeFizzyDrink =
+  (): ConditionSelfInventory => ({
+    description: "Consume a fizzy drink.",
+    type: ConditionType.Inventory,
+    property: MeepleInventoryItem.Fizzy,
+    operator: Operator.GreaterThanOrEqual,
+    quantity: 2,
+    action: (meeple: Meeple) => {
+      meeple.actions
+        .callMethod(() => {
+          meeple.dispatch({
+            type: "consume",
+            property: MeepleInventoryItem.Fizzy,
+            quantity: 1,
+          });
+        })
+        .delay(DEFAULT_DELAY);
+    },
+  });
 
 /// If ore is less than 100 then generate ore
 export const ifLowOreGenerateOre = (): ConditionSelfInventory => ({
@@ -157,11 +160,11 @@ export const ifLowOreGenerateOre = (): ConditionSelfInventory => ({
 
 /// turn ore into money
 export const ifOreTurnIntoFizzy = (): ConditionSelfInventory => ({
-  description: "Convert 1 ore into 2 fizzy drinks.",
+  description: "Convert 1 ore into 10 fizzy drinks and 10 money.",
   type: ConditionType.Inventory,
   property: MeepleInventoryItem.Minirals,
   operator: Operator.GreaterThanOrEqual,
-  quantity: 1,
+  quantity: 2,
   action: (meeple: Meeple) => {
     meeple.actions
       .callMethod(() => {
@@ -170,7 +173,22 @@ export const ifOreTurnIntoFizzy = (): ConditionSelfInventory => ({
           fromProperty: MeepleInventoryItem.Minirals,
           toProperty: MeepleInventoryItem.Fizzy,
           fromQuantity: 1,
-          toQuantity: 2,
+          toQuantity:
+            TRANSMUTATION_RATIOS[MeepleInventoryItem.Minirals][
+              MeepleInventoryItem.Fizzy
+            ],
+        });
+      })
+      .callMethod(() => {
+        meeple.dispatch({
+          type: "transmutation",
+          fromProperty: MeepleInventoryItem.Minirals,
+          toProperty: MeepleInventoryItem.Money,
+          fromQuantity: 1,
+          toQuantity:
+            TRANSMUTATION_RATIOS[MeepleInventoryItem.Minirals][
+              MeepleInventoryItem.Money
+            ],
         });
       })
       .delay(DEFAULT_DELAY);
@@ -210,6 +228,7 @@ export const ifLowFizzyDrinkBuyFizzyDrink = (
           target: spaceStore,
           property: MeepleInventoryItem.Fizzy,
           quantity: 1,
+          price: 1,
         });
       })
       .delay(DEFAULT_DELAY);
@@ -251,6 +270,7 @@ export const ifHighFizzyDrinkRestockBar = (): ConditionSelfInventory => ({
           target: bar,
           property: MeepleInventoryItem.Fizzy,
           quantity: 1,
+          price: 2,
         });
       })
       .delay(DEFAULT_DELAY);

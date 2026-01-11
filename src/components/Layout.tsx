@@ -1,23 +1,41 @@
-import { Outlet, useParams } from "react-router-dom";
+import { Link, Outlet, useLocation, useParams } from "react-router-dom";
 import { IconBrandGithub } from "@tabler/icons-react";
 import { Counts } from "./Counts";
+import { CameraControlIndicator } from "./CameraControlIndicator";
 import { useGame } from "../Game/useGame";
 import { useEffect } from "react";
 import { MeepleRoles } from "../types";
 import { MeepleInventoryItem } from "../types";
+import cx from "classnames";
 
 export const Layout = () => {
-  const { hasStarted, meeples, setFilterBy, filterBy, lockCameraToMeeple } =
-    useGame();
+  const {
+    hasStarted,
+    meeples,
+    setFilterBy,
+    filterBy,
+    setCameraControl,
+    cameraControl,
+    selectedMeeple,
+    setSelectedMeeple,
+  } = useGame();
 
   const { meepleId } = useParams();
-  const selectedMeeple = meeples.find(
-    (meeple) => meeple.id.toString() === meepleId
-  );
+  const location = useLocation();
+  
+  useEffect(() => {
+    const selectedMeeple = meeples.find(
+      (meeple) => meeple.id.toString() === meepleId
+    );
+
+    setSelectedMeeple(selectedMeeple || null);
+  }, [meepleId]);
 
   useEffect(() => {
-    if (selectedMeeple) {
-      lockCameraToMeeple(selectedMeeple);
+    if (!!selectedMeeple) {
+      setCameraControl("meeple");
+    } else {
+      setCameraControl("player");
     }
   }, [selectedMeeple]);
 
@@ -67,11 +85,39 @@ export const Layout = () => {
           <p className="text-sm text-gray-500">A space simulation</p>
         </div>
         <div className="hidden md:block p-2">
-          <Counts roleEntries={roleEntries} inventoryEntries={inventoryEntries} />
+          <Counts
+            roleEntries={roleEntries}
+            inventoryEntries={inventoryEntries}
+          />
         </div>
       </header>
       <main className="flex h-full">
         <div className="hidden md:block w-sm h-full">
+          <div className="p-2 flex gap-2 justify-between">
+            <div role="tablist" className="tabs tabs-box">
+              <Link
+                role="tab"
+                className={cx("tab", {
+                  // main route /
+                  "tab-active": location.pathname === "/",
+                })}
+                to="/"
+              >
+                Meeples
+              </Link>
+              <Link
+                role="tab"
+                className={cx("tab", {
+                  // docs route /docs
+                  "tab-active": location.pathname === "/instructions",
+                })}
+                to="/instructions"
+              >
+                Help
+              </Link>
+            </div>
+            <CameraControlIndicator cameraControl={cameraControl} />
+          </div>
           <Outlet
             context={{
               selectedMeeple,

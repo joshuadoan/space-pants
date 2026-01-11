@@ -32,7 +32,7 @@ export const MeepleListItem = ({ meeple }: { meeple: Meeple }) => {
             {meeple.roleId}
           </span>
         </div>
-        <StateType state={meeple.state} />
+        <StateType stateType={meeple.state.type} />
         <div className="text-xs uppercase font-semibold opacity-60 flex items-center gap-1">
           <IconComponent icon="position" size={12} title="Position" />
           {meeple.pos.x.toFixed(2)}, {meeple.pos.y.toFixed(2)}

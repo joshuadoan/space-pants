@@ -29,6 +29,8 @@ import {
   MAX_SHIP_DEFAULT_SPEED,
   DEFAULT_INVENTORY,
 } from "../consts";
+import { keyboardControls } from "../utils/keyboardControls";
+import { useParams } from "react-router-dom";
 
 type GameActionStart = {
   type: "start-game";
@@ -36,6 +38,21 @@ type GameActionStart = {
 type GameActionUpdate = {
   type: "update-game";
   meeples: Meeple[];
+};
+
+type GameActionLockCameraToMeeple = {
+  type: "lock-camera-to-meeple";
+  meeple: Meeple;
+};
+
+type GameActionSetSelectedMeeple = {
+  type: "set-selected-meeple";
+  meeple: Meeple | null;
+};
+
+type GameActionSetCameraConrtol = {
+  type: "set-camera-control";
+  control: "player" | "meeple" | null;
 };
 
 type GameActionSetFilterBy = {
@@ -46,55 +63,33 @@ type GameActionSetFilterBy = {
 type GameAction =
   | GameActionStart
   | GameActionUpdate
-  | GameActionSetFilterBy;
+  | GameActionSetFilterBy
+  | GameActionLockCameraToMeeple
+  | GameActionSetCameraConrtol
+  | GameActionSetSelectedMeeple;
 
 type GameContextValue = {
   hasStarted: boolean;
   meeples: Meeple[];
   filterBy: MeepleRoles | null;
   setFilterBy: (role: MeepleRoles | null) => void;
-  lockCameraToMeeple: (meeple: Meeple) => void;
+  cameraControl: "player" | "meeple" | null;
+  setCameraControl: (control: "player" | "meeple" | null) => void;
+  selectedMeeple: Meeple | null;
+  setSelectedMeeple: (meeple: Meeple | null) => void;
 };
 
 const initialState = {
   hasStarted: false,
   meeples: [],
   filterBy: MeepleRoles.Miner,
+  cameraControl: null,
+  selectedMeeple: null,
 };
 
 // ============================================================================
 // Reducer
 // ============================================================================
-
-/**
- * Reducer function to manage game state updates.
- * Handles all game-related state changes in a predictable way.
- */
-function gameReducer(
-  state: GameContextValue,
-  action: GameAction
-): GameContextValue {
-  switch (action.type) {
-    case "start-game":
-      return {
-        ...state,
-        hasStarted: true,
-      };
-    case "update-game":
-      return {
-        ...state,
-        meeples: action.meeples,
-      };
-    case "set-filter-by":
-      return {
-        ...state,
-        filterBy: action.role,
-      };
-
-    default:
-      return state;
-  }
-}
 
 // ============================================================================
 // Context Creation
@@ -107,16 +102,72 @@ function gameReducer(
 const GameContext = createContext<GameContextValue | undefined>(undefined);
 
 export function GameProvider({ children }: { children: ReactNode }) {
-  const [gameState, dispatch] = useReducer(gameReducer, {
-    ...initialState,
-    setFilterBy: (role: MeepleRoles | null) => {
-      dispatch({ type: "set-filter-by", role: role });
+  const { meepleId } = useParams();
+  const [gameState, dispatch] = useReducer(
+    function gameReducer(
+      state: GameContextValue,
+      action: GameAction
+    ): GameContextValue {
+      switch (action.type) {
+        case "start-game":
+          return {
+            ...state,
+            hasStarted: true,
+          };
+        case "update-game":
+          return {
+            ...state,
+            meeples: action.meeples,
+          };
+        case "set-camera-control":
+          return {
+            ...state,
+            cameraControl: action.control,
+          };
+        case "set-filter-by":
+          return {
+            ...state,
+            filterBy: action.role,
+          };
+
+        case "set-selected-meeple":
+          return {
+            ...state,
+            selectedMeeple: action.meeple,
+          };
+
+        default:
+          return state;
+      }
     },
-    lockCameraToMeeple: (meeple: Meeple) => {
-      gameRef.current?.currentScene.camera.strategy.lockToActor(meeple);
-    },
-  });
+    {
+      ...initialState,
+      setFilterBy: (role: MeepleRoles | null) => {
+        dispatch({ type: "set-filter-by", role: role });
+      },
+      setCameraControl: (control: "player" | "meeple" | null) => {
+        dispatch({ type: "set-camera-control", control: control });
+      },
+      setSelectedMeeple: (meeple: Meeple | null) => {
+        dispatch({ type: "set-selected-meeple", meeple: meeple });
+      },
+    }
+  );
   const gameRef = useRef<Game | null>(null);
+
+  useEffect(() => {
+    if (gameRef.current) {
+      if (gameState.cameraControl === "player") {
+        gameRef.current.currentScene.camera.clearAllStrategies();
+        keyboardControls(gameRef.current);
+      }
+      if (gameState.cameraControl === "meeple" && gameState.selectedMeeple) {
+        gameRef.current.currentScene.camera.strategy.lockToActor(
+          gameState.selectedMeeple
+        );
+      }
+    }
+  }, [gameState.cameraControl]);
 
   useEffect(() => {
     const game = new Game(GAME_WIDTH, GAME_HEIGHT);
