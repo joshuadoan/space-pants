@@ -15,7 +15,14 @@ export const Detail = () => {
   );
 
   if (!selectedMeeple) {
-    return <div className="flex flex-col h-full w-xs p-4">Meeple not found. <Link to="/" className="link link-hover">Go back to main page</Link></div>;
+    return (
+      <div className="flex flex-col h-full w-xs p-4">
+        Meeple not found.{" "}
+        <Link to="/" className="link link-hover">
+          Go back to main page
+        </Link>
+      </div>
+    );
   }
 
   const orderedActionsHistory = [...selectedMeeple.actionsHistory].reverse();
@@ -56,11 +63,18 @@ export const Detail = () => {
             </h3>
             <div className="space-y-2">
               {selectedMeeple.conditions.map((condition, index) => {
+                // isFirstMetCondition is true for the first condition that is met
+                const isActuallyMet = selectedMeeple.evaluateCondition(condition);
+                const isFirstMetCondition = isActuallyMet && 
+                  selectedMeeple.conditions
+                    .slice(0, index)
+                    .every(c => !selectedMeeple.evaluateCondition(c));
+                
                 return (
                   <ConditionsDisplay
                     key={index}
                     condition={condition}
-                    isMet={selectedMeeple.evaluateCondition(condition)}
+                    isMet={isFirstMetCondition}
                   />
                 );
               })}
