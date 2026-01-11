@@ -9,8 +9,6 @@ export const Counts = ({
   inventoryEntries: [MeepleInventoryItem, number][];
 }) => {
 
-
-
   return (
     <div className="flex flex-col gap-1 border border-secondary rounded-lg p-2">
       {/* Roles Section */}

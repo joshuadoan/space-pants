@@ -17,7 +17,7 @@ export const Main = () => {
 
   // List view - when no meeple is selected
   return (
-    <div className="h-full flex flex-col w-full">
+    <div className="flex flex-col w-full h-full min-h-0">
       <select
         defaultValue={filterBy || "Pick a Role"}
         className="select select-info"
@@ -35,7 +35,7 @@ export const Main = () => {
           </option>
         ))}
       </select>
-      <ul className="list bg-base-100 rounded-box shadow-md w-xs h-full overflow-y-auto">
+      <ul className="list bg-base-100 rounded-box shadow-md w-xs overflow-y-auto flex-1">
         {meeples
           .filter((meeple) => {
             if (filterBy) {

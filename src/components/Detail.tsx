@@ -3,7 +3,7 @@ import { MeepleInventoryItem } from "../types";
 import { MeepleInventoryItemDisplay } from "./MeepleInventoryItemDisplay";
 import { ConditionsDisplay } from "./ConditionsDisplay";
 import { HistoryItem } from "./HistoryItem";
-import { useParams } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 import { useGame } from "../Game/useGame";
 import { MeepleInfo } from "./MeepleInfo";
 
@@ -15,13 +15,19 @@ export const Detail = () => {
   );
 
   if (!selectedMeeple) {
-    return <div>Meeple not found.</div>;
+    return <div className="flex flex-col h-full w-xs p-4">Meeple not found. <Link to="/" className="link link-hover">Go back to main page</Link></div>;
   }
 
   const orderedActionsHistory = [...selectedMeeple.actionsHistory].reverse();
   return (
     <div className="flex flex-col h-full w-xs">
-      <MeepleInfo selectedMeeple={selectedMeeple} />
+      <MeepleInfo
+        roleId={selectedMeeple.roleId}
+        name={selectedMeeple.name}
+        stateType={selectedMeeple.state.type}
+        pos={selectedMeeple.pos}
+        id={selectedMeeple.id.toString()}
+      />
       <div className="p-4 flex flex-col gap-1">
         <h3 className="text-sm font-semibold uppercase opacity-60 mb-2">
           Inventory
