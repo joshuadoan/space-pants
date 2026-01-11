@@ -1,4 +1,4 @@
-import { IconCamera, IconUser, IconUsers } from "@tabler/icons-react";
+import { IconCamera, IconArrowUp, IconArrowDown, IconArrowLeft, IconArrowRight } from "@tabler/icons-react";
 
 interface CameraControlIndicatorProps {
   cameraControl: "player" | "meeple" | null;
@@ -18,13 +18,22 @@ export const CameraControlIndicator = ({
             : "bg-gray-500/20 text-gray-400 border border-gray-500/50"
         }`}
       >
-        {cameraControl === "player" ? (
+        <>
           <IconCamera size={16} className="animate-pulse" />
-        ) : cameraControl === "meeple" ? (
-          <IconUser size={16} className="animate-pulse" />
-        ) : (
-          <IconUsers size={16} />
-        )}
+          <span className="flex items-center gap-1">
+            {cameraControl === "player" ? (
+              <>
+                <span className="mr-1">Keyboard controls:</span>
+                <IconArrowUp size={16} />
+                <IconArrowDown size={16} />
+                <IconArrowLeft size={16} />
+                <IconArrowRight size={16} />
+              </>
+            ) : cameraControl === "meeple" ? (
+              "Following the selected meeple"
+            ) : null}
+          </span>
+        </>
       </div>
     </div>
   );
