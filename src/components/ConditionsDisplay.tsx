@@ -1,4 +1,24 @@
-import type { Condition } from "../types";
+import type { Condition, Operator } from "../types";
+import { MeepleInventoryItemDisplay } from "./MeepleInventoryItemDisplay";
+
+const formatOperator = (operator: Operator): string => {
+  switch (operator) {
+    case "equal":
+      return "=";
+    case "not-equal":
+      return "≠";
+    case "less-than":
+      return "<";
+    case "greater-than":
+      return ">";
+    case "less-than-or-equal":
+      return "≤";
+    case "greater-than-or-equal":
+      return "≥";
+    default:
+      return operator;
+  }
+};
 
 export const ConditionsDisplay = ({
   condition,
@@ -10,7 +30,7 @@ export const ConditionsDisplay = ({
   return (
     <div
       key={condition.description}
-      className={`p-3 bg-base-200 rounded-lg border-l-4 flex items-center gap-2 ${
+      className={`p-3 bg-base-200 rounded-lg border-l-4 flex flex-col gap-2 ${
         isMet ? "border-green-400" : "border-gray-400"
       }`}
     >
@@ -23,6 +43,16 @@ export const ConditionsDisplay = ({
         <span className={`text-sm ${isMet ? "font-medium" : "opacity-70"}`}>
           {condition.description}
         </span>
+      </div>
+      <div className="flex items-center gap-2 pl-4 text-xs opacity-60">
+        <MeepleInventoryItemDisplay item={condition.property} />
+        <span className="font-mono">{formatOperator(condition.operator)}</span>
+        <span className="font-mono">{condition.quantity}</span>
+        {condition.target && (
+          <span className="ml-1 opacity-50">
+            ({condition.target.name || condition.target.roleId}'s inventory)
+          </span>
+        )}
       </div>
     </div>
   );

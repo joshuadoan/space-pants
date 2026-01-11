@@ -68,7 +68,7 @@ export const Layout = () => {
       <div className="block md:hidden bg-yellow-400 text-black text-center py-2 px-4 font-semibold z-50">
         desktop is better
       </div>
-      <header className="p-2 flex justify-between items-center">
+      <header className="flex justify-between items-center">
         <div>
           <div className="flex items-center gap-3">
             <a
@@ -93,7 +93,8 @@ export const Layout = () => {
       </header>
       <main className="flex flex-1 min-h-0">
         <div className="hidden md:flex md:flex-col w-sm min-h-0">
-          <div className="p-2 flex gap-2 justify-between">
+          <div className="flex flex-col gap-2 justify-between">
+            <CameraControlIndicator cameraControl={cameraControl} />
             <div role="tablist" className="tabs tabs-box">
               <Link
                 role="tab"
@@ -125,7 +126,6 @@ export const Layout = () => {
                 Help
               </Link>
             </div>
-            <CameraControlIndicator cameraControl={cameraControl} />
           </div>
           <Outlet
             context={{
