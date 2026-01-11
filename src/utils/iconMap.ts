@@ -20,6 +20,12 @@ import {
   IconShoppingCart,
   IconSparkles,
 } from "@tabler/icons-react";
+import type {
+  MeepleRoles,
+  MeepleInventoryItem,
+  MeepleAction,
+  MeepleStateNames,
+} from "../types";
 
 // ============================================================================
 // Icon Component Type
@@ -30,10 +36,35 @@ export type IconComponent = ComponentType<{
   className?: string;
 }>;
 
-const IconMap: Record<
-  string,
-  IconComponent
-> = {
+// ============================================================================
+// Type-safe Icon Keys
+// ============================================================================
+
+// Extract action types from MeepleAction union
+type ActionType = MeepleAction["type"];
+
+// Extract enum values as string literal types
+type MeepleRolesValue = `${MeepleRoles}`;
+type MeepleInventoryItemValue = `${MeepleInventoryItem}`;
+type MeepleStateNamesValue = `${MeepleStateNames}`;
+
+// Union of all required icon keys
+type RequiredIconKeys =
+  | MeepleRolesValue // All role enum values
+  | MeepleInventoryItemValue // All inventory item enum values
+  | ActionType // All action type strings
+  | MeepleStateNamesValue // All state enum values
+  | "arrow-left" // Navigation
+  | "position" // Position indicator
+  | "trader" // Legacy/alternative role identifier
+  | "stuff"; // Legacy inventory item
+
+// Type that requires all keys to be present
+// Using Record ensures all RequiredIconKeys must have a value
+type IconMapType = Record<RequiredIconKeys, IconComponent>;
+
+// This will error if any RequiredIconKeys are missing from the object
+const IconMap: IconMapType = {
   // Roles
   "miner": IconHammer,
   "trader": IconShoppingCart,
@@ -71,7 +102,7 @@ const IconMap: Record<
   "transmuting": IconArrowsExchange,
   "position": IconMapPin,
   "minirals": IconDiamond,
-} as const;
+};
 
 // ============================================================================
 // Icon Component Wrapper
