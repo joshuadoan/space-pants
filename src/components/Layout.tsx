@@ -95,7 +95,7 @@ export const Layout = () => {
         <div className="hidden md:flex md:flex-col w-sm min-h-0">
           <div className="flex flex-col gap-2 justify-between">
             <CameraControlIndicator cameraControl={cameraControl} />
-            <div role="tablist" className="tabs tabs-box">
+            <div role="tablist" className="tabs tabs-box mb-2">
               <Link
                 role="tab"
                 className={cx("tab", {

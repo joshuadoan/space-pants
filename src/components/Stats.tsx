@@ -1,8 +1,9 @@
-import { useOutletContext } from "react-router-dom";
+import { useOutletContext, Link } from "react-router-dom";
 import { useGame } from "../Game/useGame";
 import { MeepleRoles, MeepleInventoryItem, MeepleStateNames } from "../types";
 import type { Meeple } from "../Game/Meeple";
 import { useMemo } from "react";
+import { ProductsChart } from "./ProductsChart";
 
 type StatsProps = {
   meeples: Meeple[];
@@ -65,6 +66,23 @@ export const Stats = () => {
           b.inventory[MeepleInventoryItem.Money] -
           a.inventory[MeepleInventoryItem.Money]
       )[0];
+
+    // Richest by role
+    const richestByRole = Object.values(MeepleRoles)
+      .map((role) => {
+        const roleMeeples = [...meeples]
+          .filter((m) => m.roleId === role)
+          .sort(
+            (a, b) =>
+              b.inventory[MeepleInventoryItem.Money] -
+              a.inventory[MeepleInventoryItem.Money]
+          );
+        return {
+          role,
+          richest: roleMeeples.length > 0 ? roleMeeples[0] : null,
+        };
+      })
+      .filter(({ richest }) => richest !== null);
 
     // Action stats
     const totalActions = meeples.reduce(
@@ -137,6 +155,7 @@ export const Stats = () => {
       mostActiveMeeple,
       fastestMeeple,
       richestMiner,
+      richestByRole,
       totalActions,
       averageActionsPerMeeple,
       actionTypeCounts,
@@ -171,31 +190,9 @@ export const Stats = () => {
   }
 
   return (
-    <div className="h-full overflow-y-auto p-4 space-y-6 w-xs">
-      <div>
-        <h2 className="text-2xl font-bold mb-4">📊 Live Game Stats</h2>
-      </div>
-
-      {/* Population Overview */}
-      <div className="card bg-base-200 shadow-md">
-        <div className="card-body">
-          <h3 className="card-title text-lg">👥 Population</h3>
-          <div className="grid grid-cols-2 gap-2 mt-2">
-            {stats.populationByRole.map(({ role, count }) => (
-              <div key={role} className="flex justify-between">
-                <span className="capitalize">{role.replace("-", " ")}:</span>
-                <span className="font-semibold">{count}</span>
-              </div>
-            ))}
-          </div>
-          <div className="mt-2 pt-2 border-t border-base-300">
-            <div className="flex justify-between font-bold">
-              <span>Total Meeples:</span>
-              <span>{stats.totalMeeples}</span>
-            </div>
-          </div>
-        </div>
-      </div>
+    <div className="h-full overflow-y-auto space-y-6 w-xs">
+      {/* Products Over Time Chart */}
+      <ProductsChart meeples={meeples} />
 
       {/* Economic Overview */}
       <div className="card bg-base-200 shadow-md">
@@ -233,6 +230,27 @@ export const Stats = () => {
             <div className="flex justify-between">
               <span>Meeples with Fizzy:</span>
               <span>{stats.meeplesWithFizzy}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Population Overview */}
+      <div className="card bg-base-200 shadow-md">
+        <div className="card-body">
+          <h3 className="card-title text-lg">👥 Population</h3>
+          <div className="grid grid-cols-2 gap-2 mt-2">
+            {stats.populationByRole.map(({ role, count }) => (
+              <div key={role} className="flex justify-between">
+                <span className="capitalize">{role.replace("-", " ")}:</span>
+                <span className="font-semibold">{count}</span>
+              </div>
+            ))}
+          </div>
+          <div className="mt-2 pt-2 border-t border-base-300">
+            <div className="flex justify-between font-bold">
+              <span>Total Meeples:</span>
+              <span>{stats.totalMeeples}</span>
             </div>
           </div>
         </div>
@@ -277,28 +295,31 @@ export const Stats = () => {
             {stats.richestMeeple && (
               <div>
                 <div className="text-sm text-gray-400">Richest Meeple</div>
-                <div className="font-semibold">{stats.richestMeeple.name}</div>
+                <div className="font-semibold">
+                  <Link
+                    to={`/${stats.richestMeeple.id}`}
+                    className="link link-hover"
+                  >
+                    {stats.richestMeeple.name}
+                  </Link>
+                </div>
                 <div className="text-sm">
                   💰 {stats.richestMeeple.inventory[MeepleInventoryItem.Money].toLocaleString()}{" "}
                   ({stats.richestMeeple.roleId})
                 </div>
               </div>
             )}
-            {stats.mostActiveMeeple && (
-              <div>
-                <div className="text-sm text-gray-400">Most Active</div>
-                <div className="font-semibold">
-                  {stats.mostActiveMeeple.name}
-                </div>
-                <div className="text-sm">
-                  📝 {stats.mostActiveMeeple.actionsHistory.length} actions
-                </div>
-              </div>
-            )}
             {stats.fastestMeeple && (
               <div>
                 <div className="text-sm text-gray-400">Fastest Meeple</div>
-                <div className="font-semibold">{stats.fastestMeeple.name}</div>
+                <div className="font-semibold">
+                  <Link
+                    to={`/${stats.fastestMeeple.id}`}
+                    className="link link-hover"
+                  >
+                    {stats.fastestMeeple.name}
+                  </Link>
+                </div>
                 <div className="text-sm">
                   🚀 {stats.fastestMeeple.speed.toFixed(1)} speed
                 </div>
@@ -307,7 +328,14 @@ export const Stats = () => {
             {stats.richestMiner && (
               <div>
                 <div className="text-sm text-gray-400">Richest Miner</div>
-                <div className="font-semibold">{stats.richestMiner.name}</div>
+                <div className="font-semibold">
+                  <Link
+                    to={`/${stats.richestMiner.id}`}
+                    className="link link-hover"
+                  >
+                    {stats.richestMiner.name}
+                  </Link>
+                </div>
                 <div className="text-sm">
                   💰{" "}
                   {stats.richestMiner.inventory[
@@ -316,43 +344,32 @@ export const Stats = () => {
                 </div>
               </div>
             )}
-          </div>
-        </div>
-      </div>
-
-      {/* Action Statistics */}
-      <div className="card bg-base-200 shadow-md">
-        <div className="card-body">
-          <h3 className="card-title text-lg">📈 Action Statistics</h3>
-          <div className="space-y-2 mt-2">
-            <div className="flex justify-between">
-              <span>Total Actions:</span>
-              <span className="font-semibold">
-                {stats.totalActions.toLocaleString()}
-              </span>
-            </div>
-            <div className="flex justify-between">
-              <span>Average per Meeple:</span>
-              <span className="font-semibold">
-                {stats.averageActionsPerMeeple.toFixed(1)}
-              </span>
-            </div>
-          </div>
-          {Object.keys(stats.actionTypeCounts).length > 0 && (
-            <div className="mt-4 pt-2 border-t border-base-300">
-              <div className="text-sm font-semibold mb-2">Action Breakdown:</div>
-              <div className="space-y-1">
-                {Object.entries(stats.actionTypeCounts)
-                  .sort(([, a], [, b]) => b - a)
-                  .map(([actionType, count]) => (
-                    <div key={actionType} className="flex justify-between text-sm">
-                      <span className="capitalize">{actionType}:</span>
-                      <span>{count.toLocaleString()}</span>
+            {stats.richestByRole
+              .filter(({ role }) => role !== MeepleRoles.Miner)
+              .map(({ role, richest }) => (
+                richest && (
+                  <div key={role}>
+                    <div className="text-sm text-gray-400">
+                      Richest {role.replace("-", " ").split(" ").map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(" ")}
                     </div>
-                  ))}
-              </div>
-            </div>
-          )}
+                    <div className="font-semibold">
+                      <Link
+                        to={`/${richest.id}`}
+                        className="link link-hover"
+                      >
+                        {richest.name}
+                      </Link>
+                    </div>
+                    <div className="text-sm">
+                      💰{" "}
+                      {richest.inventory[
+                        MeepleInventoryItem.Money
+                      ].toLocaleString()}
+                    </div>
+                  </div>
+                )
+              ))}
+          </div>
         </div>
       </div>
     </div>
