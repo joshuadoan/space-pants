@@ -10,7 +10,7 @@ export const GAME_HEIGHT = 2500;
 
 export const COUNTS = {
   MINER: 17,
-  BARTENDER: 3,
+  BARTENDER: 7,
   ASTEROID: 6,
   SPACE_STORE: 4,
   SPACE_BAR: 1,
@@ -32,15 +32,15 @@ export const DEFAULT_PRICE = 1;
 // e.g. 1 minirals-> 10 fizzy drinks and 10 money
 export const TRANSMUTATION_RATIOS = {
   [MeepleInventoryItem.Minirals]: {
-    [MeepleInventoryItem.Fizzy]: 10,
-    [MeepleInventoryItem.Money]: 10,
+    [MeepleInventoryItem.Fizzy]: 1,
+    [MeepleInventoryItem.Money]: 1,
   },
 };
 
 export const SELL_PRICES = {
-  [MeepleInventoryItem.Minirals]: 2,
+  [MeepleInventoryItem.Minirals]: 1,
 };
 
 export const BUY_PRICES = {
-  [MeepleInventoryItem.Fizzy]: 2,
+  [MeepleInventoryItem.Fizzy]: 1,
 };

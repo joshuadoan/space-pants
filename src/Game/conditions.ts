@@ -85,7 +85,7 @@ export const ifHasMoneyBuyFizzyDrink = (): ConditionSelfInventory => ({
   type: ConditionType.Inventory,
   property: MeepleInventoryItem.Money,
   operator: Operator.GreaterThanOrEqual,
-  quantity: 2,
+  quantity: 1,
   action: (meeple: Meeple, game: Game) => {
     const target = game.getRandomMeepleByRole(MeepleRoles.SpaceBar);
     meeple.actions
@@ -124,7 +124,7 @@ export const ifHighFizzyDrinkConsumeFizzyDrink =
     type: ConditionType.Inventory,
     property: MeepleInventoryItem.Fizzy,
     operator: Operator.GreaterThanOrEqual,
-    quantity: 2,
+    quantity: 1,
     action: (meeple: Meeple) => {
       meeple.actions
         .callMethod(() => {
