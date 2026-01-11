@@ -1,4 +1,4 @@
-import type { MeepleState } from "../types";
+
 import { MeepleStateNames } from "../types";
 
 const getStateColor = (stateType: MeepleStateNames): string => {

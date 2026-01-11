@@ -3,6 +3,7 @@ import { Layout } from "./components/Layout";
 import { Main } from "./components/Main";
 import { Detail } from "./components/Detail";
 import { Instructions } from "./components/Instructions";
+import { Stats } from "./components/Stats";
 
 function App() {
   return (
@@ -12,6 +13,7 @@ function App() {
           <Route index element={<Main />} />
           <Route path="/:meepleId" element={<Detail />} />
           <Route path="/instructions" element={<Instructions />} />
+          <Route path="/stats" element={<Stats />} />
         </Route>
       </Routes>
     </div>

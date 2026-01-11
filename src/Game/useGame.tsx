@@ -30,7 +30,6 @@ import {
   DEFAULT_INVENTORY,
 } from "../consts";
 import { keyboardControls } from "../utils/keyboardControls";
-import { useParams } from "react-router-dom";
 
 type GameActionStart = {
   type: "start-game";
@@ -102,7 +101,6 @@ const initialState = {
 const GameContext = createContext<GameContextValue | undefined>(undefined);
 
 export function GameProvider({ children }: { children: ReactNode }) {
-  const { meepleId } = useParams();
   const [gameState, dispatch] = useReducer(
     function gameReducer(
       state: GameContextValue,

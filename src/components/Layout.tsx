@@ -22,7 +22,7 @@ export const Layout = () => {
 
   const { meepleId } = useParams();
   const location = useLocation();
-  
+
   useEffect(() => {
     const selectedMeeple = meeples.find(
       (meeple) => meeple.id.toString() === meepleId
@@ -91,8 +91,8 @@ export const Layout = () => {
           />
         </div>
       </header>
-      <main className="flex h-full">
-        <div className="hidden md:block w-sm h-full">
+      <main className="flex flex-1 min-h-0">
+        <div className="hidden md:flex md:flex-col w-sm min-h-0">
           <div className="p-2 flex gap-2 justify-between">
             <div role="tablist" className="tabs tabs-box">
               <Link
@@ -104,6 +104,15 @@ export const Layout = () => {
                 to="/"
               >
                 Meeples
+              </Link>
+              <Link
+                role="tab"
+                className={cx("tab", {
+                  "tab-active": location.pathname === "/stats",
+                })}
+                to="/stats"
+              >
+                Stats
               </Link>
               <Link
                 role="tab"
