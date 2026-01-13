@@ -22,6 +22,8 @@ import {
   ifHighFizzyDrinkRestockBar,
   ifHasMoneyBuyFizzyDrink,
   ifHighFizzyDrinkConsumeFizzyDrink,
+  patrolForRole,
+  // ifTargetInRadarChaseTarget,
 } from "./conditions";
 import { generateSpaceName } from "../utils/generateSpaceName";
 import {
@@ -81,7 +83,7 @@ type GameContextValue = {
 const initialState = {
   hasStarted: false,
   meeples: [],
-  filterBy: MeepleRoles.Miner,
+  filterBy: MeepleRoles.PirateShip,
   cameraControl: null,
   selectedMeeple: null,
 };
@@ -322,6 +324,61 @@ export function GameProvider({ children }: { children: ReactNode }) {
       Bartender.name = generateSpaceName();
       Bartender.home = game.getRandomMeepleByRole(MeepleRoles.SpaceBar);
       game.currentScene.add(Bartender);
+    }
+
+    for (let i = 0; i < COUNTS.PIRATE_BASE; i++) {
+      const PirateBase = new Meeple({
+        width: 100,
+        height: 100,
+        roleId: MeepleRoles.PirateBase,
+        inventory: {
+          ...DEFAULT_INVENTORY,
+        },
+        conditions: [],
+      });
+
+      PirateBase.graphics.add(
+        createEntityGraphic(EntityGraphicStyle.SpaceStation)
+      );
+      PirateBase.pos = new Vector(
+        Math.random() * GAME_WIDTH,
+        Math.random() * GAME_HEIGHT
+      );
+
+      PirateBase.name = generateSpaceName();
+      PirateBase.conditions = [];
+      PirateBase.home = PirateBase;
+      game.currentScene.add(PirateBase);
+    }
+
+    for (let i = 0; i < COUNTS.PIRATE_SHIP; i++) {
+      const PirateShip = new Meeple({
+        width: 100,
+        height: 100,
+        roleId: MeepleRoles.PirateShip,
+        inventory: {
+          ...DEFAULT_INVENTORY,
+        },
+        conditions: [],
+      });
+
+      PirateShip.graphics.add(createEntityGraphic(EntityGraphicStyle.Pirate));
+      // random position wihtin the game width and height
+      PirateShip.pos = new Vector(
+        Math.random() * GAME_WIDTH,
+        Math.random() * GAME_HEIGHT
+      );
+
+      PirateShip.conditions = [
+        // ifTargetInRadarChaseTarget(MeepleRoles.Miner),
+        patrolForRole(MeepleRoles.Miner),
+      ];
+      PirateShip.speed =
+        Math.random() * (MAX_SHIP_DEFAULT_SPEED - MIN_SHIP_DEFAULT_SPEED) +
+        MIN_SHIP_DEFAULT_SPEED;
+      PirateShip.name = generateSpaceName();
+      PirateShip.home = game.getRandomMeepleByRole(MeepleRoles.PirateBase);
+      game.currentScene.add(PirateShip);
     }
 
     // zom out and center camera in the game

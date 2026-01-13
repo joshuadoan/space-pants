@@ -86,9 +86,9 @@ export const Detail = () => {
         </h3>
         <div className="">
           <AnimatePresence mode="popLayout">
-            {orderedActionsHistory.map((historyItem) => (
+            {orderedActionsHistory.map((historyItem, index) => (
               <HistoryItem
-                key={historyItem.timestamp}
+                key={historyItem.timestamp + index}
                 historyItem={historyItem}
               />
             ))}

@@ -198,5 +198,52 @@ export const HistoryItem = ({
           <div className="text-xs opacity-60 mt-1">{timeAgo}</div>
         </motion.div>
       );  
+    case "patrolling":
+      return (
+        <motion.div
+          {...animationProps}
+          className={`${baseClasses} border-pink-400`}
+        >
+          <div className="flex items-center gap-2 text-sm font-medium">
+            <IconComponent icon="patrolling" size={16} title="Patrolling" />
+            <span>
+              Patrolling for {historyItem.state.role}
+            </span>
+          </div>
+          <div className="text-xs opacity-60 mt-1">{timeAgo}</div>
+        </motion.div>
+      );
+    case "chasing":
+      return (
+        <motion.div
+          {...animationProps}
+          className={`${baseClasses} border-red-400`}
+        >
+          <div className="flex items-center gap-2 text-sm font-medium">
+            <IconComponent icon="chasing" size={16} title="Chasing" />
+            <span>
+              Chasing {historyItem.state.target.name} (
+              {historyItem.state.target.roleId})
+            </span>
+          </div>
+          <div className="text-xs opacity-60 mt-1">{timeAgo}</div>
+        </motion.div>
+      );
+    case "fleeing":
+      return (
+        <motion.div
+          {...animationProps}
+          className={`${baseClasses} border-orange-400`}
+        >
+          <div className="flex items-center gap-2 text-sm font-medium">
+            <IconComponent icon="fleeing" size={16} title="Fleeing" />
+            <span>
+              Fleeing from {historyItem.state.target.name} (
+              {historyItem.state.target.roleId})
+            </span>
+          </div>
+          <div className="text-xs opacity-60 mt-1">{timeAgo}</div>
+        </motion.div>
+      );
   }
 };

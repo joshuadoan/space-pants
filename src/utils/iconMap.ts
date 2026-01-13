@@ -10,12 +10,14 @@ import {
   IconClock,
   IconCurrencyDollar,
   IconDiamond,
+  IconEye,
   IconGlassFull,
   IconHammer,
   IconHome,
   IconMapPin,
   IconMeteor,
   IconRoute,
+  IconShip,
   IconShoppingBag,
   IconShoppingCart,
   IconSparkles,
@@ -73,6 +75,8 @@ const IconMap: IconMapType = {
   "space-bar": IconGlassFull,
   "space-apartment": IconHome,
   "bartender": IconChefHat,
+  "pirate-base":  IconHome,
+  "pirate-ship": IconShip,
   // Navigation
   "arrow-left": IconArrowLeft,
   // Inventory Items
@@ -89,6 +93,9 @@ const IconMap: IconMapType = {
   "sell": IconCash,
   "generate": IconSparkles,
   "consume": IconBottle,
+  "patrol-for-role": IconMapPin,
+  "chase": IconMapPin,
+  "flee": IconMapPin,
   // States
   "idle": IconClock,
   "traveling": IconRoute,
@@ -102,6 +109,10 @@ const IconMap: IconMapType = {
   "transmuting": IconArrowsExchange,
   "position": IconMapPin,
   "minirals": IconDiamond,
+  "patrolling": IconMapPin,
+  "chasing": IconMapPin,
+  "fleeing": IconMapPin,
+  "targeted": IconEye,
 };
 
 // ============================================================================

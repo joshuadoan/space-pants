@@ -1,0 +1,59 @@
+# Files to Update When Adding New Meeple States, Actions, or Inventory Items
+
+## When Adding a New Meeple State
+
+1. **`src/types.ts`**
+   - Add the new state name to the `MeepleStateNames` enum
+   - Create a new state type (e.g., `MeepleStateNewState`)
+   - Add the new state type to the `MeepleState` union type
+
+2. **`src/Game/Meeple.ts`**
+   - Add a case in the `dispatch()` method's switch statement to handle the new state
+
+3. **`src/components/StateType.tsx`**
+   - Add a case in the `getStateColor()` switch statement to assign a color badge for the new state
+
+4. **`src/components/HistoryItem.tsx`**
+   - Add a case in the switch statement to render the new state in the history display
+
+5. **`src/utils/iconMap.ts`**
+   - Add an icon mapping for the new state in the `IconMap` object
+
+## When Adding a New Meeple Action
+
+1. **`src/types.ts`**
+   - Create a new action type (e.g., `MeepleActionNewAction`)
+   - Add the new action type to the `MeepleAction` union type
+
+2. **`src/Game/Meeple.ts`**
+   - Add a case in the `dispatch()` method's switch statement to handle the new action
+   - Implement the action logic (if needed)
+
+3. **`src/utils/iconMap.ts`**
+   - Add an icon mapping for the new action in the `IconMap` object
+
+4. **`src/Game/conditions.ts`** (if applicable)
+   - Update condition actions to use the new action type if needed
+
+## When Adding a New Meeple Inventory Item
+
+1. **`src/types.ts`**
+   - Add the new item to the `MeepleInventoryItem` enum
+
+2. **`src/consts.ts`**
+   - Add the new item to `DEFAULT_INVENTORY` with a default value (usually 0)
+   - Add to `TRANSMUTATION_RATIOS` if the item can be transmuted from/to
+   - Add to `SELL_PRICES` if the item can be sold
+   - Add to `BUY_PRICES` if the item can be bought
+
+3. **`src/utils/iconMap.ts`**
+   - Add an icon mapping for the new inventory item in the `IconMap` object
+
+4. **`src/components/ProductsChart.tsx`** (if applicable)
+   - Add aggregation logic to track the new inventory item in charts
+
+5. **`src/components/Stats.tsx`** (if applicable)
+   - Add stats tracking for the new inventory item (counts, filtering, etc.)
+
+6. **`src/Game/conditions.ts`** (if applicable)
+   - Update conditions that reference inventory items to use the new item if needed

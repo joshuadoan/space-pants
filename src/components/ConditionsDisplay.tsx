@@ -1,5 +1,7 @@
 import type { Condition, Operator } from "../types";
+import { ConditionType } from "../types";
 import { MeepleInventoryItemDisplay } from "./MeepleInventoryItemDisplay";
+import { IconComponent } from "../utils/iconMap";
 
 const formatOperator = (operator: Operator): string => {
   switch (operator) {
@@ -45,12 +47,19 @@ export const ConditionsDisplay = ({
         </span>
       </div>
       <div className="flex items-center gap-2 pl-4 text-xs opacity-60">
-        <MeepleInventoryItemDisplay item={condition.property} />
+        {condition.type === ConditionType.Inventory ? (
+          <MeepleInventoryItemDisplay item={condition.property} />
+        ) : (
+          <div className="flex items-center gap-2">
+            <IconComponent icon={condition.role} size={16} title={condition.role} />
+            <span className="text-sm capitalize">{condition.role.replace("-", " ")}</span>
+          </div>
+        )}
         <span className="font-mono">{formatOperator(condition.operator)}</span>
         <span className="font-mono">{condition.quantity}</span>
         {condition.target && (
           <span className="ml-1 opacity-50">
-            ({condition.target.name || condition.target.roleId}'s inventory)
+            ({condition.target.name || condition.target.roleId}'s {condition.type === ConditionType.Inventory ? "inventory" : "radar"})
           </span>
         )}
       </div>

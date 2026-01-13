@@ -80,7 +80,9 @@ export const Layout = () => {
             >
               <IconBrandGithub size={24} />
             </a>
-            <h1 className="text-2xl font-bold">space-pants</h1>
+            <Link to="/">
+              <h1 className="text-2xl font-bold">space-pants</h1>
+            </Link>
           </div>
           <p className="text-sm text-gray-500">A space simulation</p>
         </div>
