@@ -8,11 +8,30 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added - 2026-01-13
+- **Pirates and Pirate Bases**: Added new hostile entities to the game
+  - **Pirate Bases**: Stationary space stations that serve as homes for pirate ships
+  - **Pirate Ships**: Mobile entities that patrol space looking for miners
+    - Use radar system to detect miners within 600 unit radius
+    - Automatically switch from patrolling to chasing when targets are detected
+    - Fire laser projectiles at chased targets that steal money (1 money per hit)
+    - Chases automatically end after 5 seconds if target isn't caught
+    - Variable speeds between 50-150 units
+- **Laser Projectile System**: New combat mechanic
+  - Pirates fire red laser projectiles that track moving targets
+  - Lasers automatically transfer money from target to shooter on hit
+  - Projectiles have 3 second lifetime and self-destruct on collision or timeout
+  - Refactored into separate `LaserProjectile` class for better code organization
+- **Radar System**: New detection mechanic for pirates
+  - Pirates can scan for specific entity types within a configurable radius
+  - Enables dynamic target detection and pursuit behavior
+- **Meeple Facing Logic**: Entities now face left or right based on movement direction
+- **Zoom Control**: Added UI slider to adjust camera zoom level
+- Enhanced keyboard controls for camera movement
+
+### Changed - 2026-01-13
+- Refactor layout and Counts component for cleaner UI
 - Update counts and adjust Counts component spacing
-- Add Meeple facing logic and transaction on hit
-- Update Meeple.ts
-- Add zoom control and improve Meeple behaviors
-- Add pirate roles, patrol/chase logic, and radar conditions
+- Improved camera control indicator display
 
 ### Changed - 2026-01-11
 - Adjust game economy and condition thresholds

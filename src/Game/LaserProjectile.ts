@@ -1,4 +1,4 @@
-import { Actor, Color, CollisionType } from "excalibur";
+import { Actor, Color, CollisionType, Rectangle } from "excalibur";
 import { MeepleInventoryItem } from "../types";
 import { Meeple } from "./Meeple";
 
