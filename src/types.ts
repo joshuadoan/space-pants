@@ -25,6 +25,12 @@ export type MeepleActionTravel = {
   target: Meeple;
 };
 
+// finish (goes to passed in state or idle by default)
+export type MeepleActionFinish = {
+  type: "finish";
+  state?: MeepleState;
+};
+
 // chase 
 export type MeepleActionChase = {
   type: "chase";
@@ -109,7 +115,8 @@ export type MeepleAction =
   | MeepleActionConsume
   | MeepleActionPatrolForRole
   | MeepleActionChase
-  | MeepleActionFlee;
+  | MeepleActionFlee
+  | MeepleActionFinish;
 
 export enum MeepleStateNames {
   Idle = "idle",
@@ -140,6 +147,7 @@ export type MeepleStateIdle = {
 export type MeepleStateChasing = {
   type: MeepleStateNames.Chasing;
   target: Meeple;
+  startTime: number; // when the chase started
 };
 
 export type MeepleStateTraveling = {

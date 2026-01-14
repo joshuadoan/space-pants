@@ -6,6 +6,7 @@ import {
   IconBottle,
   IconBox,
   IconCash,
+  IconCheck,
   IconChefHat,
   IconClock,
   IconCurrencyDollar,
@@ -113,6 +114,7 @@ const IconMap: IconMapType = {
   "chasing": IconMapPin,
   "fleeing": IconMapPin,
   "targeted": IconEye,
+  "finish": IconCheck,
 };
 
 // ============================================================================

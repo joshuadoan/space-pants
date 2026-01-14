@@ -18,6 +18,8 @@ export const Layout = () => {
     cameraControl,
     selectedMeeple,
     setSelectedMeeple,
+    zoomLevel,
+    setZoomLevel,
   } = useGame();
 
   const { meepleId } = useParams();
@@ -86,10 +88,19 @@ export const Layout = () => {
           </div>
           <p className="text-sm text-gray-500">A space simulation</p>
         </div>
-        <div className="hidden md:block p-2">
+        <div className="hidden md:flex p-2 items-center gap-2">
           <Counts
             roleEntries={roleEntries}
             inventoryEntries={inventoryEntries}
+          />
+          <input
+            type="range"
+            min={0}
+            max={1.5}
+            step={0.01}
+            defaultValue={zoomLevel}
+            className="range range-primary w-48"
+            onChange={(e) => setZoomLevel(Number(e.target.value))}
           />
         </div>
       </header>

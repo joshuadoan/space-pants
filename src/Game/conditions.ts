@@ -1,8 +1,4 @@
-import {
-  DEFAULT_DELAY,
-  SELL_PRICES,
-  TRANSMUTATION_RATIOS,
-} from "../consts";
+import { DEFAULT_DELAY, SELL_PRICES, TRANSMUTATION_RATIOS } from "../consts";
 import {
   ConditionType,
   Operator,
@@ -12,7 +8,7 @@ import {
 } from "../types";
 import type { Meeple } from "./Meeple";
 import type { Game } from "./Game";
-import type { ConditionSelfInventory } from "../types";
+import type { ConditionSelfInventory, ConditionSelfRadar } from "../types";
 
 export const ifNoMoneyMineOre = (): ConditionSelfInventory => ({
   description: "Travel to an asteroid field and mine ore.",
@@ -291,37 +287,15 @@ export function patrolForRole(role: MeepleRoles): ConditionSelfInventory {
     operator: Operator.LessThan,
     quantity: 1,
     action: (meeple: Meeple) => {
-      switch (meeple.state.type) {
-        case MeepleStateNames.Idle:
-          meeple.actions.callMethod(() => {
-            meeple.dispatch({
-              type: "patrol-for-role",
-              role: role,
-            });
-          });
-          break;
-        case MeepleStateNames.Patrolling:
-          const nearbyMeeples = meeple.useRadar({
-            meepleRoles: [role],
-            radius: 300,
-          });
-
-          if (nearbyMeeples.length > 0) {
-            meeple.dispatch({
-              type: "chase",
-              target: nearbyMeeples[0],
-              startTime: Date.now(),
-            });
-          }
-          break;
-        default:
-          break;
-      }
+      meeple.dispatch({
+        type: "patrol-for-role",
+        role: role,
+      });
     },
   };
 }
 
-// /// chase target if in radar
+/// chase target if in radar
 // export const ifTargetInRadarChaseTarget = (
 //   role: MeepleRoles
 // ): ConditionSelfRadar => ({

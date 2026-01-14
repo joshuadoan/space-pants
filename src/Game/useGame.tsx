@@ -56,6 +56,11 @@ type GameActionSetCameraConrtol = {
   control: "player" | "meeple" | null;
 };
 
+type GameActionSetZoomLevel = {
+  type: "set-zoom-level";
+  level: number;
+};
+
 type GameActionSetFilterBy = {
   type: "set-filter-by";
   role: MeepleRoles | null;
@@ -67,7 +72,8 @@ type GameAction =
   | GameActionSetFilterBy
   | GameActionLockCameraToMeeple
   | GameActionSetCameraConrtol
-  | GameActionSetSelectedMeeple;
+  | GameActionSetSelectedMeeple
+  | GameActionSetZoomLevel;
 
 type GameContextValue = {
   hasStarted: boolean;
@@ -78,6 +84,8 @@ type GameContextValue = {
   setCameraControl: (control: "player" | "meeple" | null) => void;
   selectedMeeple: Meeple | null;
   setSelectedMeeple: (meeple: Meeple | null) => void;
+  zoomLevel: number;
+  setZoomLevel: (level: number) => void;
 };
 
 const initialState = {
@@ -86,6 +94,7 @@ const initialState = {
   filterBy: MeepleRoles.PirateShip,
   cameraControl: null,
   selectedMeeple: null,
+  zoomLevel: 0.5,
 };
 
 // ============================================================================
@@ -136,6 +145,12 @@ export function GameProvider({ children }: { children: ReactNode }) {
             selectedMeeple: action.meeple,
           };
 
+        case "set-zoom-level":
+          return {
+            ...state,
+            zoomLevel: action.level,
+          };
+
         default:
           return state;
       }
@@ -151,9 +166,18 @@ export function GameProvider({ children }: { children: ReactNode }) {
       setSelectedMeeple: (meeple: Meeple | null) => {
         dispatch({ type: "set-selected-meeple", meeple: meeple });
       },
+      setZoomLevel: (level: number) => {
+        dispatch({ type: "set-zoom-level", level: level });
+      },
     }
   );
   const gameRef = useRef<Game | null>(null);
+
+  useEffect(() => {
+    if (gameRef.current) {
+      gameRef.current.currentScene.camera.zoom = gameState.zoomLevel;
+    }
+  }, [gameState.zoomLevel]);
 
   useEffect(() => {
     if (gameRef.current) {
@@ -387,7 +411,10 @@ export function GameProvider({ children }: { children: ReactNode }) {
 
     game.currentScene.add(tilemap);
     gameRef.current = game;
+
     game.start();
+
+    dispatch({ type: "set-zoom-level", level: 0.5 });
 
     dispatch({ type: "start-game" });
 

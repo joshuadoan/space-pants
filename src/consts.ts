@@ -5,18 +5,18 @@ export const PLAYER_SPEED = 4;
 
 export const DEFAULT_DELAY = 1000;
 
-export const GAME_WIDTH = 1000;
-export const GAME_HEIGHT = 1000;
+export const GAME_WIDTH = 2500;
+export const GAME_HEIGHT = 2500;
 
 export const COUNTS = {
-  MINER: 17,
-  BARTENDER: 0,
+  MINER: 42,
+  BARTENDER: 7,
   ASTEROID: 7,
   SPACE_STORE: 1,
   SPACE_BAR: 1,
   SPACE_APARTMENT: 1,
   PIRATE_BASE: 1,
-  PIRATE_SHIP: 1,
+  PIRATE_SHIP: 17,
 };
 
 export const MIN_SHIP_DEFAULT_SPEED = 50;

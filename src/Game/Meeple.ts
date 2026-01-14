@@ -13,6 +13,7 @@ import {
   type ActionHistory,
 } from "../types";
 import type { Game } from "./Game";
+import { formatRelativeTime } from "../utils/dateUtils";
 
 export class Meeple extends Actor {
   speed: number = 100;
@@ -55,21 +56,28 @@ export class Meeple extends Actor {
   traderTimer(game: Game): Timer {
     const timer = new Timer({
       fcn: () => {
-        if (this.actions.getQueue().hasNext()) {
-          return;
-        }
-
-        for (const condition of this.conditions) {
-          if (this.evaluateCondition(condition)) {
-            condition.action(this, game);
-            break;
-          }
-        }
-
         switch (this.state.type) {
           case MeepleStateNames.Chasing:
+            // if chase sis over 5 seconds, stop chasing
+            if (Date.now() - this.state.startTime > 5000) {
+              this.dispatch({
+                type: "finish",
+                state: { type: MeepleStateNames.Idle },
+              });
+            }
             break;
           case MeepleStateNames.Patrolling:
+            const meeplesInRadar = this.useRadar({
+              meepleRoles: [this.state.role],
+              radius: 300,
+            });
+            if (meeplesInRadar.length > 0) {
+              this.dispatch({
+                type: "chase",
+                target: meeplesInRadar[0],
+                startTime: Date.now(),
+              });
+            }
             break;
           case MeepleStateNames.Generating:
             break;
@@ -87,6 +95,17 @@ export class Meeple extends Actor {
             break;
           default:
             break;
+        }
+
+        if (this.actions.getQueue().hasNext()) {
+          return;
+        }
+
+        for (const condition of this.conditions) {
+          if (this.evaluateCondition(condition)) {
+            condition.action(this, game);
+            break;
+          }
         }
       },
       repeats: true,
@@ -114,7 +133,6 @@ export class Meeple extends Actor {
           transaction: action.transaction,
         };
         this.transact(this.state.transaction);
-
         break;
       case "mine":
         this.state = {
@@ -201,21 +219,27 @@ export class Meeple extends Actor {
         const randomPoints = [
           game.getRandomPointInGame(),
           game.getRandomPointInGame(),
+          game.getRandomPointInGame(),
         ];
 
-        this.actions.moveTo(
-          randomPoints[Math.floor(Math.random() * randomPoints.length)],
-          this.speed
-        );
+        for (const point of randomPoints) {
+          this.actions.moveTo(point, this.speed);
+        }
         break;
       case "chase":
         this.state = {
           type: MeepleStateNames.Chasing,
           target: action.target,
+          startTime: action.startTime,
         };
+        this.actions.clearActions();
         this.actions.follow(action.target, this.speed);
         break;
       case "flee":
+        break;
+      case "finish":
+        this.actions.clearActions();
+        this.state = action.state || { type: MeepleStateNames.Idle };
         break;
       default:
         break;

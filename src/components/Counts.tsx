@@ -16,7 +16,7 @@ export const Counts = ({
         {roleEntries.map(([key, value]) => (
           <div
             key={key}
-            className="flex items-center gap-1.5 px-2 py-1 bg-base-200 rounded-lg"
+            className="flex items-center gap-1 px-1 py-1 bg-base-200 rounded-lg"
           >
             <IconComponent icon={key} size={18} title={key} />
             <span className="text-sm font-semibold min-w-6 text-right">
@@ -31,7 +31,7 @@ export const Counts = ({
         {inventoryEntries.map(([key, value]) => (
           <div
             key={key}
-            className="flex items-center gap-1.5 px-2 py-1 bg-base-200 rounded-lg"
+            className="flex items-center gap-1 px-1 py-1 bg-base-200 rounded-lg"
           >
             <IconComponent icon={key} size={18} title={key} />
             <span className="text-sm font-semibold min-w-6 text-right">
