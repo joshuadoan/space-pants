@@ -2,6 +2,7 @@ import { Link, Outlet, useLocation, useParams } from "react-router-dom";
 import { IconBrandGithub } from "@tabler/icons-react";
 import { Counts } from "./Counts";
 import { CameraControlIndicator } from "./CameraControlIndicator";
+import { ZoomControl } from "./ZoomControl";
 import { useGame } from "../Game/useGame";
 import { useEffect } from "react";
 import { MeepleRoles } from "../types";
@@ -88,20 +89,14 @@ export const Layout = () => {
           </div>
           <p className="text-sm text-gray-500">A space simulation</p>
         </div>
-        <div className="hidden md:flex p-2 items-center gap-2">
-          <Counts
-            roleEntries={roleEntries}
-            inventoryEntries={inventoryEntries}
-          />
-          <input
-            type="range"
-            min={0}
-            max={1.5}
-            step={0.01}
-            defaultValue={zoomLevel}
-            className="range range-primary w-48"
-            onChange={(e) => setZoomLevel(Number(e.target.value))}
-          />
+        <div className="flex p-2 items-center gap-2">
+          <div className="hidden md:flex">
+            <Counts
+              roleEntries={roleEntries}
+              inventoryEntries={inventoryEntries}
+            />
+          </div>
+          <ZoomControl zoomLevel={zoomLevel} setZoomLevel={setZoomLevel} />
         </div>
       </header>
       <main className="flex flex-1 min-h-0">
