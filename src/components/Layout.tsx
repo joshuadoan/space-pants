@@ -58,10 +58,6 @@ export const Layout = () => {
     ),
   };
 
-  const roleEntries = Object.entries(counts).filter(([key]) =>
-    Object.values(MeepleRoles).includes(key as MeepleRoles)
-  ) as [MeepleRoles, number][];
-
   const inventoryEntries = Object.entries(counts).filter(([key]) =>
     Object.values(MeepleInventoryItem).includes(key as MeepleInventoryItem)
   ) as [MeepleInventoryItem, number][];
@@ -94,44 +90,42 @@ export const Layout = () => {
           <ZoomControl zoomLevel={zoomLevel} setZoomLevel={setZoomLevel} />
         </div>
       </header>
-      <div className="hidden md:block">
-        <Counts roleEntries={roleEntries} inventoryEntries={inventoryEntries} />
+      <div className="hidden md:flex justify-between">
+        <div role="tablist" className="tabs tabs-box mb-2">
+          <Link
+            role="tab"
+            className={cx("tab", {
+              // main route /
+              "tab-active": location.pathname === "/",
+            })}
+            to="/"
+          >
+            Meeples
+          </Link>
+          <Link
+            role="tab"
+            className={cx("tab", {
+              "tab-active": location.pathname === "/stats",
+            })}
+            to="/stats"
+          >
+            Stats
+          </Link>
+          <Link
+            role="tab"
+            className={cx("tab", {
+              // docs route /docs
+              "tab-active": location.pathname === "/instructions",
+            })}
+            to="/instructions"
+          >
+            Help
+          </Link>
+        </div>
+        <Counts  inventoryEntries={inventoryEntries} />
       </div>
       <main className="flex flex-1 min-h-0">
         <div className="hidden md:flex md:flex-col w-sm min-h-0">
-          <div className="flex flex-col gap-2 justify-between">
-            <div role="tablist" className="tabs tabs-box mb-2">
-              <Link
-                role="tab"
-                className={cx("tab", {
-                  // main route /
-                  "tab-active": location.pathname === "/",
-                })}
-                to="/"
-              >
-                Meeples
-              </Link>
-              <Link
-                role="tab"
-                className={cx("tab", {
-                  "tab-active": location.pathname === "/stats",
-                })}
-                to="/stats"
-              >
-                Stats
-              </Link>
-              <Link
-                role="tab"
-                className={cx("tab", {
-                  // docs route /docs
-                  "tab-active": location.pathname === "/instructions",
-                })}
-                to="/instructions"
-              >
-                Help
-              </Link>
-            </div>
-          </div>
           <Outlet
             context={{
               selectedMeeple,
