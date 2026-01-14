@@ -23,11 +23,11 @@ export const CameraControlIndicator = ({
           <span className="flex items-center gap-1">
             {cameraControl === "player" ? (
               <>
-                <span className="mr-1">Keyboard controls:</span>
-                <IconArrowUp size={16} />
-                <IconArrowDown size={16} />
-                <IconArrowLeft size={16} />
-                <IconArrowRight size={16} />
+                <span className="mr-1 hidden md:inline">Keyboard controls:</span>
+                <IconArrowUp size={16} className="hidden md:inline" />
+                <IconArrowDown size={16} className="hidden md:inline" />
+                <IconArrowLeft size={16} className="hidden md:inline" />
+                <IconArrowRight size={16} className="hidden md:inline" />
               </>
             ) : cameraControl === "meeple" ? (
               "Following the selected meeple"

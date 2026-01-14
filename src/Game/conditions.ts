@@ -284,7 +284,7 @@ export function patrolForRole(role: MeepleRoles): ConditionSelfInventory {
     type: ConditionType.Inventory,
     property: MeepleInventoryItem.Money,
     operator: Operator.LessThan,
-    quantity: 1,
+    quantity: 100,
     action: (meeple: Meeple) => {
       meeple.dispatch({
         type: "patrol-for-role",
@@ -294,29 +294,4 @@ export function patrolForRole(role: MeepleRoles): ConditionSelfInventory {
   };
 }
 
-/// chase target if in radar
-// export const ifTargetInRadarChaseTarget = (
-//   role: MeepleRoles
-// ): ConditionSelfRadar => ({
-//   description: `Chase ${role}`,
-//   type: ConditionType.Radar,
-//   role: role,
-//   operator: Operator.GreaterThanOrEqual,
-//   quantity: 300,
-//   target: undefined,
-//   action: function (meeple: Meeple) {
-//     const target = this.target;
-//     console.log("target", target);
-//     if (!target) {
-//       return;
-//     }
-
-//     meeple.actions.callMethod(() => {
-//       meeple.dispatch({
-//         type: "chase",
-//         target,
-//         startTime: Date.now(),
-//       });
-//     });
-//   },
-// });
+// otherwise go home and transfer all money home
