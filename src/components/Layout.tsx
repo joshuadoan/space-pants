@@ -58,10 +58,6 @@ export const Layout = () => {
     ),
   };
 
-  const roleEntries = Object.entries(counts).filter(([key]) =>
-    Object.values(MeepleRoles).includes(key as MeepleRoles)
-  ) as [MeepleRoles, number][];
-
   const inventoryEntries = Object.entries(counts).filter(([key]) =>
     Object.values(MeepleInventoryItem).includes(key as MeepleInventoryItem)
   ) as [MeepleInventoryItem, number][];
