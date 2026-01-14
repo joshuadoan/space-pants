@@ -18,6 +18,8 @@ The simulation features several types of entities, each with unique behaviors:
 - **Space Stores**: Convert minerals into fizzy drinks and money through transmutation
 - **Space Bars**: Sell fizzy drinks to miners
 - **Space Apartments**: Serve as homes for miners
+- **Pirate Bases**: Stationary space stations that serve as homes for pirate ships
+- **Pirate Ships**: Hostile entities that patrol the space, detect miners using radar, chase them, and fire laser projectiles that steal money from their targets
 
 ### How It Works
 
@@ -28,6 +30,18 @@ Each entity has a set of **conditions** that trigger actions based on their inve
 - If a miner has too many fizzy drinks, they consume them
 
 The simulation updates every 500ms, and entities move autonomously to perform their actions.
+
+### Combat System
+
+Pirates introduce a combat element to the simulation:
+
+- **Patrolling**: Pirate ships patrol the space, moving randomly while searching for targets
+- **Radar Detection**: Pirates use a radar system to detect miners within a 600 unit radius
+- **Chasing**: When a pirate detects a miner, it switches to chase mode and pursues the target
+- **Laser Attacks**: While chasing, pirates fire red laser projectiles at their targets
+  - Lasers track moving targets automatically
+  - On hit, lasers transfer 1 money from the target to the pirate
+  - Chases last up to 5 seconds before the pirate gives up
 
 ### Resources
 
@@ -51,6 +65,11 @@ The camera can be controlled in two modes:
    - Activated when you click on a meeple to view its details
 
 The current camera mode is indicated by an icon in the top-right of the sidebar.
+
+### Zoom Control
+
+- Use the zoom slider in the UI to adjust the camera zoom level
+- Zoom level affects how much of the game world is visible at once
 
 ### Navigation
 

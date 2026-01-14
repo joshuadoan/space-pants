@@ -1,4 +1,4 @@
-import { Actor, Timer, Vector, Color, Line, CollisionType } from "excalibur";
+import { Actor, Timer, Vector } from "excalibur";
 import {
   MeepleRoles,
   type MeepleInventory,
@@ -13,6 +13,7 @@ import {
   type ActionHistory,
 } from "../types";
 import type { Game } from "./Game";
+import { LaserProjectile } from "./LaserProjectile";
 
 export class Meeple extends Actor {
   speed: number = 100;
@@ -75,6 +76,7 @@ export class Meeple extends Actor {
         switch (this.state.type) {
           case MeepleStateNames.Chasing:
             this.fireLaser(this.state.target);
+            // this.fireMissile(this.state.target);
             // if chase sis over 5 seconds, stop chasing
             if (Date.now() - this.state.startTime > 5000) {
               this.dispatch({
@@ -86,7 +88,7 @@ export class Meeple extends Actor {
           case MeepleStateNames.Patrolling:
             const meeplesInRadar = this.useRadar({
               meepleRoles: [this.state.role],
-              radius: 300,
+              radius: 600,
             });
             if (meeplesInRadar.length > 0) {
               this.dispatch({
@@ -457,8 +459,8 @@ export class Meeple extends Actor {
     }
 
     // Machine gun style: fire multiple projectiles in rapid succession
-    const numProjectiles = 5;
-    const fireInterval = 200; // milliseconds between shots
+    const numProjectiles = 3;
+    const fireInterval = 1000; // milliseconds between shots
 
     for (let i = 0; i < numProjectiles; i++) {
       setTimeout(() => {
@@ -471,7 +473,7 @@ export class Meeple extends Actor {
   // returns a list of meeples within a radias with dedault radius of 100
   useRadar({
     meepleRoles,
-    radius = 300,
+    radius = 600,
   }: {
     meepleRoles: MeepleRoles[];
     radius: number;
@@ -502,91 +504,5 @@ export class Meeple extends Actor {
     }
 
     return nearbyMeeples;
-  }
-}
-
-/**
- * Laser projectile that fires from a meeple toward a target.
- * Appears as a small dash/line and destroys itself after a moment or on collision.
- */
-class LaserProjectile extends Actor {
-  private target: Meeple;
-  private speed: number = 500;
-  private lifetime: number = 1000; // milliseconds
-  private startTime: number;
-
-  constructor(shooter: Meeple, target: Meeple) {
-    super({
-      width: 4,
-      height: 4,
-      collisionType: CollisionType.Passive,
-    });
-
-    this.target = target;
-    this.startTime = Date.now();
-
-    // Position at the shooter's position
-    this.pos = shooter.pos.clone();
-
-    // Calculate direction toward target
-    const direction = target.pos.sub(shooter.pos).normalize();
-    this.vel = direction.scale(this.speed);
-
-    // Create a small line graphic (dash)
-    const line = new Line({
-      start: Vector.Zero,
-      end: new Vector(8, 0), // 8 pixel dash
-      color: Color.fromHex("#FF4444"), // Bright red
-      thickness: 2,
-    });
-
-    // Rotate the line to point toward target
-    this.rotation = direction.toAngle();
-
-    this.graphics.add(line);
-
-    // Set up collision detection
-    this.on("precollision", (evt) => {
-      const otherActor = evt.other.owner;
-      if (otherActor instanceof Meeple && otherActor === target) {
-        otherActor.dispatch({
-          type: "transact",
-          transaction: {
-            from: otherActor,
-            to: shooter,
-            property: MeepleInventoryItem.Money,
-            quantity: 1,
-          },
-        })
-        this.kill();
-      }
-    });
-  }
-
-  onPreUpdate(_engine: any, _delta: number): void {
-    // Destroy after lifetime expires
-    if (Date.now() - this.startTime > this.lifetime) {
-      this.kill();
-      return;
-    }
-
-    // If target is dead or removed, destroy projectile
-    if (this.target.isKilled()) {
-      this.kill();
-      return;
-    }
-
-    // Check distance to target as a fallback collision detection
-    const distanceToTarget = this.pos.distance(this.target.pos);
-    if (distanceToTarget < 10) {
-      // Close enough to consider it a hit
-      this.kill();
-      return;
-    }
-
-    // Update direction to track moving target
-    const direction = this.target.pos.sub(this.pos).normalize();
-    this.vel = direction.scale(this.speed);
-    this.rotation = direction.toAngle();
   }
 }
