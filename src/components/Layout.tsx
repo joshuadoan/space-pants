@@ -71,7 +71,7 @@ export const Layout = () => {
       <div className="block md:hidden bg-yellow-400 text-black text-center py-2 px-4 font-semibold z-50">
         desktop is better
       </div>
-      <header className="flex justify-between items-center">
+      <header className="flex justify-between items-center mb-2 p-2">
         <div>
           <div className="flex items-center gap-3">
             <a
@@ -90,19 +90,16 @@ export const Layout = () => {
           <p className="text-sm text-gray-500">A space simulation</p>
         </div>
         <div className="flex p-2 items-center gap-2">
-          <div className="hidden md:flex">
-            <Counts
-              roleEntries={roleEntries}
-              inventoryEntries={inventoryEntries}
-            />
-          </div>
+          <CameraControlIndicator cameraControl={cameraControl} />
           <ZoomControl zoomLevel={zoomLevel} setZoomLevel={setZoomLevel} />
         </div>
       </header>
+      <div className="hidden md:block">
+        <Counts roleEntries={roleEntries} inventoryEntries={inventoryEntries} />
+      </div>
       <main className="flex flex-1 min-h-0">
         <div className="hidden md:flex md:flex-col w-sm min-h-0">
           <div className="flex flex-col gap-2 justify-between">
-            <CameraControlIndicator cameraControl={cameraControl} />
             <div role="tablist" className="tabs tabs-box mb-2">
               <Link
                 role="tab"

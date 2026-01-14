@@ -10,9 +10,9 @@ export const Counts = ({
 }) => {
 
   return (
-    <div className="flex flex-col gap-1 border border-secondary rounded-lg p-2">
+    <div className="flex flex-col gap-1 rounded-lg p-2">
       {/* Roles Section */}
-      <div className="flex items-center gap-1.5">
+      <div className="flex items-center gap-2">
         {roleEntries.map(([key, value]) => (
           <div
             key={key}
@@ -24,10 +24,6 @@ export const Counts = ({
             </span>
           </div>
         ))}
-      </div>
-
-      {/* Inventory Section */}
-      <div className="flex items-center gap-3">
         {inventoryEntries.map(([key, value]) => (
           <div
             key={key}
