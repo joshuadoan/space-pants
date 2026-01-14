@@ -23,6 +23,7 @@ import {
   ifHasMoneyBuyFizzyDrink,
   ifHighFizzyDrinkConsumeFizzyDrink,
   patrolForRole,
+  ifHighMoneyTransferToPirateBase,
   // ifTargetInRadarChaseTarget,
 } from "./conditions";
 import { generateSpaceName } from "../utils/generateSpaceName";
@@ -396,6 +397,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
       PirateShip.conditions = [
         // ifTargetInRadarChaseTarget(MeepleRoles.Miner),
         patrolForRole(MeepleRoles.Miner),
+        ifHighMoneyTransferToPirateBase(),
       ];
       PirateShip.speed =
         Math.random() * (MAX_SHIP_DEFAULT_SPEED - MIN_SHIP_DEFAULT_SPEED) +
