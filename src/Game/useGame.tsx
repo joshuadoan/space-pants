@@ -22,6 +22,8 @@ import {
   ifHighFizzyDrinkRestockBar,
   ifHasMoneyBuyFizzyDrink,
   ifHighFizzyDrinkConsumeFizzyDrink,
+  patrolForRole,
+  // ifTargetInRadarChaseTarget,
 } from "./conditions";
 import { generateSpaceName } from "../utils/generateSpaceName";
 import {
@@ -54,6 +56,11 @@ type GameActionSetCameraConrtol = {
   control: "player" | "meeple" | null;
 };
 
+type GameActionSetZoomLevel = {
+  type: "set-zoom-level";
+  level: number;
+};
+
 type GameActionSetFilterBy = {
   type: "set-filter-by";
   role: MeepleRoles | null;
@@ -65,7 +72,8 @@ type GameAction =
   | GameActionSetFilterBy
   | GameActionLockCameraToMeeple
   | GameActionSetCameraConrtol
-  | GameActionSetSelectedMeeple;
+  | GameActionSetSelectedMeeple
+  | GameActionSetZoomLevel;
 
 type GameContextValue = {
   hasStarted: boolean;
@@ -76,14 +84,17 @@ type GameContextValue = {
   setCameraControl: (control: "player" | "meeple" | null) => void;
   selectedMeeple: Meeple | null;
   setSelectedMeeple: (meeple: Meeple | null) => void;
+  zoomLevel: number;
+  setZoomLevel: (level: number) => void;
 };
 
 const initialState = {
   hasStarted: false,
   meeples: [],
-  filterBy: MeepleRoles.Miner,
+  filterBy: MeepleRoles.PirateShip,
   cameraControl: null,
   selectedMeeple: null,
+  zoomLevel: 0.5,
 };
 
 // ============================================================================
@@ -134,6 +145,12 @@ export function GameProvider({ children }: { children: ReactNode }) {
             selectedMeeple: action.meeple,
           };
 
+        case "set-zoom-level":
+          return {
+            ...state,
+            zoomLevel: action.level,
+          };
+
         default:
           return state;
       }
@@ -149,9 +166,18 @@ export function GameProvider({ children }: { children: ReactNode }) {
       setSelectedMeeple: (meeple: Meeple | null) => {
         dispatch({ type: "set-selected-meeple", meeple: meeple });
       },
+      setZoomLevel: (level: number) => {
+        dispatch({ type: "set-zoom-level", level: level });
+      },
     }
   );
   const gameRef = useRef<Game | null>(null);
+
+  useEffect(() => {
+    if (gameRef.current) {
+      gameRef.current.currentScene.camera.zoom = gameState.zoomLevel;
+    }
+  }, [gameState.zoomLevel]);
 
   useEffect(() => {
     if (gameRef.current) {
@@ -324,13 +350,71 @@ export function GameProvider({ children }: { children: ReactNode }) {
       game.currentScene.add(Bartender);
     }
 
+    for (let i = 0; i < COUNTS.PIRATE_BASE; i++) {
+      const PirateBase = new Meeple({
+        width: 100,
+        height: 100,
+        roleId: MeepleRoles.PirateBase,
+        inventory: {
+          ...DEFAULT_INVENTORY,
+        },
+        conditions: [],
+      });
+
+      PirateBase.graphics.add(
+        createEntityGraphic(EntityGraphicStyle.SpaceStation)
+      );
+      PirateBase.pos = new Vector(
+        Math.random() * GAME_WIDTH,
+        Math.random() * GAME_HEIGHT
+      );
+
+      PirateBase.name = generateSpaceName();
+      PirateBase.conditions = [];
+      PirateBase.home = PirateBase;
+      game.currentScene.add(PirateBase);
+    }
+
+    for (let i = 0; i < COUNTS.PIRATE_SHIP; i++) {
+      const PirateShip = new Meeple({
+        width: 100,
+        height: 100,
+        roleId: MeepleRoles.PirateShip,
+        inventory: {
+          ...DEFAULT_INVENTORY,
+        },
+        conditions: [],
+      });
+
+      PirateShip.graphics.add(createEntityGraphic(EntityGraphicStyle.Pirate));
+      // random position wihtin the game width and height
+      PirateShip.pos = new Vector(
+        Math.random() * GAME_WIDTH,
+        Math.random() * GAME_HEIGHT
+      );
+
+      PirateShip.conditions = [
+        // ifTargetInRadarChaseTarget(MeepleRoles.Miner),
+        patrolForRole(MeepleRoles.Miner),
+      ];
+      PirateShip.speed =
+        Math.random() * (MAX_SHIP_DEFAULT_SPEED - MIN_SHIP_DEFAULT_SPEED) +
+        MIN_SHIP_DEFAULT_SPEED;
+      PirateShip.name = generateSpaceName();
+      PirateShip.home = game.getRandomMeepleByRole(MeepleRoles.PirateBase);
+      game.currentScene.add(PirateShip);
+    }
+
     // zom out and center camera in the game
     game.currentScene.camera.zoom = 0.5;
     game.currentScene.camera.pos = new Vector(GAME_WIDTH / 2, GAME_HEIGHT / 2);
 
     game.currentScene.add(tilemap);
     gameRef.current = game;
+
     game.start();
+
+    dispatch({ type: "set-zoom-level", level: 0.5 });
 
     dispatch({ type: "start-game" });
 

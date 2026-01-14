@@ -8,6 +8,8 @@ export enum MeepleRoles {
   SpaceBar = "space-bar",
   SpaceApartment = "space-apartment",
   Bartender = "bartender",
+  PirateBase = "pirate-base",
+  PirateShip = "pirate-ship",
 }
 
 export enum MeepleInventoryItem {
@@ -22,6 +24,27 @@ export type MeepleActionTravel = {
   type: "travel";
   target: Meeple;
 };
+
+// finish (goes to passed in state or idle by default)
+export type MeepleActionFinish = {
+  type: "finish";
+  state?: MeepleState;
+};
+
+// chase 
+export type MeepleActionChase = {
+  type: "chase";
+  target: Meeple;
+  startTime: number; // when the chase started
+};
+
+// flee
+export type MeepleActionFlee = {
+  type: "flee";
+  target: Meeple;
+  startTime: number; // when the flee started
+};
+
 export type MeepleActionVisit = {
   type: "visit";
   target: Meeple;
@@ -69,6 +92,11 @@ export type MeepleActionTransmutation = {
   toQuantity: number;
 };
 
+export type MeepleActionPatrolForRole = {
+  type: "patrol-for-role";
+  role: MeepleRoles;
+}
+
 export type GenerateAction = {
   type: "generate";
   property: MeepleInventoryItem;
@@ -84,7 +112,11 @@ export type MeepleAction =
   | MeepleActionSell
   | MeepleActionTransmutation
   | GenerateAction
-  | MeepleActionConsume;
+  | MeepleActionConsume
+  | MeepleActionPatrolForRole
+  | MeepleActionChase
+  | MeepleActionFlee
+  | MeepleActionFinish;
 
 export enum MeepleStateNames {
   Idle = "idle",
@@ -97,10 +129,25 @@ export enum MeepleStateNames {
   Transmuting = "transmuting",
   Generating = "generating",
   Consuming = "consuming",
-}
+  Patrolling = "patrolling",
+  Chasing = "chasing",
+  Fleeing = "fleeing",
+  Targeted = "targeted",
+};
+
+export type MeepleStatePatrolling = {
+  type: MeepleStateNames.Patrolling;
+  role: MeepleRoles;
+};
 
 export type MeepleStateIdle = {
   type: MeepleStateNames.Idle;
+};
+
+export type MeepleStateChasing = {
+  type: MeepleStateNames.Chasing;
+  target: Meeple;
+  startTime: number; // when the chase started
 };
 
 export type MeepleStateTraveling = {
@@ -130,6 +177,7 @@ export type MeepleStateBuying = {
   target: Meeple;
   property: MeepleInventoryItem;
   quantity: number;
+  price: number;
 };
 
 export type MeepleStateSelling = {
@@ -137,6 +185,7 @@ export type MeepleStateSelling = {
   target: Meeple;
   property: MeepleInventoryItem;
   quantity: number;
+  price: number;
 };
 
 export type MeepleStateTransmuting = {
@@ -159,6 +208,16 @@ export type MeepleStateConsuming = {
   quantity: number;
 };
 
+export type MeepleStateFleeing = {
+  type: MeepleStateNames.Fleeing;
+  target: Meeple;
+};
+
+export type MeepleStateTargeted = {
+  type: MeepleStateNames.Targeted;
+  pursuer: Meeple;
+};
+
 export type MeepleState =
   | MeepleStateIdle
   | MeepleStateTraveling
@@ -169,7 +228,11 @@ export type MeepleState =
   | MeepleStateSelling
   | MeepleStateTransmuting
   | MeepleStateGenerating
-  | MeepleStateConsuming;
+  | MeepleStateConsuming
+  | MeepleStatePatrolling
+  | MeepleStateChasing
+  | MeepleStateFleeing
+  | MeepleStateTargeted;
 
 export type MeepleActionHistory = {
   action: MeepleAction;
@@ -186,6 +249,7 @@ export type MeepleTransaction = {
 
 export enum ConditionType {
   Inventory = "inventory",
+  Radar = "radar",
 }
 
 export enum Operator {
@@ -207,7 +271,17 @@ export type ConditionSelfInventory = {
   target?: Meeple;
 };
 
-export type Condition = ConditionSelfInventory;
+export type ConditionSelfRadar = {
+  description: string;
+  type: ConditionType.Radar;
+  role: MeepleRoles;
+  operator: Operator;
+  quantity: number;
+  action: (meeple: Meeple, game: Game) => void;
+  target?: Meeple;
+};
+
+export type Condition = ConditionSelfInventory | ConditionSelfRadar;
 
 export type ActionHistory = {
   action: MeepleAction;

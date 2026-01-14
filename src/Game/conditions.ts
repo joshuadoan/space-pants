@@ -85,7 +85,7 @@ export const ifHasMoneyBuyFizzyDrink = (): ConditionSelfInventory => ({
   type: ConditionType.Inventory,
   property: MeepleInventoryItem.Money,
   operator: Operator.GreaterThanOrEqual,
-  quantity: 2,
+  quantity: 1,
   action: (meeple: Meeple, game: Game) => {
     const target = game.getRandomMeepleByRole(MeepleRoles.SpaceBar);
     meeple.actions
@@ -124,7 +124,7 @@ export const ifHighFizzyDrinkConsumeFizzyDrink =
     type: ConditionType.Inventory,
     property: MeepleInventoryItem.Fizzy,
     operator: Operator.GreaterThanOrEqual,
-    quantity: 2,
+    quantity: 1,
     action: (meeple: Meeple) => {
       meeple.actions
         .callMethod(() => {
@@ -179,6 +179,7 @@ export const ifOreTurnIntoFizzy = (): ConditionSelfInventory => ({
             ],
         });
       })
+      .delay(DEFAULT_DELAY)
       .callMethod(() => {
         meeple.dispatch({
           type: "transmutation",
@@ -227,7 +228,7 @@ export const ifLowFizzyDrinkBuyFizzyDrink = (
           type: "buy",
           target: spaceStore,
           property: MeepleInventoryItem.Fizzy,
-          quantity: 1,
+          quantity: 2,
           price: 1,
         });
       })
@@ -276,3 +277,46 @@ export const ifHighFizzyDrinkRestockBar = (): ConditionSelfInventory => ({
       .delay(DEFAULT_DELAY);
   },
 });
+
+export function patrolForRole(role: MeepleRoles): ConditionSelfInventory {
+  return {
+    description: `Patrol for ${role}`,
+    type: ConditionType.Inventory,
+    property: MeepleInventoryItem.Money,
+    operator: Operator.LessThan,
+    quantity: 1,
+    action: (meeple: Meeple) => {
+      meeple.dispatch({
+        type: "patrol-for-role",
+        role: role,
+      });
+    },
+  };
+}
+
+/// chase target if in radar
+// export const ifTargetInRadarChaseTarget = (
+//   role: MeepleRoles
+// ): ConditionSelfRadar => ({
+//   description: `Chase ${role}`,
+//   type: ConditionType.Radar,
+//   role: role,
+//   operator: Operator.GreaterThanOrEqual,
+//   quantity: 300,
+//   target: undefined,
+//   action: function (meeple: Meeple) {
+//     const target = this.target;
+//     console.log("target", target);
+//     if (!target) {
+//       return;
+//     }
+
+//     meeple.actions.callMethod(() => {
+//       meeple.dispatch({
+//         type: "chase",
+//         target,
+//         startTime: Date.now(),
+//       });
+//     });
+//   },
+// });

@@ -4,6 +4,7 @@ import { MeepleRoles, MeepleInventoryItem, MeepleStateNames } from "../types";
 import type { Meeple } from "../Game/Meeple";
 import { useMemo } from "react";
 import { ProductsChart } from "./ProductsChart";
+import { TRANSMUTATION_RATIOS, SELL_PRICES, BUY_PRICES } from "../consts";
 
 type StatsProps = {
   meeples: Meeple[];
@@ -370,6 +371,64 @@ export const Stats = () => {
                 )
               ))}
           </div>
+        </div>
+      </div>
+
+      {/* Game Constants */}
+      <div className="card bg-base-200 shadow-md">
+        <div className="card-body">
+          <h3 className="card-title text-lg">⚙️ Game Constants</h3>
+          
+          {/* Transmutation Ratios */}
+          {Object.keys(TRANSMUTATION_RATIOS).length > 0 && (
+            <div className="mt-2">
+              <div className="text-sm font-semibold mb-2">Transmutation Ratios</div>
+              <div className="space-y-1 text-sm">
+                {Object.entries(TRANSMUTATION_RATIOS).map(([fromItem, ratios]) => (
+                  <div key={fromItem} className="pl-2">
+                    <span className="capitalize font-medium">{fromItem}:</span>
+                    <div className="pl-4 space-y-0.5">
+                      {Object.entries(ratios).map(([toItem, ratio]) => (
+                        <div key={toItem} className="text-xs">
+                          → {ratio}x <span className="capitalize">{toItem}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Sell Prices */}
+          {Object.keys(SELL_PRICES).length > 0 && (
+            <div className="mt-4 pt-2 border-t border-base-300">
+              <div className="text-sm font-semibold mb-2">Sell Prices</div>
+              <div className="space-y-1 text-sm">
+                {Object.entries(SELL_PRICES).map(([item, price]) => (
+                  <div key={item} className="flex justify-between pl-2">
+                    <span className="capitalize">{item}:</span>
+                    <span className="font-semibold text-green-400">{price} money</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Buy Prices */}
+          {Object.keys(BUY_PRICES).length > 0 && (
+            <div className="mt-4 pt-2 border-t border-base-300">
+              <div className="text-sm font-semibold mb-2">Buy Prices</div>
+              <div className="space-y-1 text-sm">
+                {Object.entries(BUY_PRICES).map(([item, price]) => (
+                  <div key={item} className="flex justify-between pl-2">
+                    <span className="capitalize">{item}:</span>
+                    <span className="font-semibold text-blue-400">{price} money</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>

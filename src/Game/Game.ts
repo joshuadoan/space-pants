@@ -1,4 +1,4 @@
-import { Color, DisplayMode, Engine } from "excalibur";
+import { Color, DisplayMode, Engine, Vector } from "excalibur";
 import { Meeple } from "./Meeple";
 import type { MeepleRoles } from "../types";
 
@@ -52,5 +52,14 @@ export class Game extends Engine {
         actor instanceof Meeple && actor.roleId === role
     );
     return meeples[Math.floor(Math.random() * meeples.length)];
+  }
+
+
+  // random point on game map within th bounds of the game
+  getRandomPointInGame(): Vector {
+    return new Vector(
+      Math.random() * this.worldWidth,
+      Math.random() * this.worldHeight
+    );
   }
 }
