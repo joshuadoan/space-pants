@@ -52,6 +52,23 @@ export class Meeple extends Actor {
     game.currentScene.add(timer);
     timer.start();
   }
+
+  onPreUpdate(_engine: any, _delta: number): void {
+    // Face the direction of movement (left or right)
+    if (this.vel.x !== 0) {
+      // If moving right (positive x), face right (scale.x = 1)
+      // If moving left (negative x), face left (scale.x = -1)
+      const currentYScale = this.scale.y;
+      if (this.vel.x > 0) {
+        // Moving right - face right
+        this.scale = new Vector(1, currentYScale);
+      } else {
+        // Moving left - face left (flip horizontally)
+        this.scale = new Vector(-1, currentYScale);
+      }
+    }
+  }
+
   traderTimer(game: Game): Timer {
     const timer = new Timer({
       fcn: () => {
@@ -532,6 +549,15 @@ class LaserProjectile extends Actor {
     this.on("precollision", (evt) => {
       const otherActor = evt.other.owner;
       if (otherActor instanceof Meeple && otherActor === target) {
+        otherActor.dispatch({
+          type: "transact",
+          transaction: {
+            from: otherActor,
+            to: shooter,
+            property: MeepleInventoryItem.Money,
+            quantity: 1,
+          },
+        })
         this.kill();
       }
     });

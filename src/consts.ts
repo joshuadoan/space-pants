@@ -16,7 +16,7 @@ export const COUNTS = {
   SPACE_BAR: 1,
   SPACE_APARTMENT: 1,
   PIRATE_BASE: 1,
-  PIRATE_SHIP: 17,
+  PIRATE_SHIP: 3,
 };
 
 export const MIN_SHIP_DEFAULT_SPEED = 50;

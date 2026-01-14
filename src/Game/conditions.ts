@@ -4,11 +4,10 @@ import {
   Operator,
   MeepleRoles,
   MeepleInventoryItem,
-  MeepleStateNames,
 } from "../types";
 import type { Meeple } from "./Meeple";
 import type { Game } from "./Game";
-import type { ConditionSelfInventory, ConditionSelfRadar } from "../types";
+import type { ConditionSelfInventory } from "../types";
 
 export const ifNoMoneyMineOre = (): ConditionSelfInventory => ({
   description: "Travel to an asteroid field and mine ore.",
