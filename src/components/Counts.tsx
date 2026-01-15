@@ -16,7 +16,7 @@ export const Counts = ({
             className="flex items-center gap-0.5 py-1 bg-base-200 rounded-lg"
           >
             <IconComponent icon={key} size={18} title={key} />
-            <span className="text-sm font-semibold min-w-6 text-right">
+            <span className={`text-sm font-semibold min-w-6 text-right ${value < 0 ? 'text-red-500' : ''}`}>
               {value}
             </span>
           </div>

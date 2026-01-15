@@ -167,6 +167,37 @@ export const Stats = () => {
       };
     }).filter(({ count }) => count > 0);
 
+    // Deficits by role (negative inventory)
+    const deficitsByRole = Object.values(MeepleRoles)
+      .map((role) => {
+        const roleMeeples = meeples.filter((m) => m.roleId === role);
+        const aggregatedInventory = Object.values(MeepleInventoryItem).reduce(
+          (acc, item) => {
+            acc[item] = roleMeeples.reduce(
+              (sum, m) => sum + m.inventory[item],
+              0
+            );
+            return acc;
+          },
+          {} as Record<MeepleInventoryItem, number>
+        );
+        const negativeItems = Object.entries(aggregatedInventory).filter(
+          ([_, count]) => count < 0
+        );
+        if (negativeItems.length === 0) return null;
+        return {
+          role,
+          inventory: Object.fromEntries(negativeItems) as Record<
+            MeepleInventoryItem,
+            number
+          >,
+          count: roleMeeples.length,
+        };
+      })
+      .filter(
+        (item): item is NonNullable<typeof item> => item !== null
+      );
+
     return {
       populationByRole,
       totalMoney,
@@ -193,6 +224,7 @@ export const Stats = () => {
       activeMeeples,
       idleMeeples,
       inventoryByRole,
+      deficitsByRole,
     };
   }, [meeples, hasStarted]);
 
@@ -388,6 +420,45 @@ export const Stats = () => {
           </div>
         </div>
       </div>
+
+      {/* Deficits by Role */}
+      {stats.deficitsByRole.length > 0 && (
+        <div className="card bg-base-200 shadow-md border-2 border-red-500/50">
+          <div className="card-body">
+            <h3 className="card-title text-lg text-red-400">⚠️ Deficits by Role</h3>
+            <div className="space-y-3 mt-2">
+              {stats.deficitsByRole.map(({ role, inventory, count }) => (
+                <div key={role} className="space-y-1">
+                  <div className="flex items-center gap-2">
+                    <IconComponent icon={role} size={18} title={role} />
+                    <span className="font-semibold capitalize">
+                      {role.replace("-", " ")}:
+                    </span>
+                    <span className="text-sm text-gray-400">({count})</span>
+                  </div>
+                  <div className="flex items-center gap-3 pl-7">
+                    {Object.entries(inventory).map(([item, count]) => (
+                      <div
+                        key={item}
+                        className="flex items-center gap-1 text-red-400"
+                      >
+                        <IconComponent
+                          icon={item as MeepleInventoryItem}
+                          size={16}
+                          title={item}
+                        />
+                        <span className="text-sm font-semibold">
+                          {count.toLocaleString()}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Game Constants */}
       <div className="card bg-base-200 shadow-md">

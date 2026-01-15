@@ -32,7 +32,7 @@ export class LaserProjectile extends Actor {
     // Create a small cube graphic (square)
     const cube = new Rectangle({
       width: 4,
-      height:4,
+      height: 4,
       color: Color.fromHex("#FF4444"), // Bright red
     });
 
@@ -58,8 +58,13 @@ export class LaserProjectile extends Actor {
             property: MeepleInventoryItem.Money,
             quantity: 1,
           },
-        })
+        });
         this.kill();
+        otherActor.dispatch({
+          type: "flee",
+          target: shooter,
+          startTime: Date.now(),
+        });
       }
     });
   }

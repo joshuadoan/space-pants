@@ -224,7 +224,7 @@ export class Meeple extends Actor {
         this.consume(this.state.property, this.state.quantity);
 
         break;
-      case "patrol-for-role":
+      case "patrol-for-role": {
         this.state = {
           type: MeepleStateNames.Patrolling,
           role: action.role,
@@ -234,8 +234,10 @@ export class Meeple extends Actor {
         if (!game) {
           return;
         }
-        // random point  wihtin 1/4 of the game size
         const randomPoints = [
+          game.getRandomPointInGame(),
+          game.getRandomPointInGame(),
+          game.getRandomPointInGame(),
           game.getRandomPointInGame(),
           game.getRandomPointInGame(),
           game.getRandomPointInGame(),
@@ -245,6 +247,7 @@ export class Meeple extends Actor {
           this.actions.moveTo(point, this.speed);
         }
         break;
+      }
       case "chase":
         this.state = {
           type: MeepleStateNames.Chasing,
@@ -252,10 +255,27 @@ export class Meeple extends Actor {
           startTime: action.startTime,
         };
         this.actions.clearActions();
+
         this.actions.follow(action.target, this.speed);
         break;
-      case "flee":
+      case "flee": {
+        this.state = {
+          type: MeepleStateNames.Fleeing,
+          target: action.target,
+        };
+        const game = this.scene?.engine as Game;
+        if (!game) {
+          return;
+        }
+
+        this.actions
+          .moveTo(game.getRandomPointInGame("small"), this.speed * 1.5)
+          .moveTo(game.getRandomPointInGame("small"), this.speed * 1.5)
+          .moveTo(game.getRandomPointInGame("small"), this.speed * 1.5)
+          .moveTo(game.getRandomPointInGame("small"), this.speed * 1.5)
+          .moveTo(game.getRandomPointInGame("small"), this.speed * 1.5)
         break;
+      }
       case "finish":
         this.actions.clearActions();
         this.state = action.state || { type: MeepleStateNames.Idle };
