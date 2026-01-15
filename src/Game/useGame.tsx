@@ -347,7 +347,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
         Math.random() * (MAX_SHIP_DEFAULT_SPEED - MIN_SHIP_DEFAULT_SPEED) +
         MIN_SHIP_DEFAULT_SPEED;
       Bartender.name = generateSpaceName();
-      Bartender.home = game.getRandomMeepleByRole(MeepleRoles.SpaceBar);
+      Bartender.home = spaceBars[i];
       game.currentScene.add(Bartender);
     }
 
@@ -395,9 +395,9 @@ export function GameProvider({ children }: { children: ReactNode }) {
       );
 
       PirateShip.conditions = [
+        ifHighMoneyTransferToPirateBase(),
         ifTargetThenChase(),
         patrolForRole(MeepleRoles.Miner),
-        ifHighMoneyTransferToPirateBase(),
       ];
       PirateShip.speed =
         Math.random() * (MAX_SHIP_DEFAULT_SPEED - MIN_SHIP_DEFAULT_SPEED) +

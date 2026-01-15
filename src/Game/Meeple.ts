@@ -14,6 +14,7 @@ import {
 } from "../types";
 import type { Game } from "./Game";
 import { LaserProjectile } from "./LaserProjectile";
+import { Radar } from "./Radar";
 
 export class Meeple extends Actor {
   speed: number = 100;
@@ -24,6 +25,8 @@ export class Meeple extends Actor {
   home: Meeple | null = null;
   inventory: MeepleInventory;
   actionsHistory: ActionHistory[] = [];
+  radarRadius: number = 300;
+  radar: Radar;
   constructor({
     width,
     height,
@@ -45,6 +48,7 @@ export class Meeple extends Actor {
     this.roleId = roleId;
     this.inventory = inventory;
     this.conditions = conditions;
+    this.radar = new Radar(this);
   }
 
   onInitialize(game: Game): void {
@@ -52,6 +56,10 @@ export class Meeple extends Actor {
 
     game.currentScene.add(timer);
     timer.start();
+
+    // Initialize radar
+    this.radar = new Radar(this);
+    game.currentScene.add(this.radar);
   }
 
   onPreUpdate(_engine: any, _delta: number): void {
@@ -75,27 +83,16 @@ export class Meeple extends Actor {
       fcn: () => {
         switch (this.state.type) {
           case MeepleStateNames.Chasing:
-            // this.fireLaser(this.state.target);
-            // // this.fireMissile(this.state.target);
-            // // if chase sis over 5 seconds, stop chasing
-            // if (Date.now() - this.state.startTime > 3000) {
-            //   this.dispatch({
-            //     type: "finish",
-            //   });
-            // }
+            this.fireLaser(this.state.target);
             break;
           case MeepleStateNames.Patrolling:
-            // const meeplesInRadar = this.useRadar({
-            //   meepleRoles: [this.state.role],
-            //   radius: 600,
-            // });
-            // if (meeplesInRadar.length > 0) {
-            //   this.dispatch({
-            //     type: "chase",
-            //     target: meeplesInRadar[0],
-            //     startTime: Date.now(),
-            //   });
-            // }
+            this.actions.moveTo(game.getRandomPointInGame(), this.speed);
+            
+            const targets = this.useRadar({
+              meepleRoles: [this.state.role],
+            });
+
+            this.state.found = targets;
             break;
           case MeepleStateNames.Generating:
             break;
@@ -121,7 +118,11 @@ export class Meeple extends Actor {
 
         for (const condition of this.conditions) {
           if (this.evaluateCondition(condition)) {
-            condition.action(this, game);
+            const conditionAction = condition.action(this, game);
+            const stateAction = conditionAction[this.state.type];
+            if (stateAction) {
+              stateAction();
+            }
             break;
           }
         }
@@ -227,24 +228,26 @@ export class Meeple extends Actor {
         this.state = {
           type: MeepleStateNames.Patrolling,
           role: action.role,
+          found: action.found,
         };
 
         const game = this.scene?.engine as Game;
         if (!game) {
           return;
         }
-        const randomPoints = [
-          game.getRandomPointInGame(),
-          game.getRandomPointInGame(),
-          game.getRandomPointInGame(),
-          game.getRandomPointInGame(),
-          game.getRandomPointInGame(),
-          game.getRandomPointInGame(),
-        ];
+        // const randomPoints = [
+        //   game.getRandomPointInGame(),
+        //   game.getRandomPointInGame(),
+        //   game.getRandomPointInGame(),
+        //   game.getRandomPointInGame(),
+        //   game.getRandomPointInGame(),
+        //   game.getRandomPointInGame(),
+        // ];
 
-        for (const point of randomPoints) {
-          this.actions.moveTo(point, this.speed);
-        }
+        // for (const point of randomPoints) {
+        //   this.actions.moveTo(point, this.speed);
+        // }
+
         break;
       }
       case "chase":
@@ -311,16 +314,29 @@ export class Meeple extends Actor {
             return false;
         }
       case ConditionType.Radar:
-        const nearbyMeeples = this.useRadar({
-          meepleRoles: condition.roles,
-          radius: condition.radius,
-        });
-
-        if (nearbyMeeples.length > 0) {
-          condition.target = nearbyMeeples[0];
-          return true;
+        // Show the radar visualization when condition is evaluated
+        // if (this.radar) {
+        //   this.radar.show();
+        //   // Hide the radar after 1 second
+        //   setTimeout(() => {
+        //     if (this.radar) {
+        //       this.radar.hide();
+        //     }
+        //   }, 1000);
+        // }
+        switch (this.state.type) {
+          case MeepleStateNames.Patrolling: {
+            const nearbyMeeples = this.state.found;
+            if (nearbyMeeples.length > 0) {
+              condition.target = nearbyMeeples[0];
+              return true;
+            }
+            return false;
+          }
+          default:
+            return false;
         }
-        return false;
+
       default:
         return false;
     }
@@ -483,13 +499,7 @@ export class Meeple extends Actor {
   }
 
   // returns a list of meeples within a radias with dedault radius of 100
-  useRadar({
-    meepleRoles,
-    radius = 600,
-  }: {
-    meepleRoles: MeepleRoles[];
-    radius: number;
-  }): Meeple[] {
+  useRadar({ meepleRoles }: { meepleRoles: MeepleRoles[] }): Meeple[] {
     if (!this.scene) {
       return [];
     }
@@ -508,7 +518,15 @@ export class Meeple extends Actor {
           // Calculate distance from this meeple to the other meeple
           const distance = thisPos.distance(actor.pos);
           // If within radius, add to results
-          if (distance <= radius) {
+          console.log(distance, this.radarRadius);
+          if (distance <= this.radarRadius) {
+            this.radar.show();
+            // Hide the radar after 1 second
+            setTimeout(() => {
+              if (this.radar) {
+                this.radar.hide();
+              }
+            }, 1000);
             nearbyMeeples.push(actor);
           }
         }

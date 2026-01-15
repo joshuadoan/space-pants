@@ -56,23 +56,10 @@ export class Game extends Engine {
 
 
   // random point on game map within th bounds of the game
-  getRandomPointInGame(size: "small" | "medium" | "large" = "medium"): Vector {
-    // return new Vector(
-    //   Math.random() * this.worldWidth,
-    //   Math.random() * this.worldHeight
-    // );
-    switch (size) {
-      case "small":
-        return new Vector(
-          Math.random() * 100,
-          Math.random() * 100
-        );
-      case "medium":
-        return new Vector(Math.random() * this.worldWidth / 4, Math.random() * this.worldHeight / 4);
-      case "large":
-        return new Vector(Math.random() * this.worldWidth * 2, Math.random() * this.worldHeight * 2);
-      default:
-        return new Vector(Math.random() * this.worldWidth, Math.random() * this.worldHeight);
-    }
+  getRandomPointInGame(): Vector {
+    return new Vector(
+      Math.random() * this.worldWidth,
+      Math.random() * this.worldHeight
+    );
   }
 }

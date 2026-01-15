@@ -97,6 +97,7 @@ export type MeepleActionTransmutation = {
 export type MeepleActionPatrolForRole = {
   type: "patrol-for-role";
   role: MeepleRoles;
+  found: Meeple[]
 }
 
 export type GenerateAction = {
@@ -140,6 +141,7 @@ export enum MeepleStateNames {
 export type MeepleStatePatrolling = {
   type: MeepleStateNames.Patrolling;
   role: MeepleRoles;
+  found: Meeple[]
 };
 
 export type MeepleStateIdle = {
