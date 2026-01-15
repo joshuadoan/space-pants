@@ -64,11 +64,11 @@ export class Game extends Engine {
     switch (size) {
       case "small":
         return new Vector(
-          Math.random() * this.worldWidth / 4,
-          Math.random() * this.worldHeight / 4
+          Math.random() * 100,
+          Math.random() * 100
         );
       case "medium":
-        return new Vector(Math.random() * this.worldWidth / 2, Math.random() * this.worldHeight / 2);
+        return new Vector(Math.random() * this.worldWidth / 4, Math.random() * this.worldHeight / 4);
       case "large":
         return new Vector(Math.random() * this.worldWidth * 2, Math.random() * this.worldHeight * 2);
       default:

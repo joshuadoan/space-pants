@@ -7,7 +7,7 @@ import {
 } from "../types";
 import type { Meeple } from "./Meeple";
 import type { Game } from "./Game";
-import type { ConditionSelfInventory } from "../types";
+import type { ConditionSelfInventory, ConditionSelfRadar } from "../types";
 
 export const ifNoMoneyMineOre = (): ConditionSelfInventory => ({
   description: "Travel to an asteroid field and mine ore.",
@@ -293,6 +293,28 @@ export function patrolForRole(role: MeepleRoles): ConditionSelfInventory {
     },
   };
 }
+
+// ConditionSelfRadar
+export const ifTargetThenChase = (): ConditionSelfRadar => ({
+  description: `Chase target if found in radar`,
+  type: ConditionType.Radar,
+  roles: [MeepleRoles.Miner, MeepleRoles.Bartender],
+  operator: Operator.LessThan,
+  radius: 1000,
+  action: function (meeple: Meeple) {
+    if (!this.target) {
+      return;
+    }
+
+    meeple.dispatch({
+      type: "chase",
+      target: this.target,
+      startTime: Date.now(),
+    });
+  },
+});
+
+
 
 // For pirate ships: if money > 100, fly home to pirate base and transfer all money to base
 export const ifHighMoneyTransferToPirateBase = (): ConditionSelfInventory => ({

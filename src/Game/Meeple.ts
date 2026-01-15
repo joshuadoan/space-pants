@@ -75,28 +75,27 @@ export class Meeple extends Actor {
       fcn: () => {
         switch (this.state.type) {
           case MeepleStateNames.Chasing:
-            this.fireLaser(this.state.target);
-            // this.fireMissile(this.state.target);
-            // if chase sis over 5 seconds, stop chasing
-            if (Date.now() - this.state.startTime > 5000) {
-              this.dispatch({
-                type: "finish",
-                state: { type: MeepleStateNames.Idle },
-              });
-            }
+            // this.fireLaser(this.state.target);
+            // // this.fireMissile(this.state.target);
+            // // if chase sis over 5 seconds, stop chasing
+            // if (Date.now() - this.state.startTime > 3000) {
+            //   this.dispatch({
+            //     type: "finish",
+            //   });
+            // }
             break;
           case MeepleStateNames.Patrolling:
-            const meeplesInRadar = this.useRadar({
-              meepleRoles: [this.state.role],
-              radius: 600,
-            });
-            if (meeplesInRadar.length > 0) {
-              this.dispatch({
-                type: "chase",
-                target: meeplesInRadar[0],
-                startTime: Date.now(),
-              });
-            }
+            // const meeplesInRadar = this.useRadar({
+            //   meepleRoles: [this.state.role],
+            //   radius: 600,
+            // });
+            // if (meeplesInRadar.length > 0) {
+            //   this.dispatch({
+            //     type: "chase",
+            //     target: meeplesInRadar[0],
+            //     startTime: Date.now(),
+            //   });
+            // }
             break;
           case MeepleStateNames.Generating:
             break;
@@ -255,31 +254,18 @@ export class Meeple extends Actor {
           startTime: action.startTime,
         };
         this.actions.clearActions();
-
         this.actions.follow(action.target, this.speed);
         break;
       case "flee": {
-        const prevState = this.state;
-        this.state = {
-          type: MeepleStateNames.Fleeing,
-          target: action.target,
-        };
         const game = this.scene?.engine as Game;
         if (!game) {
           return;
         }
-
-        this.actions
-          .moveTo(game.getRandomPointInGame("small"), this.speed * 1.5)
-          .moveTo(game.getRandomPointInGame("small"), this.speed * 1.5)
-          .moveTo(game.getRandomPointInGame("small"), this.speed * 1.5)
-          .moveTo(game.getRandomPointInGame("small"), this.speed * 1.5)
-          .moveTo(game.getRandomPointInGame("small"), this.speed * 1.5)
-          .callMethod(() => {
-            this.dispatch({
-              type: "finish",
-            })
-          });
+        this.state = {
+          type: MeepleStateNames.Fleeing,
+          target: action.target,
+        };
+        this.actions.moveTo(game.getRandomPointInGame(), this.speed * 2);
         break;
       }
       case "finish":
@@ -326,8 +312,8 @@ export class Meeple extends Actor {
         }
       case ConditionType.Radar:
         const nearbyMeeples = this.useRadar({
-          meepleRoles: [condition.role],
-          radius: condition.quantity,
+          meepleRoles: condition.roles,
+          radius: condition.radius,
         });
 
         if (nearbyMeeples.length > 0) {

@@ -47,7 +47,7 @@ export class LaserProjectile extends Actor {
       if (otherActor instanceof Meeple && otherActor === target) {
         /// distance between laser and target
         const distance = this.pos.distance(target.pos);
-        if (distance > 10) {
+        if (distance > otherActor.width / 2 + shooter.width / 2) {
           return;
         }
         otherActor.dispatch({
@@ -60,11 +60,7 @@ export class LaserProjectile extends Actor {
           },
         });
         this.kill();
-        otherActor.dispatch({
-          type: "flee",
-          target: shooter,
-          startTime: Date.now(),
-        });
+
       }
     });
   }

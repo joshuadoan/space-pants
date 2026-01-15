@@ -24,7 +24,7 @@ import {
   ifHighFizzyDrinkConsumeFizzyDrink,
   patrolForRole,
   ifHighMoneyTransferToPirateBase,
-  // ifTargetInRadarChaseTarget,
+  ifTargetThenChase,
 } from "./conditions";
 import { generateSpaceName } from "../utils/generateSpaceName";
 import {
@@ -92,7 +92,7 @@ type GameContextValue = {
 const initialState = {
   hasStarted: false,
   meeples: [],
-  filterBy: MeepleRoles.Miner,
+  filterBy: MeepleRoles.PirateShip,
   cameraControl: null,
   selectedMeeple: null,
   zoomLevel: 0.5,
@@ -395,7 +395,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
       );
 
       PirateShip.conditions = [
-        // ifTargetInRadarChaseTarget(MeepleRoles.Miner),
+        ifTargetThenChase(),
         patrolForRole(MeepleRoles.Miner),
         ifHighMoneyTransferToPirateBase(),
       ];
