@@ -259,6 +259,7 @@ export class Meeple extends Actor {
         this.actions.follow(action.target, this.speed);
         break;
       case "flee": {
+        const prevState = this.state;
         this.state = {
           type: MeepleStateNames.Fleeing,
           target: action.target,
@@ -274,6 +275,11 @@ export class Meeple extends Actor {
           .moveTo(game.getRandomPointInGame("small"), this.speed * 1.5)
           .moveTo(game.getRandomPointInGame("small"), this.speed * 1.5)
           .moveTo(game.getRandomPointInGame("small"), this.speed * 1.5)
+          .callMethod(() => {
+            this.dispatch({
+              type: "finish",
+            })
+          });
         break;
       }
       case "finish":
