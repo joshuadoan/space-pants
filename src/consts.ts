@@ -5,8 +5,8 @@ export const PLAYER_SPEED = 4;
 
 export const DEFAULT_DELAY = 1000;
 
-export const GAME_WIDTH = 1000;
-export const GAME_HEIGHT = 1000;
+export const GAME_WIDTH = 2500;
+export const GAME_HEIGHT = 2500;
 
 export const COUNTS = {
   MINER: 17,
