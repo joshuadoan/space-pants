@@ -95,7 +95,7 @@ const initialState = {
   filterBy: MeepleRoles.PirateShip,
   cameraControl: null,
   selectedMeeple: null,
-  zoomLevel: 0.5,
+  zoomLevel: 0.1,
 };
 
 // ============================================================================
@@ -408,7 +408,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
     }
 
     // zom out and center camera in the game
-    game.currentScene.camera.zoom = 0.5;
+    // game.currentScene.camera.zoom = initialState.zoomLevel;
     game.currentScene.camera.pos = new Vector(GAME_WIDTH / 2, GAME_HEIGHT / 2);
 
     game.currentScene.add(tilemap);
@@ -416,7 +416,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
 
     game.start();
 
-    dispatch({ type: "set-zoom-level", level: 0.5 });
+    dispatch({ type: "set-zoom-level", level: initialState.zoomLevel });
 
     dispatch({ type: "start-game" });
 

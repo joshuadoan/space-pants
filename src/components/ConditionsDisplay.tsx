@@ -94,7 +94,7 @@ const RadarConditionDisplay = ({
           </div>
         ))}
         <span className="font-mono">{formatOperator(condition.operator)}</span>
-        <span className="font-mono">{condition.radius}px</span>
+        <span className="font-mono">meeple's radar</span>
         {condition.target && (
           <span className="ml-1 opacity-50">
             (target: {condition.target.name || condition.target.roleId}'s radar)

@@ -17,37 +17,15 @@ export const ifNoMoneyMineOre = (): ConditionSelfInventory => ({
   operator: Operator.LessThan,
   quantity: 1,
   action: (meeple: Meeple, game: Game) => {
+    const target = game.getRandomMeepleByRole(MeepleRoles.Asteroid);
     return {
       [MeepleStateNames.Idle]: () => {
-        const target = game.getRandomMeepleByRole(MeepleRoles.Asteroid);
-        meeple.actions
-          .callMethod(() => {
-            meeple.dispatch({
-              type: "travel",
-              target: target,
-            });
-          })
-          .moveTo(target.pos, meeple.speed)
-          .callMethod(() => {
-            meeple.dispatch({
-              type: "visit",
-              target: target,
-            });
-          })
-          .delay(DEFAULT_DELAY);
+        meeple.travelToAndVisit(target);
       },
       [MeepleStateNames.Visiting]: () => {
-        if (meeple.state.type !== MeepleStateNames.Visiting) {
-          return meeple.dispatch({
-            type: "finish",
-            state: {
-              type: MeepleStateNames.Idle,
-            },
-          });
-        }
         meeple.dispatch({
           type: "mine",
-          target: meeple.state.target,
+          target,
           property: MeepleInventoryItem.Minirals,
           quantity: 1,
         });
@@ -381,14 +359,25 @@ export function patrolForRole(role: MeepleRoles): ConditionSelfInventory {
     property: MeepleInventoryItem.Money,
     operator: Operator.LessThan,
     quantity: 100,
-    action: (meeple: Meeple) => {
+    action: (meeple: Meeple, game: Game) => {
       return {
         [MeepleStateNames.Idle]: () => {
-          meeple.dispatch({
-            type: "patrol-for-role",
-            role: role,
-            found: [],
-          });
+          meeple.actions
+            .callMethod(() => {
+              meeple.dispatch({
+                type: "patrol-for-role",
+                role: role,
+              });
+            })
+            .moveTo(game.getRandomPointInGame(), meeple.speed)
+            .callMethod(() => {
+              meeple.dispatch({
+                type: "finish",
+                state: {
+                  type: MeepleStateNames.Idle,
+                },
+              });
+            });
         },
       };
     },
@@ -401,46 +390,30 @@ export const ifTargetThenChase = (): ConditionSelfRadar => ({
   type: ConditionType.Radar,
   roles: [MeepleRoles.Miner, MeepleRoles.Bartender],
   operator: Operator.LessThan,
-  radius: 300,
   action: function (meeple: Meeple) {
     return {
-      [MeepleStateNames.Patrolling]: () => {
-        if (meeple.state.type !== MeepleStateNames.Patrolling) {
-          return;
-        }
-
-        if (meeple.state.found.length > 0) {
-          console.log("chasing target", meeple.state.found[0]);
+      [MeepleStateNames.Idle]: () => {
+        const target = this.target;
+        if (target) {
+          meeple.actions.clearActions();
           meeple.dispatch({
             type: "chase",
-            target: meeple.state.found[0],
+            target: target,
             startTime: Date.now(),
           });
         }
-
-        // meeple.dispatch({
-        //   type: "chase",
-        //   target: meeple.state.found[0],
-        //   startTime: Date.now(),
-        // });
       },
-      [MeepleStateNames.Chasing]: () => {
-        /// if it had been 4 seconds then finish
-        if (meeple.state.type !== MeepleStateNames.Chasing) {
-          return;
+      // same for patrolling
+      [MeepleStateNames.Patrolling]: () => {
+        const target = this.target;
+        if (target) {
+          meeple.actions.clearActions();
+          meeple.dispatch({
+            type: "chase",
+            target: target,
+            startTime: Date.now(),
+          });
         }
-
-        console.log("chasing target forever ", meeple.name);
-
-        // console.log("chasing target", Date.now() - meeple.state.startTime );
-        // if (Date.now() - meeple.state.startTime > 4000) {
-        //   meeple.dispatch({
-        //     type: "finish",
-        //     state: {
-        //       type: MeepleStateNames.Idle,
-        //     },
-        //   });
-        // }
       },
     };
   },
@@ -459,6 +432,7 @@ export const ifHighMoneyTransferToPirateBase = (): ConditionSelfInventory => ({
         if (!meeple.home) {
           return;
         }
+        console.log("chasing target", meeple.state);
         const pirateBase = meeple.home;
         const moneyAmount = meeple.inventory[MeepleInventoryItem.Money];
         meeple.actions

@@ -97,7 +97,6 @@ export type MeepleActionTransmutation = {
 export type MeepleActionPatrolForRole = {
   type: "patrol-for-role";
   role: MeepleRoles;
-  found: Meeple[]
 }
 
 export type GenerateAction = {
@@ -141,7 +140,6 @@ export enum MeepleStateNames {
 export type MeepleStatePatrolling = {
   type: MeepleStateNames.Patrolling;
   role: MeepleRoles;
-  found: Meeple[]
 };
 
 export type MeepleStateIdle = {
@@ -284,7 +282,6 @@ export type ConditionSelfRadar = {
   type: ConditionType.Radar;
   roles: MeepleRoles[];
   operator: Operator;
-  radius: number;
   action: (meeple: Meeple, game: Game) => ConditionAction;
   target?: Meeple;
 };

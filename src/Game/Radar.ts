@@ -9,20 +9,22 @@ export class Radar extends Actor {
   private meeple: Meeple;
 
   constructor(meeple: Meeple) {
-    // Calculate radius based on meeple's size (using width/2 as radius)
+    // Use the meeple's radar radius for both detection and visualization
     const radius = meeple.radarRadius;
     
+    // Actor size should be diameter (2 * radius) to properly contain the circle
     super({
-      width: radius,
-      height: radius,
+      width: radius * 2,
+      height: radius * 2,
       collisionType: CollisionType.PreventCollision,
     });
 
     this.meeple = meeple;
 
     // Create a circle graphic for the radar (soft purple with high transparency)
+    // Radius should match the detection radius in world coordinates (not multiplied by zoom)
     const circle = new Circle({
-      radius: radius * (meeple.scene?.camera.zoom ?? 1),
+      radius: radius,
       color: Color.fromHex("#9B7ED624"), // Soft purple color with 14% opacity for radar
     });
 

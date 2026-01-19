@@ -17,6 +17,9 @@ importers:
       '@tanstack/react-virtual':
         specifier: ^3.13.14
         version: 3.13.14(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
+      '@wavesurfer/react':
+        specifier: ^1.0.12
+        version: 1.0.12(react@19.2.3)(wavesurfer.js@7.12.1)
       classnames:
         specifier: ^2.5.1
         version: 2.5.1
@@ -65,6 +68,9 @@ importers:
       tailwindcss:
         specifier: ^4.1.18
         version: 4.1.18
+      wavesurfer.js:
+        specifier: ^7.12.1
+        version: 7.12.1
       xstate:
         specifier: ^5.25.0
         version: 5.25.0
@@ -902,6 +908,12 @@ packages:
 
   '@vitest/utils@4.0.16':
     resolution: {integrity: sha512-h8z9yYhV3e1LEfaQ3zdypIrnAg/9hguReGZoS7Gl0aBG5xgA410zBqECqmaF/+RkTggRsfnzc1XaAHA6bmUufA==}
+
+  '@wavesurfer/react@1.0.12':
+    resolution: {integrity: sha512-BNHpz2ryKNVvJdxB47pCPUsNCsjb2pZRysg82M5djIiw0vsiSJwdlt5jaAfDo3vd5IWrcoK9OiPQKO9ZEVNpDQ==}
+    peerDependencies:
+      react: ^18.2.0 || ^19.0.0
+      wavesurfer.js: '>=7.7.14'
 
   acorn-jsx@5.3.2:
     resolution: {integrity: sha512-rq9s+JNhf0IChjtDXxllJ7g41oZk5SlXtp0LHwyA5cejwn7vKmKp4pPri6YEePv2PU65sAsegbXtIinmDFDXgQ==}
@@ -2027,6 +2039,9 @@ packages:
       jsdom:
         optional: true
 
+  wavesurfer.js@7.12.1:
+    resolution: {integrity: sha512-NswPjVHxk0Q1F/VMRemCPUzSojjuHHisQrBqQiRXg7MVbe3f5vQ6r0rTTXA/a/neC/4hnOEC4YpXca4LpH0SUg==}
+
   which@2.0.2:
     resolution: {integrity: sha512-BLI3Tl1TW3Pvl70l3yq3Y64i+awpwXqsGBYWkkqMtnbXgrMD+yj7rhW0kuEDxzJaYXGjEW5ogapKNMEKNMjibA==}
     engines: {node: '>= 8'}
@@ -2809,6 +2824,11 @@ snapshots:
     dependencies:
       '@vitest/pretty-format': 4.0.16
       tinyrainbow: 3.0.3
+
+  '@wavesurfer/react@1.0.12(react@19.2.3)(wavesurfer.js@7.12.1)':
+    dependencies:
+      react: 19.2.3
+      wavesurfer.js: 7.12.1
 
   acorn-jsx@5.3.2(acorn@8.15.0):
     dependencies:
@@ -4052,6 +4072,8 @@ snapshots:
       - terser
       - tsx
       - yaml
+
+  wavesurfer.js@7.12.1: {}
 
   which@2.0.2:
     dependencies:

@@ -15,6 +15,7 @@ import {
 import type { Game } from "./Game";
 import { LaserProjectile } from "./LaserProjectile";
 import { Radar } from "./Radar";
+import { DEFAULT_DELAY } from "../consts";
 
 export class Meeple extends Actor {
   speed: number = 100;
@@ -25,7 +26,7 @@ export class Meeple extends Actor {
   home: Meeple | null = null;
   inventory: MeepleInventory;
   actionsHistory: ActionHistory[] = [];
-  radarRadius: number = 300;
+  radarRadius: number = 1000;
   radar: Radar;
   constructor({
     width,
@@ -86,13 +87,6 @@ export class Meeple extends Actor {
             this.fireLaser(this.state.target);
             break;
           case MeepleStateNames.Patrolling:
-            this.actions.moveTo(game.getRandomPointInGame(), this.speed);
-            
-            const targets = this.useRadar({
-              meepleRoles: [this.state.role],
-            });
-
-            this.state.found = targets;
             break;
           case MeepleStateNames.Generating:
             break;
@@ -120,6 +114,7 @@ export class Meeple extends Actor {
           if (this.evaluateCondition(condition)) {
             const conditionAction = condition.action(this, game);
             const stateAction = conditionAction[this.state.type];
+
             if (stateAction) {
               stateAction();
             }
@@ -228,26 +223,7 @@ export class Meeple extends Actor {
         this.state = {
           type: MeepleStateNames.Patrolling,
           role: action.role,
-          found: action.found,
         };
-
-        const game = this.scene?.engine as Game;
-        if (!game) {
-          return;
-        }
-        // const randomPoints = [
-        //   game.getRandomPointInGame(),
-        //   game.getRandomPointInGame(),
-        //   game.getRandomPointInGame(),
-        //   game.getRandomPointInGame(),
-        //   game.getRandomPointInGame(),
-        //   game.getRandomPointInGame(),
-        // ];
-
-        // for (const point of randomPoints) {
-        //   this.actions.moveTo(point, this.speed);
-        // }
-
         break;
       }
       case "chase":
@@ -256,8 +232,8 @@ export class Meeple extends Actor {
           target: action.target,
           startTime: action.startTime,
         };
-        this.actions.clearActions();
-        this.actions.follow(action.target, this.speed);
+
+        this.actions.follow(action.target, this.speed * 0.75);
         break;
       case "flee": {
         const game = this.scene?.engine as Game;
@@ -268,7 +244,7 @@ export class Meeple extends Actor {
           type: MeepleStateNames.Fleeing,
           target: action.target,
         };
-        this.actions.moveTo(game.getRandomPointInGame(), this.speed * 2);
+        this.actions.moveTo(game.getRandomPointInGame(), this.speed * 4);
         break;
       }
       case "finish":
@@ -287,6 +263,12 @@ export class Meeple extends Actor {
   }
 
   evaluateCondition(condition: Condition) {
+    const PANIC_STATES = [MeepleStateNames.Fleeing];
+
+    if (PANIC_STATES.includes(this.state.type)) {
+      return false;
+    }
+
     switch (condition.type) {
       case ConditionType.Inventory:
         const inventory =
@@ -314,27 +296,16 @@ export class Meeple extends Actor {
             return false;
         }
       case ConditionType.Radar:
-        // Show the radar visualization when condition is evaluated
-        // if (this.radar) {
-        //   this.radar.show();
-        //   // Hide the radar after 1 second
-        //   setTimeout(() => {
-        //     if (this.radar) {
-        //       this.radar.hide();
-        //     }
-        //   }, 1000);
-        // }
-        switch (this.state.type) {
-          case MeepleStateNames.Patrolling: {
-            const nearbyMeeples = this.state.found;
-            if (nearbyMeeples.length > 0) {
-              condition.target = nearbyMeeples[0];
-              return true;
-            }
-            return false;
-          }
-          default:
-            return false;
+        const targets = this.useRadar({
+          meepleRoles: condition.roles,
+        });
+
+        if (targets.length > 0) {
+          condition.target = targets[0];
+          return true;
+        } else {
+          condition.target = undefined;
+          return false;
         }
 
       default:
@@ -518,7 +489,6 @@ export class Meeple extends Actor {
           // Calculate distance from this meeple to the other meeple
           const distance = thisPos.distance(actor.pos);
           // If within radius, add to results
-          console.log(distance, this.radarRadius);
           if (distance <= this.radarRadius) {
             this.radar.show();
             // Hide the radar after 1 second
@@ -534,5 +504,23 @@ export class Meeple extends Actor {
     }
 
     return nearbyMeeples;
+  }
+
+  travelToAndVisit(target: Meeple) {
+    this.actions
+      .callMethod(() => {
+        this.dispatch({
+          type: "travel",
+          target: target,
+        });
+      })
+      .moveTo(target.pos, this.speed)
+      .callMethod(() => {
+        this.dispatch({
+          type: "visit",
+          target: target,
+        });
+      })
+      .delay(DEFAULT_DELAY);
   }
 }
