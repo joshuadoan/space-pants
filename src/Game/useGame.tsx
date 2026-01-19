@@ -92,7 +92,7 @@ type GameContextValue = {
 const initialState = {
   hasStarted: false,
   meeples: [],
-  filterBy: MeepleRoles.PirateShip,
+  filterBy: MeepleRoles.Miner,
   cameraControl: null,
   selectedMeeple: null,
   zoomLevel: 0.1,
