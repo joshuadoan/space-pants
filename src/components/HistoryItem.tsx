@@ -37,6 +37,10 @@ export const HistoryItem = ({
         </motion.div>
       );
     case "traveling":
+      const target = historyItem.state.target;
+      const isMeeple = target && "name" in target && "roleId" in target;
+      const isVector = target && "x" in target && "y" in target;
+      
       return (
         <motion.div
           {...animationProps}
@@ -44,8 +48,17 @@ export const HistoryItem = ({
         >
           <div className="flex items-center gap-2 text-sm font-medium">
             <IconComponent icon="traveling" size={16} title="Traveling" />
-            Traveling to {historyItem.state.target.name} (
-            {historyItem.state.target.roleId})
+            {isMeeple ? (
+              <>
+                Traveling to {target.name} ({target.roleId})
+              </>
+            ) : isVector ? (
+              <>
+                Traveling to position ({Math.round(target.x)}, {Math.round(target.y)})
+              </>
+            ) : (
+              <>Traveling</>
+            )}
           </div>
           <div className="text-xs opacity-60 mt-1">{timeAgo}</div>
         </motion.div>

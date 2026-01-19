@@ -28,7 +28,7 @@ const getStateColor = (stateType: MeepleStateNames): string => {
     case MeepleStateNames.Chasing:
       return "badge-red";
     case MeepleStateNames.Fleeing:
-      return "badge-orange";
+      return "badge-yellow";
     case MeepleStateNames.Targeted:
       return "badge-green";
     default:

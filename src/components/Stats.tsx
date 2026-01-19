@@ -5,6 +5,7 @@ import type { Meeple } from "../Game/Meeple";
 import { useMemo } from "react";
 import { ProductsChart } from "./ProductsChart";
 import { TRANSMUTATION_RATIOS, SELL_PRICES, BUY_PRICES } from "../consts";
+import { IconComponent } from "../utils/iconMap";
 
 type StatsProps = {
   meeples: Meeple[];
@@ -146,6 +147,57 @@ export const Stats = () => {
       (m) => m.state.type === MeepleStateNames.Idle
     ).length;
 
+    // Inventory by role
+    const inventoryByRole = Object.values(MeepleRoles).map((role) => {
+      const roleMeeples = meeples.filter((m) => m.roleId === role);
+      const aggregatedInventory = Object.values(MeepleInventoryItem).reduce(
+        (acc, item) => {
+          acc[item] = roleMeeples.reduce(
+            (sum, m) => sum + m.inventory[item],
+            0
+          );
+          return acc;
+        },
+        {} as Record<MeepleInventoryItem, number>
+      );
+      return {
+        role,
+        inventory: aggregatedInventory,
+        count: roleMeeples.length,
+      };
+    }).filter(({ count }) => count > 0);
+
+    // Deficits by role (negative inventory)
+    const deficitsByRole = Object.values(MeepleRoles)
+      .map((role) => {
+        const roleMeeples = meeples.filter((m) => m.roleId === role);
+        const aggregatedInventory = Object.values(MeepleInventoryItem).reduce(
+          (acc, item) => {
+            acc[item] = roleMeeples.reduce(
+              (sum, m) => sum + m.inventory[item],
+              0
+            );
+            return acc;
+          },
+          {} as Record<MeepleInventoryItem, number>
+        );
+        const negativeItems = Object.entries(aggregatedInventory).filter(
+          ([_, count]) => count < 0
+        );
+        if (negativeItems.length === 0) return null;
+        return {
+          role,
+          inventory: Object.fromEntries(negativeItems) as Record<
+            MeepleInventoryItem,
+            number
+          >,
+          count: roleMeeples.length,
+        };
+      })
+      .filter(
+        (item): item is NonNullable<typeof item> => item !== null
+      );
+
     return {
       populationByRole,
       totalMoney,
@@ -171,6 +223,8 @@ export const Stats = () => {
       totalMeeples,
       activeMeeples,
       idleMeeples,
+      inventoryByRole,
+      deficitsByRole,
     };
   }, [meeples, hasStarted]);
 
@@ -326,53 +380,85 @@ export const Stats = () => {
                 </div>
               </div>
             )}
-            {stats.richestMiner && (
-              <div>
-                <div className="text-sm text-gray-400">Richest Miner</div>
-                <div className="font-semibold">
-                  <Link
-                    to={`/${stats.richestMiner.id}`}
-                    className="link link-hover"
-                  >
-                    {stats.richestMiner.name}
-                  </Link>
-                </div>
-                <div className="text-sm">
-                  💰{" "}
-                  {stats.richestMiner.inventory[
-                    MeepleInventoryItem.Money
-                  ].toLocaleString()}
-                </div>
-              </div>
-            )}
-            {stats.richestByRole
-              .filter(({ role }) => role !== MeepleRoles.Miner)
-              .map(({ role, richest }) => (
-                richest && (
-                  <div key={role}>
-                    <div className="text-sm text-gray-400">
-                      Richest {role.replace("-", " ").split(" ").map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(" ")}
-                    </div>
-                    <div className="font-semibold">
-                      <Link
-                        to={`/${richest.id}`}
-                        className="link link-hover"
-                      >
-                        {richest.name}
-                      </Link>
-                    </div>
-                    <div className="text-sm">
-                      💰{" "}
-                      {richest.inventory[
-                        MeepleInventoryItem.Money
-                      ].toLocaleString()}
-                    </div>
-                  </div>
-                )
-              ))}
           </div>
         </div>
       </div>
+
+      {/* Inventory by Role */}
+      <div className="card bg-base-200 shadow-md">
+        <div className="card-body">
+          <h3 className="card-title text-lg">📦 Inventory by Role</h3>
+          <div className="space-y-3 mt-2">
+            {stats.inventoryByRole.map(({ role, inventory, count }) => (
+              <div key={role} className="space-y-1">
+                <div className="flex items-center gap-2">
+                  <IconComponent icon={role} size={18} title={role} />
+                  <span className="font-semibold capitalize">
+                    {role.replace("-", " ")}:
+                  </span>
+                  <span className="text-sm text-gray-400">({count})</span>
+                </div>
+                <div className="flex items-center gap-3 pl-7">
+                  {Object.entries(inventory)
+                    .filter(([_, count]) => count > 0)
+                    .map(([item, count]) => (
+                      <div
+                        key={item}
+                        className="flex items-center gap-1"
+                      >
+                        <IconComponent
+                          icon={item as MeepleInventoryItem}
+                          size={16}
+                          title={item}
+                        />
+                        <span className="text-sm">{count.toLocaleString()}</span>
+                      </div>
+                    ))}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* Deficits by Role */}
+      {stats.deficitsByRole.length > 0 && (
+        <div className="card bg-base-200 shadow-md border-2 border-red-500/50">
+          <div className="card-body">
+            <h3 className="card-title text-lg text-red-400">⚠️ Deficits by Role</h3>
+            <div className="space-y-3 mt-2">
+              {stats.deficitsByRole.map(({ role, inventory, count }) => (
+                <div key={role} className="space-y-1">
+                  <div className="flex items-center gap-2">
+                    <IconComponent icon={role} size={18} title={role} />
+                    <span className="font-semibold capitalize">
+                      {role.replace("-", " ")}:
+                    </span>
+                    <span className="text-sm text-gray-400">({count})</span>
+                  </div>
+                  <div className="flex items-center gap-3 pl-7">
+                    {Object.entries(inventory).map(([item, count]) => (
+                      <div
+                        key={item}
+                        className="flex items-center gap-1 text-red-400"
+                      >
+                        <IconComponent
+                          icon={item as MeepleInventoryItem}
+                          size={16}
+                          title={item}
+                        />
+                        <span className="text-sm font-semibold">
+                          {count.toLocaleString()}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Game Constants */}
       <div className="card bg-base-200 shadow-md">

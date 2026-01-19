@@ -4,10 +4,11 @@ import {
   Operator,
   MeepleRoles,
   MeepleInventoryItem,
+  MeepleStateNames,
 } from "../types";
 import type { Meeple } from "./Meeple";
 import type { Game } from "./Game";
-import type { ConditionSelfInventory } from "../types";
+import type { ConditionSelfInventory, ConditionSelfRadar } from "../types";
 
 export const ifNoMoneyMineOre = (): ConditionSelfInventory => ({
   description: "Travel to an asteroid field and mine ore.",
@@ -17,30 +18,19 @@ export const ifNoMoneyMineOre = (): ConditionSelfInventory => ({
   quantity: 1,
   action: (meeple: Meeple, game: Game) => {
     const target = game.getRandomMeepleByRole(MeepleRoles.Asteroid);
-    meeple.actions
-      .callMethod(() => {
-        meeple.dispatch({
-          type: "travel",
-          target: target,
-        });
-      })
-      .moveTo(target.pos, meeple.speed)
-      .callMethod(() => {
-        meeple.dispatch({
-          type: "visit",
-          target: target,
-        });
-      })
-      .delay(DEFAULT_DELAY)
-      .callMethod(() => {
+    return {
+      [MeepleStateNames.Idle]: () => {
+        meeple.travelToAndVisit(target);
+      },
+      [MeepleStateNames.Visiting]: () => {
         meeple.dispatch({
           type: "mine",
-          target: target,
+          target,
           property: MeepleInventoryItem.Minirals,
           quantity: 1,
         });
-      })
-      .delay(DEFAULT_DELAY);
+      },
+    };
   },
 });
 
@@ -51,32 +41,44 @@ export const ifOreSellToSpaceStore = (): ConditionSelfInventory => ({
   operator: Operator.GreaterThanOrEqual,
   quantity: 1,
   action: (meeple: Meeple, game: Game) => {
-    const target = game.getRandomMeepleByRole(MeepleRoles.SpaceStore);
-    meeple.actions
-      .callMethod(() => {
-        meeple.dispatch({
-          type: "travel",
-          target: target,
-        });
-      })
-      .moveTo(target.pos, meeple.speed)
-      .callMethod(() => {
-        meeple.dispatch({
-          type: "visit",
-          target: target,
-        });
-      })
-      .delay(DEFAULT_DELAY)
-      .callMethod(() => {
-        meeple.dispatch({
-          type: "sell",
-          target: target,
-          property: MeepleInventoryItem.Minirals,
-          quantity: 1,
-          price: SELL_PRICES[MeepleInventoryItem.Minirals],
-        });
-      })
-      .delay(DEFAULT_DELAY);
+    return {
+      [MeepleStateNames.Mining]: () => {
+        const target = game.getRandomMeepleByRole(MeepleRoles.SpaceStore);
+        meeple.actions
+          .callMethod(() => {
+            meeple.dispatch({
+              type: "travel",
+              target: target,
+            });
+          })
+          .moveTo(target.pos, meeple.speed)
+          .callMethod(() => {
+            meeple.dispatch({
+              type: "visit",
+              target: target,
+            });
+          })
+          .delay(DEFAULT_DELAY)
+          .callMethod(() => {
+            meeple.dispatch({
+              type: "sell",
+              target: target,
+              property: MeepleInventoryItem.Minirals,
+              quantity: 1,
+              price: SELL_PRICES[MeepleInventoryItem.Minirals],
+            });
+          })
+          .delay(DEFAULT_DELAY)
+          .callMethod(() => {
+            meeple.dispatch({
+              type: "finish",
+              state: {
+                type: MeepleStateNames.Idle,
+              },
+            });
+          });
+      },
+    };
   },
 });
 
@@ -87,33 +89,45 @@ export const ifHasMoneyBuyFizzyDrink = (): ConditionSelfInventory => ({
   operator: Operator.GreaterThanOrEqual,
   quantity: 1,
   action: (meeple: Meeple, game: Game) => {
-    const target = game.getRandomMeepleByRole(MeepleRoles.SpaceBar);
-    meeple.actions
-      .callMethod(() => {
-        meeple.dispatch({
-          type: "travel",
-          target: target,
-        });
-      })
-      .moveTo(target.pos, meeple.speed)
-      .callMethod(() => {
-        meeple.dispatch({
-          type: "visit",
-          target: target,
-        });
-      })
-      .delay(DEFAULT_DELAY)
-      .callMethod(() => {
-        // Buy fizzy drink: pay money to bar, receive fizzy drink
-        meeple.dispatch({
-          type: "buy",
-          target: target,
-          property: MeepleInventoryItem.Fizzy,
-          quantity: 1,
-          price: 1,
-        });
-      })
-      .delay(DEFAULT_DELAY);
+    return {
+      [MeepleStateNames.Idle]: () => {
+        const target = game.getRandomMeepleByRole(MeepleRoles.SpaceBar);
+        meeple.actions
+          .callMethod(() => {
+            meeple.dispatch({
+              type: "travel",
+              target: target,
+            });
+          })
+          .moveTo(target.pos, meeple.speed)
+          .callMethod(() => {
+            meeple.dispatch({
+              type: "visit",
+              target: target,
+            });
+          })
+          .delay(DEFAULT_DELAY)
+          .callMethod(() => {
+            // Buy fizzy drink: pay money to bar, receive fizzy drink
+            meeple.dispatch({
+              type: "buy",
+              target: target,
+              property: MeepleInventoryItem.Fizzy,
+              quantity: 1,
+              price: 1,
+            });
+          })
+          .delay(DEFAULT_DELAY)
+          .callMethod(() => {
+            meeple.dispatch({
+              type: "finish",
+              state: {
+                type: MeepleStateNames.Idle,
+              },
+            });
+          });
+      },
+    };
   },
 });
 
@@ -126,15 +140,27 @@ export const ifHighFizzyDrinkConsumeFizzyDrink =
     operator: Operator.GreaterThanOrEqual,
     quantity: 1,
     action: (meeple: Meeple) => {
-      meeple.actions
-        .callMethod(() => {
-          meeple.dispatch({
-            type: "consume",
-            property: MeepleInventoryItem.Fizzy,
-            quantity: 1,
-          });
-        })
-        .delay(DEFAULT_DELAY);
+      return {
+        [MeepleStateNames.Idle]: () => {
+          meeple.actions
+            .callMethod(() => {
+              meeple.dispatch({
+                type: "consume",
+                property: MeepleInventoryItem.Fizzy,
+                quantity: 1,
+              });
+            })
+            .delay(DEFAULT_DELAY)
+            .callMethod(() => {
+              meeple.dispatch({
+                type: "finish",
+                state: {
+                  type: MeepleStateNames.Idle,
+                },
+              });
+            });
+        },
+      };
     },
   });
 
@@ -146,15 +172,27 @@ export const ifLowOreGenerateOre = (): ConditionSelfInventory => ({
   operator: Operator.LessThan,
   quantity: 100,
   action: (meeple: Meeple) => {
-    meeple.actions
-      .callMethod(() => {
-        meeple.dispatch({
-          type: "generate",
-          property: MeepleInventoryItem.Minirals,
-          quantity: 1,
-        });
-      })
-      .delay(DEFAULT_DELAY);
+    return {
+      [MeepleStateNames.Idle]: () => {
+        meeple.actions
+          .callMethod(() => {
+            meeple.dispatch({
+              type: "generate",
+              property: MeepleInventoryItem.Minirals,
+              quantity: 1,
+            });
+          })
+          .delay(DEFAULT_DELAY)
+          .callMethod(() => {
+            meeple.dispatch({
+              type: "finish",
+              state: {
+                type: MeepleStateNames.Idle,
+              },
+            });
+          });
+      },
+    };
   },
 });
 
@@ -166,73 +204,97 @@ export const ifOreTurnIntoFizzy = (): ConditionSelfInventory => ({
   operator: Operator.GreaterThanOrEqual,
   quantity: 2,
   action: (meeple: Meeple) => {
-    meeple.actions
-      .callMethod(() => {
-        meeple.dispatch({
-          type: "transmutation",
-          fromProperty: MeepleInventoryItem.Minirals,
-          toProperty: MeepleInventoryItem.Fizzy,
-          fromQuantity: 1,
-          toQuantity:
-            TRANSMUTATION_RATIOS[MeepleInventoryItem.Minirals][
-              MeepleInventoryItem.Fizzy
-            ],
-        });
-      })
-      .delay(DEFAULT_DELAY)
-      .callMethod(() => {
-        meeple.dispatch({
-          type: "transmutation",
-          fromProperty: MeepleInventoryItem.Minirals,
-          toProperty: MeepleInventoryItem.Money,
-          fromQuantity: 1,
-          toQuantity:
-            TRANSMUTATION_RATIOS[MeepleInventoryItem.Minirals][
-              MeepleInventoryItem.Money
-            ],
-        });
-      })
-      .delay(DEFAULT_DELAY);
+    return {
+      [MeepleStateNames.Idle]: () => {
+        meeple.actions
+          .callMethod(() => {
+            meeple.dispatch({
+              type: "transmutation",
+              fromProperty: MeepleInventoryItem.Minirals,
+              toProperty: MeepleInventoryItem.Fizzy,
+              fromQuantity: 1,
+              toQuantity:
+                TRANSMUTATION_RATIOS[MeepleInventoryItem.Minirals][
+                  MeepleInventoryItem.Fizzy
+                ],
+            });
+          })
+          .delay(DEFAULT_DELAY)
+          .callMethod(() => {
+            meeple.dispatch({
+              type: "transmutation",
+              fromProperty: MeepleInventoryItem.Minirals,
+              toProperty: MeepleInventoryItem.Money,
+              fromQuantity: 1,
+              toQuantity:
+                TRANSMUTATION_RATIOS[MeepleInventoryItem.Minirals][
+                  MeepleInventoryItem.Money
+                ],
+            });
+          })
+          .delay(DEFAULT_DELAY)
+          .callMethod(() => {
+            meeple.dispatch({
+              type: "finish",
+              state: {
+                type: MeepleStateNames.Idle,
+              },
+            });
+          });
+      },
+    };
   },
 });
 
 export const ifLowFizzyDrinkBuyFizzyDrink = (
   bar: Meeple
 ): ConditionSelfInventory => ({
-  description: "Restock the bar's fizzy drink supply from the SpaceStore.",
+  description: "Buy fizzy drinks from the SpaceStore.",
   type: ConditionType.Inventory,
   property: MeepleInventoryItem.Fizzy,
   operator: Operator.LessThan,
   quantity: 100,
   target: bar, // Check the bar's inventory, not the bartender's
   action: (meeple: Meeple, game: Game) => {
-    const spaceStore = game.getRandomMeepleByRole(MeepleRoles.SpaceStore);
-    meeple.actions
-      .callMethod(() => {
-        meeple.dispatch({
-          type: "travel",
-          target: spaceStore,
-        });
-      })
-      .moveTo(spaceStore.pos, meeple.speed)
-      .callMethod(() => {
-        meeple.dispatch({
-          type: "visit",
-          target: spaceStore,
-        });
-      })
-      .delay(DEFAULT_DELAY)
-      .callMethod(() => {
-        // Bartender pays money to space store and receives fizzy drink
-        meeple.dispatch({
-          type: "buy",
-          target: spaceStore,
-          property: MeepleInventoryItem.Fizzy,
-          quantity: 2,
-          price: 1,
-        });
-      })
-      .delay(DEFAULT_DELAY);
+    return {
+      [MeepleStateNames.Idle]: () => {
+        const spaceStore = game.getRandomMeepleByRole(MeepleRoles.SpaceStore);
+        meeple.actions
+          .callMethod(() => {
+            meeple.dispatch({
+              type: "travel",
+              target: spaceStore,
+            });
+          })
+          .moveTo(spaceStore.pos, meeple.speed)
+          .callMethod(() => {
+            meeple.dispatch({
+              type: "visit",
+              target: spaceStore,
+            });
+          })
+          .delay(DEFAULT_DELAY)
+          .callMethod(() => {
+            // Bartender pays money to space store and receives fizzy drink
+            meeple.dispatch({
+              type: "buy",
+              target: spaceStore,
+              property: MeepleInventoryItem.Fizzy,
+              quantity: 2,
+              price: 1,
+            });
+          })
+          .delay(DEFAULT_DELAY)
+          .callMethod(() => {
+            meeple.dispatch({
+              type: "finish",
+              state: {
+                type: MeepleStateNames.Idle,
+              },
+            });
+          });
+      },
+    };
   },
 });
 
@@ -246,35 +308,47 @@ export const ifHighFizzyDrinkRestockBar = (): ConditionSelfInventory => ({
   operator: Operator.GreaterThanOrEqual,
   quantity: 1,
   action: (meeple: Meeple, _game: Game) => {
-    if (!meeple.home) {
-      return;
-    }
-    const bar = meeple.home;
-    meeple.actions
-      .callMethod(() => {
-        meeple.dispatch({
-          type: "travel",
-          target: bar,
-        });
-      })
-      .moveTo(bar.pos, meeple.speed)
-      .callMethod(() => {
-        meeple.dispatch({
-          type: "visit",
-          target: bar,
-        });
-      })
-      .delay(DEFAULT_DELAY)
-      .callMethod(() => {
-        meeple.dispatch({
-          type: "sell",
-          target: bar,
-          property: MeepleInventoryItem.Fizzy,
-          quantity: 1,
-          price: 2,
-        });
-      })
-      .delay(DEFAULT_DELAY);
+    return {
+      [MeepleStateNames.Idle]: () => {
+        if (!meeple.home) {
+          return;
+        }
+        const bar = meeple.home;
+        meeple.actions
+          .callMethod(() => {
+            meeple.dispatch({
+              type: "travel",
+              target: bar,
+            });
+          })
+          .moveTo(bar.pos, meeple.speed)
+          .callMethod(() => {
+            meeple.dispatch({
+              type: "visit",
+              target: bar,
+            });
+          })
+          .delay(DEFAULT_DELAY)
+          .callMethod(() => {
+            meeple.dispatch({
+              type: "sell",
+              target: bar,
+              property: MeepleInventoryItem.Fizzy,
+              quantity: 1,
+              price: 2,
+            });
+          })
+          .delay(DEFAULT_DELAY)
+          .callMethod(() => {
+            meeple.dispatch({
+              type: "finish",
+              state: {
+                type: MeepleStateNames.Idle,
+              },
+            });
+          });
+      },
+    };
   },
 });
 
@@ -285,14 +359,65 @@ export function patrolForRole(role: MeepleRoles): ConditionSelfInventory {
     property: MeepleInventoryItem.Money,
     operator: Operator.LessThan,
     quantity: 100,
-    action: (meeple: Meeple) => {
-      meeple.dispatch({
-        type: "patrol-for-role",
-        role: role,
-      });
+    action: (meeple: Meeple, game: Game) => {
+      return {
+        [MeepleStateNames.Idle]: () => {
+          meeple.actions
+            .callMethod(() => {
+              meeple.dispatch({
+                type: "patrol-for-role",
+                role: role,
+              });
+            })
+            .moveTo(game.getRandomPointInGame(), meeple.speed)
+            .callMethod(() => {
+              meeple.dispatch({
+                type: "finish",
+                state: {
+                  type: MeepleStateNames.Idle,
+                },
+              });
+            });
+        },
+      };
     },
   };
 }
+
+// ConditionSelfRadar
+export const ifTargetThenChase = (): ConditionSelfRadar => ({
+  description: `Chase target if found in radar`,
+  type: ConditionType.Radar,
+  roles: [MeepleRoles.Miner, MeepleRoles.Bartender],
+  operator: Operator.LessThan,
+  action: function (meeple: Meeple) {
+    return {
+      [MeepleStateNames.Idle]: () => {
+        const target = this.target;
+        if (target) {
+          meeple.actions.clearActions();
+          meeple.dispatch({
+            type: "chase",
+            target: target,
+            startTime: Date.now(),
+          });
+        }
+      },
+      // same for patrolling
+      [MeepleStateNames.Patrolling]: () => {
+        const target = this.target;
+        if (target) {
+          meeple.actions.clearActions();
+          meeple.dispatch({
+            type: "chase",
+            target: target,
+            startTime: Date.now(),
+          });
+        }
+      },
+    };
+  },
+});
 
 // For pirate ships: if money > 100, fly home to pirate base and transfer all money to base
 export const ifHighMoneyTransferToPirateBase = (): ConditionSelfInventory => ({
@@ -302,38 +427,43 @@ export const ifHighMoneyTransferToPirateBase = (): ConditionSelfInventory => ({
   operator: Operator.GreaterThan,
   quantity: 100,
   action: (meeple: Meeple, _game: Game) => {
-    if (!meeple.home) {
-      return;
-    }
-    const pirateBase = meeple.home;
-    const moneyAmount = meeple.inventory[MeepleInventoryItem.Money];
-    meeple.actions
-      .callMethod(() => {
-        meeple.dispatch({
-          type: "travel",
-          target: pirateBase,
-        });
-      })
-      .moveTo(pirateBase.pos, meeple.speed)
-      .callMethod(() => {
-        meeple.dispatch({
-          type: "visit",
-          target: pirateBase,
-        });
-      })
-      .delay(DEFAULT_DELAY)
-      .callMethod(() => {
-        meeple.dispatch({
-          type: "transact",
-          transaction: {
-            from: meeple,
-            to: pirateBase,
-            property: MeepleInventoryItem.Money,
-            quantity: moneyAmount,
-          },
-        });
-      })
-      .delay(DEFAULT_DELAY);
+    return {
+      [MeepleStateNames.Idle]: () => {
+        if (!meeple.home) {
+          return;
+        }
+        console.log("chasing target", meeple.state);
+        const pirateBase = meeple.home;
+        const moneyAmount = meeple.inventory[MeepleInventoryItem.Money];
+        meeple.actions
+          .callMethod(() => {
+            meeple.dispatch({
+              type: "travel",
+              target: pirateBase,
+            });
+          })
+          .moveTo(pirateBase.pos, meeple.speed)
+          .callMethod(() => {
+            meeple.dispatch({
+              type: "visit",
+              target: pirateBase,
+            });
+          })
+          .delay(DEFAULT_DELAY)
+          .callMethod(() => {
+            meeple.dispatch({
+              type: "transact",
+              transaction: {
+                from: meeple,
+                to: pirateBase,
+                property: MeepleInventoryItem.Money,
+                quantity: moneyAmount,
+              },
+            });
+          })
+          .delay(DEFAULT_DELAY);
+      },
+    };
   },
 });
 

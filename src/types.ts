@@ -1,3 +1,4 @@
+import type { Vector } from "excalibur";
 import type { Game } from "./Game/Game";
 import type { Meeple } from "./Game/Meeple";
 
@@ -22,7 +23,7 @@ export type MeepleInventory = Record<MeepleInventoryItem, number>;
 
 export type MeepleActionTravel = {
   type: "travel";
-  target: Meeple;
+  target: Meeple | Vector;
 };
 
 // finish (goes to passed in state or idle by default)
@@ -37,6 +38,7 @@ export type MeepleActionChase = {
   target: Meeple;
   startTime: number; // when the chase started
 };
+
 
 // flee
 export type MeepleActionFlee = {
@@ -152,7 +154,7 @@ export type MeepleStateChasing = {
 
 export type MeepleStateTraveling = {
   type: MeepleStateNames.Traveling;
-  target: Meeple;
+  target: Meeple | Vector;
 };
 
 export type MeepleStateVisiting = {
@@ -261,23 +263,26 @@ export enum Operator {
   NotEqual = "not-equal",
 }
 
+export type ConditionAction = {
+  [key in MeepleStateNames]?: () => void;
+};
+
 export type ConditionSelfInventory = {
   description: string;
   type: ConditionType.Inventory;
   property: MeepleInventoryItem;
   operator: Operator;
   quantity: number;
-  action: (meeple: Meeple, game: Game) => void;
+  action: (meeple: Meeple, game: Game) => ConditionAction;
   target?: Meeple;
 };
 
 export type ConditionSelfRadar = {
   description: string;
   type: ConditionType.Radar;
-  role: MeepleRoles;
+  roles: MeepleRoles[];
   operator: Operator;
-  quantity: number;
-  action: (meeple: Meeple, game: Game) => void;
+  action: (meeple: Meeple, game: Game) => ConditionAction;
   target?: Meeple;
 };
 
