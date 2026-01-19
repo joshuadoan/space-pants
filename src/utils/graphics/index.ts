@@ -4,9 +4,10 @@ import { createSpaceShipOutOfShapes } from "./default";
 import { createMinerShipOutOfShapes, createMiner2ShipOutOfShapes } from "./miner";
 import { createTraderShipOutOfShapes, createTrader2ShipOutOfShapes } from "./trader";
 import { createBartenderShipOutOfShapes, createBartender2ShipOutOfShapes } from "./bartender";
-import { createSpaceStationGraphic, createSpaceBarGraphic, createSpaceApartmentsGraphic } from "./buildings";
+import { createSpaceStationGraphic, createSpaceBarGraphic, createSpaceApartmentsGraphic, createBankGraphic } from "./buildings";
 import { createPirateShipOutOfShapes, createPoliceShipOutOfShapes, createCruiseShipOutOfShapes, createGalacticZooOutOfShapes } from "./special";
 import { createAsteroidGraphic } from "./asteroid";
+import { createBankerShipOutOfShapes } from "./banker";
 
 // Re-export the enum for convenience
 export { EntityGraphicStyle } from "./types";
@@ -51,6 +52,10 @@ export function createEntityGraphic(style: EntityGraphicStyle): GraphicsGroup {
       return createBartender2ShipOutOfShapes();
     case EntityGraphicStyle.Asteroid:
       return createAsteroidGraphic();
+    case EntityGraphicStyle.Bank:
+      return createBankGraphic();
+    case EntityGraphicStyle.Banker:
+      return createBankerShipOutOfShapes();
     case EntityGraphicStyle.Default:
     default:
       return createSpaceShipOutOfShapes();

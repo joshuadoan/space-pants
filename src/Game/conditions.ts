@@ -10,3 +10,4 @@ export { ifHighFizzyDrinkRestockBar } from "./conditions/ifHighFizzyDrinkRestock
 export { patrolForRole } from "./conditions/patrolForRole";
 export { ifTargetThenChase } from "./conditions/ifTargetThenChase";
 export { ifHighMoneyTransferToPirateBase } from "./conditions/ifHighMoneyTransferToPirateBase";
+export { ifLowMoneyGenerateMoney } from "./conditions/ifLowMoneyGenerateMoney";

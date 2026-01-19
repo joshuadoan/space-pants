@@ -25,6 +25,7 @@ import {
   patrolForRole,
   ifHighMoneyTransferToPirateBase,
   ifTargetThenChase,
+  ifLowMoneyGenerateMoney,
 } from "./conditions";
 import { generateSpaceName } from "../utils/generateSpaceName";
 import {
@@ -405,6 +406,54 @@ export function GameProvider({ children }: { children: ReactNode }) {
       PirateShip.name = generateSpaceName();
       PirateShip.home = game.getRandomMeepleByRole(MeepleRoles.PirateBase);
       game.currentScene.add(PirateShip);
+    }
+
+    const banks: Meeple[] = [];
+    for (let i = 0; i < COUNTS.BANK; i++) {
+      const Bank = new Meeple({
+        width: 100,
+        height: 100,
+        roleId: MeepleRoles.Bank,
+        inventory: {
+          ...DEFAULT_INVENTORY,
+        },
+        conditions: [],
+      });
+
+      Bank.graphics.add(createEntityGraphic(EntityGraphicStyle.Bank));
+      Bank.pos = new Vector(
+        Math.random() * GAME_WIDTH,
+        Math.random() * GAME_HEIGHT
+      );
+
+      Bank.name = generateSpaceName();
+      Bank.conditions = [ifLowMoneyGenerateMoney()];
+      Bank.home = Bank;
+      game.currentScene.add(Bank);
+      banks.push(Bank);
+    }
+
+    for (let i = 0; i < COUNTS.BANKER; i++) {
+      const Banker = new Meeple({
+        width: 100,
+        height: 100,
+        roleId: MeepleRoles.Banker,
+        inventory: {
+          ...DEFAULT_INVENTORY,
+        },
+        conditions: [],
+      });
+
+      Banker.graphics.add(createEntityGraphic(EntityGraphicStyle.Banker));
+      Banker.pos = new Vector(GAME_WIDTH / 2, GAME_HEIGHT / 2);
+
+      Banker.conditions = [];
+      Banker.speed =
+        Math.random() * (MAX_SHIP_DEFAULT_SPEED - MIN_SHIP_DEFAULT_SPEED) +
+        MIN_SHIP_DEFAULT_SPEED;
+      Banker.name = generateSpaceName();
+      Banker.home = banks[i];
+      game.currentScene.add(Banker);
     }
 
     // zom out and center camera in the game
