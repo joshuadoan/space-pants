@@ -4,7 +4,6 @@ import { Main } from "./components/Main";
 import { Detail } from "./components/Detail";
 import { Instructions } from "./components/Instructions";
 import { Stats } from "./components/Stats";
-import { Audio } from "./components/Audio";
 
 function App() {
   return (
@@ -17,7 +16,6 @@ function App() {
           <Route path="/stats" element={<Stats />} />
         </Route>
       </Routes>
-      <Audio className="absolute bottom-0 w-full" />
     </div>
   );
 }

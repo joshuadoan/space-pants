@@ -7,6 +7,7 @@ import { useGame } from "../Game/useGame";
 import { useEffect } from "react";
 import { MeepleRoles } from "../types";
 import { MeepleInventoryItem } from "../types";
+import { Audio } from "./Audio";
 import cx from "classnames";
 
 export const Layout = () => {
@@ -122,7 +123,7 @@ export const Layout = () => {
             Help
           </Link>
         </div>
-        <Counts  inventoryEntries={inventoryEntries} />
+        <Counts inventoryEntries={inventoryEntries} />
       </div>
       <main className="flex flex-1 min-h-0">
         <div className="hidden md:flex md:flex-col w-sm min-h-0">
@@ -137,10 +138,9 @@ export const Layout = () => {
             }}
           />
         </div>
-        <div className="w-full h-full">
-          <canvas id="game-canvas" className="w-full h-full" />
-        </div>
+        <canvas id="game-canvas" className="w-full h-full" />
       </main>
+      <Audio className="absolute bottom-0 right-0 w-full" />
     </div>
   );
 };
