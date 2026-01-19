@@ -426,7 +426,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
           (actor): actor is Meeple => actor instanceof Meeple
         ) || [];
       dispatch({ type: "update-game", meeples: currentMeeples });
-    }, 500);
+    }, 1000);
 
     return () => clearInterval(interval);
   }, []);
