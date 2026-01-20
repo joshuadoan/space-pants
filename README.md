@@ -1,5 +1,7 @@
 # space-pants
 
+**🎮 [Live Demo](https://spacefriends.org/stats)**
+
 A space simulation game built with React, TypeScript, and Excalibur.
 
 ## Overview
