@@ -11,7 +11,7 @@ export const GAME_HEIGHT = 2500;
 export const COUNTS = {
   MINER: 17,
   BARTENDER: 2,
-  PIRATE_SHIP: 0,
+  PIRATE_SHIP: 1,
   ASTEROID: 5,
   SPACE_STORE: 2,
   SPACE_BAR: 2,

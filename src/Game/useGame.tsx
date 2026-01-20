@@ -26,6 +26,7 @@ import {
   ifHighMoneyTransferToPirateBase,
   ifTargetThenChase,
   ifLowMoneyGenerateMoney,
+  ifSpaceStoreNeedsMoneyTransfer,
 } from "./conditions";
 import { generateSpaceName } from "../utils/generateSpaceName";
 import {
@@ -96,7 +97,7 @@ const initialState = {
   filterBy: MeepleRoles.Miner,
   cameraControl: null,
   selectedMeeple: null,
-  zoomLevel: 0.1,
+  zoomLevel: 0.5,
 };
 
 // ============================================================================
@@ -176,7 +177,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
   const gameRef = useRef<Game | null>(null);
 
   useEffect(() => {
-    if (gameRef.current) {
+    if (gameRef.current && gameState.hasStarted) {
       gameRef.current.currentScene.camera.zoom = gameState.zoomLevel;
     }
   }, [gameState.zoomLevel]);
@@ -447,12 +448,12 @@ export function GameProvider({ children }: { children: ReactNode }) {
       Banker.graphics.add(createEntityGraphic(EntityGraphicStyle.Banker));
       Banker.pos = new Vector(GAME_WIDTH / 2, GAME_HEIGHT / 2);
 
-      Banker.conditions = [];
+      Banker.conditions = [ifSpaceStoreNeedsMoneyTransfer(banks[i % banks.length])];
       Banker.speed =
         Math.random() * (MAX_SHIP_DEFAULT_SPEED - MIN_SHIP_DEFAULT_SPEED) +
         MIN_SHIP_DEFAULT_SPEED;
       Banker.name = generateSpaceName();
-      Banker.home = banks[i];
+      Banker.home = banks[i % banks.length];
       game.currentScene.add(Banker);
     }
 
@@ -464,9 +465,6 @@ export function GameProvider({ children }: { children: ReactNode }) {
     gameRef.current = game;
 
     game.start();
-
-    dispatch({ type: "set-zoom-level", level: initialState.zoomLevel });
-
     dispatch({ type: "start-game" });
 
     const interval = setInterval(() => {

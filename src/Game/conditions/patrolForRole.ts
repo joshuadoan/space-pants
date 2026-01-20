@@ -11,25 +11,29 @@ export function patrolForRole(role: MeepleRoles): ConditionSelfInventory {
     operator: Operator.LessThan,
     quantity: 100,
     action: (meeple: Meeple, game: Game) => {
-      return {
-        [MeepleStateNames.Idle]: () => {
-          meeple.actions
-            .callMethod(() => {
-              meeple.dispatch({
-                type: "patrol-for-role",
-                role: role,
-              });
-            })
-            .moveTo(game.getRandomPointInGame(), meeple.speed)
-            .callMethod(() => {
-              meeple.dispatch({
-                type: "finish",
-                state: {
-                  type: MeepleStateNames.Idle,
-                },
-              });
+      const startPatrol = () => {
+        meeple.actions
+          .callMethod(() => {
+            meeple.dispatch({
+              type: "patrol-for-role",
+              role: role,
             });
-        },
+          })
+          .moveTo(game.getRandomPointInGame(), meeple.speed)
+          .callMethod(() => {
+            meeple.dispatch({
+              type: "finish",
+              state: {
+                type: MeepleStateNames.Idle,
+              },
+            });
+          });
+      };
+
+      return {
+        [MeepleStateNames.Idle]: startPatrol,
+        // When patrolling and reaching destination, continue patrolling
+        [MeepleStateNames.Patrolling]: startPatrol,
       };
     },
   };

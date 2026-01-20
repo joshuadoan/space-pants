@@ -12,42 +12,54 @@ export const ifHighMoneyTransferToPirateBase = (): ConditionSelfInventory => ({
   operator: Operator.GreaterThan,
   quantity: 100,
   action: (meeple: Meeple, _game: Game) => {
+    const goHomeAndTransfer = () => {
+      if (!meeple.home) {
+        return;
+      }
+      const pirateBase = meeple.home;
+      const moneyAmount = meeple.inventory[MeepleInventoryItem.Money];
+      meeple.actions.clearActions();
+      meeple.actions
+        .callMethod(() => {
+          meeple.dispatch({
+            type: "travel",
+            target: pirateBase,
+          });
+        })
+        .moveTo(pirateBase.pos, meeple.speed)
+        .callMethod(() => {
+          meeple.dispatch({
+            type: "visit",
+            target: pirateBase,
+          });
+        })
+        .delay(DEFAULT_DELAY)
+        .callMethod(() => {
+          meeple.dispatch({
+            type: "transact",
+            transaction: {
+              from: meeple,
+              to: pirateBase,
+              property: MeepleInventoryItem.Money,
+              quantity: moneyAmount,
+            },
+          });
+        })
+        .delay(DEFAULT_DELAY)
+        .callMethod(() => {
+          meeple.dispatch({
+            type: "finish",
+            state: {
+              type: MeepleStateNames.Idle,
+            },
+          });
+        });
+    };
+
     return {
-      [MeepleStateNames.Idle]: () => {
-        if (!meeple.home) {
-          return;
-        }
-        console.log("chasing target", meeple.state);
-        const pirateBase = meeple.home;
-        const moneyAmount = meeple.inventory[MeepleInventoryItem.Money];
-        meeple.actions
-          .callMethod(() => {
-            meeple.dispatch({
-              type: "travel",
-              target: pirateBase,
-            });
-          })
-          .moveTo(pirateBase.pos, meeple.speed)
-          .callMethod(() => {
-            meeple.dispatch({
-              type: "visit",
-              target: pirateBase,
-            });
-          })
-          .delay(DEFAULT_DELAY)
-          .callMethod(() => {
-            meeple.dispatch({
-              type: "transact",
-              transaction: {
-                from: meeple,
-                to: pirateBase,
-                property: MeepleInventoryItem.Money,
-                quantity: moneyAmount,
-              },
-            });
-          })
-          .delay(DEFAULT_DELAY);
-      },
+      [MeepleStateNames.Idle]: goHomeAndTransfer,
+      [MeepleStateNames.Chasing]: goHomeAndTransfer,
+      [MeepleStateNames.Patrolling]: goHomeAndTransfer,
     };
   },
 });

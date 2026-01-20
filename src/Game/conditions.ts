@@ -11,3 +11,4 @@ export { patrolForRole } from "./conditions/patrolForRole";
 export { ifTargetThenChase } from "./conditions/ifTargetThenChase";
 export { ifHighMoneyTransferToPirateBase } from "./conditions/ifHighMoneyTransferToPirateBase";
 export { ifLowMoneyGenerateMoney } from "./conditions/ifLowMoneyGenerateMoney";
+export { ifSpaceStoreNeedsMoneyTransfer } from "./conditions/ifSpaceStoreNeedsMoneyTransfer";

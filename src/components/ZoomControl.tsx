@@ -16,8 +16,6 @@ export const ZoomControl = ({ zoomLevel, setZoomLevel }: ZoomControlProps) => {
     setZoomLevel(Math.min(max, zoomLevel + step));
   };
 
-  console.log("zoomLevel", zoomLevel);
-
   return (
     <div className="flex items-center gap-2">
       <button
