@@ -256,3 +256,91 @@ export function createSpaceApartmentsGraphic(): GraphicsGroup {
   });
 }
 
+export function createBankGraphic(): GraphicsGroup {
+  const buildingColor = Color.fromHex("#2C3E50"); // Dark blue-gray
+  const accentColor = Color.fromHex("#F39C12"); // Gold/orange for bank theme
+  const windowColor = Color.fromHex("#F1C40F"); // Bright yellow for lit windows
+  const windowDarkColor = Color.fromHex("#34495E"); // Dark for unlit windows
+  const doorColor = Color.fromHex("#1A252F"); // Very dark for door
+  const vaultColor = Color.fromHex("#7F8C8D"); // Gray for vault
+
+  const blocks: { rect: Rectangle; offset: Vector }[] = [];
+  
+  // Main building body (rectangular, solid)
+  blocks.push({ 
+    rect: new Rectangle({ width: 32, height: 24, color: buildingColor }), 
+    offset: new Vector(0, 0) 
+  });
+  
+  // Top decorative cornice
+  blocks.push({ 
+    rect: new Rectangle({ width: 36, height: 4, color: accentColor }), 
+    offset: new Vector(0, -14) 
+  });
+  
+  // Vault door (circular, represented as square)
+  blocks.push({ 
+    rect: new Rectangle({ width: 12, height: 12, color: vaultColor }), 
+    offset: new Vector(-8, 4) 
+  });
+  blocks.push({ 
+    rect: new Rectangle({ width: 8, height: 8, color: doorColor }), 
+    offset: new Vector(-8, 4) 
+  });
+  
+  // Main entrance door
+  blocks.push({ 
+    rect: new Rectangle({ width: 8, height: 12, color: doorColor }), 
+    offset: new Vector(8, 6) 
+  });
+  
+  // Windows - create a grid pattern
+  const windowSize = 4;
+  const windowSpacing = 8;
+  const startX = -6;
+  const startY = -6;
+  
+  // First floor windows (2 windows)
+  for (let i = 0; i < 2; i++) {
+    const isLit = Math.random() > 0.4; // 60% chance of being lit
+    blocks.push({ 
+      rect: new Rectangle({ 
+        width: windowSize, 
+        height: windowSize, 
+        color: isLit ? windowColor : windowDarkColor 
+      }), 
+      offset: new Vector(startX + i * windowSpacing, startY + 8) 
+    });
+  }
+  
+  // Second floor windows (2 windows)
+  for (let i = 0; i < 2; i++) {
+    const isLit = Math.random() > 0.4; // 60% chance of being lit
+    blocks.push({ 
+      rect: new Rectangle({ 
+        width: windowSize, 
+        height: windowSize, 
+        color: isLit ? windowColor : windowDarkColor 
+      }), 
+      offset: new Vector(startX + i * windowSpacing, startY - 4) 
+    });
+  }
+  
+  // Gold accent bars (security bars)
+  blocks.push({ 
+    rect: new Rectangle({ width: 30, height: 2, color: accentColor }), 
+    offset: new Vector(0, 10) 
+  });
+  blocks.push({ 
+    rect: new Rectangle({ width: 30, height: 2, color: accentColor }), 
+    offset: new Vector(0, -10) 
+  });
+
+  return new GraphicsGroup({
+    members: blocks.map(block => ({
+      graphic: block.rect,
+      offset: block.offset,
+    })),
+  });
+}
+

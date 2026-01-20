@@ -10,13 +10,15 @@ export const GAME_HEIGHT = 2500;
 
 export const COUNTS = {
   MINER: 17,
-  BARTENDER: 4,
+  BARTENDER: 2,
   PIRATE_SHIP: 1,
   ASTEROID: 5,
   SPACE_STORE: 2,
   SPACE_BAR: 2,
   SPACE_APARTMENT: 1,
   PIRATE_BASE: 1,
+  BANK: 1,
+  BANKER: 2,
 };
 
 export const MIN_SHIP_DEFAULT_SPEED = 50;

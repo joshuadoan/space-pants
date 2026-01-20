@@ -18,5 +18,7 @@ export enum EntityGraphicStyle {
   Trader2 = "trader-2",
   Bartender2 = "bartender-2",
   Asteroid = "asteroid",
+  Bank = "bank",
+  Banker = "banker",
 }
 

@@ -5,6 +5,7 @@ import {
   IconArrowsExchange,
   IconBottle,
   IconBox,
+  IconBuildingBank,
   IconCash,
   IconCheck,
   IconChefHat,
@@ -22,6 +23,7 @@ import {
   IconShoppingBag,
   IconShoppingCart,
   IconSparkles,
+  IconWallet,
 } from "@tabler/icons-react";
 import type {
   MeepleRoles,
@@ -78,6 +80,8 @@ const IconMap: IconMapType = {
   "bartender": IconChefHat,
   "pirate-base":  IconHome,
   "pirate-ship": IconShip,
+  "bank": IconBuildingBank,
+  "banker": IconWallet,
   // Navigation
   "arrow-left": IconArrowLeft,
   // Inventory Items

@@ -25,6 +25,8 @@ import {
   patrolForRole,
   ifHighMoneyTransferToPirateBase,
   ifTargetThenChase,
+  ifLowMoneyGenerateMoney,
+  ifSpaceStoreNeedsMoneyTransfer,
 } from "./conditions";
 import { generateSpaceName } from "../utils/generateSpaceName";
 import {
@@ -95,7 +97,7 @@ const initialState = {
   filterBy: MeepleRoles.Miner,
   cameraControl: null,
   selectedMeeple: null,
-  zoomLevel: 0.1,
+  zoomLevel: 0.5,
 };
 
 // ============================================================================
@@ -175,7 +177,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
   const gameRef = useRef<Game | null>(null);
 
   useEffect(() => {
-    if (gameRef.current) {
+    if (gameRef.current && gameState.hasStarted) {
       gameRef.current.currentScene.camera.zoom = gameState.zoomLevel;
     }
   }, [gameState.zoomLevel]);
@@ -407,6 +409,54 @@ export function GameProvider({ children }: { children: ReactNode }) {
       game.currentScene.add(PirateShip);
     }
 
+    const banks: Meeple[] = [];
+    for (let i = 0; i < COUNTS.BANK; i++) {
+      const Bank = new Meeple({
+        width: 100,
+        height: 100,
+        roleId: MeepleRoles.Bank,
+        inventory: {
+          ...DEFAULT_INVENTORY,
+        },
+        conditions: [],
+      });
+
+      Bank.graphics.add(createEntityGraphic(EntityGraphicStyle.Bank));
+      Bank.pos = new Vector(
+        Math.random() * GAME_WIDTH,
+        Math.random() * GAME_HEIGHT
+      );
+
+      Bank.name = generateSpaceName();
+      Bank.conditions = [ifLowMoneyGenerateMoney()];
+      Bank.home = Bank;
+      game.currentScene.add(Bank);
+      banks.push(Bank);
+    }
+
+    for (let i = 0; i < COUNTS.BANKER; i++) {
+      const Banker = new Meeple({
+        width: 100,
+        height: 100,
+        roleId: MeepleRoles.Banker,
+        inventory: {
+          ...DEFAULT_INVENTORY,
+        },
+        conditions: [],
+      });
+
+      Banker.graphics.add(createEntityGraphic(EntityGraphicStyle.Banker));
+      Banker.pos = new Vector(GAME_WIDTH / 2, GAME_HEIGHT / 2);
+
+      Banker.conditions = [ifSpaceStoreNeedsMoneyTransfer(banks[i % banks.length])];
+      Banker.speed =
+        Math.random() * (MAX_SHIP_DEFAULT_SPEED - MIN_SHIP_DEFAULT_SPEED) +
+        MIN_SHIP_DEFAULT_SPEED;
+      Banker.name = generateSpaceName();
+      Banker.home = banks[i % banks.length];
+      game.currentScene.add(Banker);
+    }
+
     // zom out and center camera in the game
     // game.currentScene.camera.zoom = initialState.zoomLevel;
     game.currentScene.camera.pos = new Vector(GAME_WIDTH / 2, GAME_HEIGHT / 2);
@@ -415,9 +465,6 @@ export function GameProvider({ children }: { children: ReactNode }) {
     gameRef.current = game;
 
     game.start();
-
-    dispatch({ type: "set-zoom-level", level: initialState.zoomLevel });
-
     dispatch({ type: "start-game" });
 
     const interval = setInterval(() => {
@@ -426,7 +473,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
           (actor): actor is Meeple => actor instanceof Meeple
         ) || [];
       dispatch({ type: "update-game", meeples: currentMeeples });
-    }, 500);
+    }, 1000);
 
     return () => clearInterval(interval);
   }, []);

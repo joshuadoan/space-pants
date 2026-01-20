@@ -26,7 +26,7 @@ export class Meeple extends Actor {
   home: Meeple | null = null;
   inventory: MeepleInventory;
   actionsHistory: ActionHistory[] = [];
-  radarRadius: number = 1000;
+  radarRadius: number = 300;
   radar: Radar;
   constructor({
     width,

@@ -11,6 +11,8 @@ export enum MeepleRoles {
   Bartender = "bartender",
   PirateBase = "pirate-base",
   PirateShip = "pirate-ship",
+  Bank = "bank",
+  Banker = "banker",
 }
 
 export enum MeepleInventoryItem {
