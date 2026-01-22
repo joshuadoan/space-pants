@@ -140,7 +140,7 @@ export const Layout = () => {
         </div>
         <canvas id="game-canvas" className="w-full h-full" />
       </main>
-      <Audio className="absolute bottom-0 right-0 w-full" />
+      <Audio className="w-full" />
     </div>
   );
 };
