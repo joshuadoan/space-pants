@@ -7,7 +7,7 @@ export const Instructions = () => {
         <h2 className="text-lg font-semibold mb-2">Game Summary</h2>
         <p className="text-sm">
           Space Pants is an autonomous space economy simulation. Watch as miners, bartenders, 
-          space stores, and other entities interact in a dynamic economy. Each entity acts 
+          space stores, banks, bankers, and other entities interact in a dynamic economy. Each entity acts 
           autonomously based on their inventory conditions, creating an emergent economic system.
         </p>
       </div>
@@ -19,6 +19,9 @@ export const Instructions = () => {
             <strong>Arrow Keys</strong> - Move camera manually (player mode)
           </li>
           <li>
+            <strong>Touch/Swipe</strong> - On mobile devices, use touch gestures to pan the camera
+          </li>
+          <li>
             <strong>Click meeple name in list</strong> - Select a meeple and lock camera to follow it (meeple mode)
             <br />
             <span className="text-xs opacity-75 italic">Note: Click on the meeple name in the meeple list, not on the canvas</span>
@@ -27,6 +30,8 @@ export const Instructions = () => {
             <strong>Click back arrow</strong> - Return to player mode and view all meeples
           </li>
           <li>Use the <strong>role filter</strong> dropdown to filter meeples by role</li>
+          <li>Use the <strong>zoom control</strong> buttons to adjust camera zoom level</li>
+          <li>Control background music with the <strong>audio player</strong> at the bottom (play/pause, next/previous track)</li>
         </ul>
       </div>
 
@@ -48,6 +53,8 @@ export const Instructions = () => {
               <li><strong>Space Stores</strong>: Convert ore to fizzy drinks and money (1 ore → 10 fizzy + 10 money)</li>
               <li><strong>Bartenders</strong>: Buy fizzy from stores (1 money) → Restock bars (earn 2 money per fizzy)</li>
               <li><strong>Asteroids</strong>: Regenerate ore when inventory is low</li>
+              <li><strong>Banks</strong>: Generate money when reserves are low</li>
+              <li><strong>Bankers</strong>: Transfer money from banks to Space Stores with negative balances</li>
             </ul>
           </div>
         </div>
