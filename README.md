@@ -20,6 +20,8 @@ The simulation features several types of entities, each with unique behaviors:
 - **Space Stores**: Convert minerals into fizzy drinks and money through transmutation
 - **Space Bars**: Sell fizzy drinks to miners
 - **Space Apartments**: Serve as homes for miners
+- **Banks**: Stationary entities that generate money when their reserves are low
+- **Bankers**: Mobile entities that transfer money from banks to Space Stores with negative balances
 - **Pirate Bases**: Stationary space stations that serve as homes for pirate ships
 - **Pirate Ships**: Hostile entities that patrol the space, detect miners using radar, chase them, and fire laser projectiles that steal money from their targets
 
@@ -31,7 +33,7 @@ Each entity has a set of **conditions** that trigger actions based on their inve
 - If a miner has money, they buy fizzy drinks
 - If a miner has too many fizzy drinks, they consume them
 
-The simulation updates every 500ms, and entities move autonomously to perform their actions.
+The simulation updates every 1000ms, and entities move autonomously to perform their actions. The game world spans 2500x2500 units.
 
 ### Combat System
 
@@ -70,14 +72,20 @@ The current camera mode is indicated by an icon in the top-right of the sidebar.
 
 ### Zoom Control
 
-- Use the zoom slider in the UI to adjust the camera zoom level
+- Use the zoom control buttons in the UI to adjust the camera zoom level
 - Zoom level affects how much of the game world is visible at once
+
+### Touch Controls
+
+- On mobile devices, use touch and swipe gestures to pan the camera around the game world
+- Touch controls work alongside keyboard controls for camera movement
 
 ### Navigation
 
 - **Filter by Role**: Use the dropdown in the main view to filter meeples by their role (Miner, Bartender, Asteroid, etc.)
 - **Select Meeple**: Click on any meeple in the list to view detailed information and lock the camera to follow them
 - **View Stats**: The header displays total counts of each entity type and resource in the simulation
+- **Audio Player**: Control background music with play/pause and track navigation controls at the bottom of the screen
 
 ## Development
 

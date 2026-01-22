@@ -7,6 +7,29 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added - 2026-01-14
+- **Multi-track Audio Player**: Added audio player component with support for multiple tracks
+  - Play/pause controls with visual feedback
+  - Next and previous track navigation
+  - Waveform visualization using Wavesurfer
+  - Three tracks available: "Blue Is For Baby, Red Is For Radical", "How You Like Me Now", and "She Said Hey"
+- **Banks and Bankers**: New financial entities in the economy
+  - **Banks**: Stationary entities that generate money when their reserves are low
+  - **Bankers**: Mobile entities that transfer money from banks to Space Stores with negative balances
+  - Bankers patrol between banks and Space Stores, ensuring stores maintain positive money reserves
+- **Touch Controls**: Added touch and swipe gesture support for camera movement on mobile devices
+  - Enables camera panning using touch gestures alongside keyboard controls
+  - Improves mobile responsiveness and user experience
+
+### Changed - 2026-01-14
+- Increased game world dimensions from 1000x1000 to 2500x2500 units for expanded playable area
+- Adjusted game update interval from 500ms to 1000ms for better performance
+- Refactored Audio component UI with modern icon buttons and improved styling
+- Moved Audio component from App to Layout for better placement
+- Reduced default BARTENDER and PIRATE_SHIP counts in game constants
+- Updated default meeple filter from PirateShip to Miner
+- Improved UI layout with tabs and inventory counts displayed side by side on medium screens
+
 ### Added - 2026-01-13
 - **Pirates and Pirate Bases**: Added new hostile entities to the game
   - **Pirate Bases**: Stationary space stations that serve as homes for pirate ships
