@@ -8,6 +8,9 @@ A space simulation game built with React, TypeScript, and Excalibur.
 
 Space Pants is an autonomous space economy simulation where different entities (Meeples) interact with each other based on condition-based behaviors. The simulation runs continuously, with entities performing actions like mining, trading, and consuming resources.
 
+![Zight Recording 2026-01-22 at 09 35 54 AM](https://github.com/user-attachments/assets/fed798c8-f4ec-4010-a562-6fb9a0e3b1b4)
+
+
 ## Simulation
 
 The simulation features several types of entities, each with unique behaviors:
